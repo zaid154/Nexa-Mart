@@ -18,19 +18,44 @@ let refreshing = null;
 const isHtmlPayload = (data) =>
   typeof data === "string" && /^\s*</.test(data);
 
+const isWakeUpError = (error) => {
+  const status = error.response?.status;
+  const type = error.response?.headers?.["content-type"] || "";
+  return (
+    !error.response ||
+    status === 502 ||
+    status === 503 ||
+    type.includes("text/html") ||
+    isHtmlPayload(error.response?.data)
+  );
+};
+
+const wakeUpMessage =
+  "Backend is waking up (free Render server). Wait 30–50 seconds and click Try again.";
+
 api.interceptors.response.use(
   (res) => {
     const type = res.headers?.["content-type"] || "";
     if (type.includes("text/html") || isHtmlPayload(res.data)) {
-      return Promise.reject(
-        new Error("API is unavailable. The backend server may not be connected.")
-      );
+      const err = new Error(wakeUpMessage);
+      err.isWakeUp = true;
+      return Promise.reject(err);
     }
     return res;
   },
   async (error) => {
     const config = error.config || {};
     const status = error.response?.status;
+
+    if (
+      config.method === "get" &&
+      (error.isWakeUp || isWakeUpError(error)) &&
+      (config._wakeRetry || 0) < 4
+    ) {
+      config._wakeRetry = (config._wakeRetry || 0) + 1;
+      await new Promise((r) => setTimeout(r, 3000));
+      return api(config);
+    }
 
     const isStartupError = !error.response || status === 503;
     if (isStartupError && config.method === "get" && !config._retried) {
@@ -60,7 +85,10 @@ api.interceptors.response.use(
       localStorage.removeItem("token");
     }
 
-    const message = error.response?.data?.message || error.message || "Something went wrong";
+    const message =
+      error.message?.includes("waking up") || isWakeUpError(error)
+        ? wakeUpMessage
+        : error.response?.data?.message || error.message || "Something went wrong";
     return Promise.reject(new Error(message));
   }
 );

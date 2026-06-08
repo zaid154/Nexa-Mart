@@ -22,6 +22,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://nexamart-28c93.web.app",
   "https://nexamart-28c93.firebaseapp.com",
+  "https://nexa-mart.onrender.com",
 ].filter(Boolean);
 
 export const createApp = () => {
@@ -31,7 +32,15 @@ export const createApp = () => {
   app.use(
     cors({
       origin(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin) {
+          callback(null, true);
+          return;
+        }
+        if (
+          allowedOrigins.includes(origin) ||
+          origin.endsWith(".web.app") ||
+          origin.endsWith(".firebaseapp.com")
+        ) {
           callback(null, true);
           return;
         }
