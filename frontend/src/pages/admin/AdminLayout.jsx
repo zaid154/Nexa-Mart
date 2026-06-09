@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 
+// The links shown in the admin sidebar menu.
 const NAV = [
   { to: "/admin", end: true, label: "Dashboard" },
   { to: "/admin/products", label: "Products" },
@@ -10,7 +11,8 @@ const NAV = [
   { to: "/admin/logs", label: "Logs" },
 ];
 
-export default function AdminLayout() {
+// The shared layout (top bar + sidebar) for every admin page.
+const AdminLayout = () => {
   return (
     <div className="admin-shell">
       <header className="admin-topbar">
@@ -28,14 +30,14 @@ export default function AdminLayout() {
         <aside className="admin-sidebar" aria-label="Admin navigation">
           <p className="admin-nav-title">Menu</p>
           <nav className="admin-nav">
-            {NAV.map(({ to, end, label }) => (
+            {NAV.map((item) => (
               <NavLink
-                key={to}
-                to={to}
-                end={end}
+                key={item.to}
+                to={item.to}
+                end={item.end}
                 className={({ isActive }) => (isActive ? "active" : "")}
               >
-                {label}
+                {item.label}
               </NavLink>
             ))}
           </nav>
@@ -47,4 +49,6 @@ export default function AdminLayout() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminLayout;

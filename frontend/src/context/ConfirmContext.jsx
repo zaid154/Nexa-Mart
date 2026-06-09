@@ -1,10 +1,13 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
+// This context shows a popup box that asks the user to confirm or cancel.
 const ConfirmContext = createContext(null);
 
+// Helper hook so other files can ask for confirmation easily.
 export const useConfirm = () => useContext(ConfirmContext);
 
-const DEFAULTS = {
+// Default text for the popup box.
+const defaultOptions = {
   title: "Are you sure?",
   message: "",
   confirmLabel: "Confirm",
@@ -13,63 +16,80 @@ const DEFAULTS = {
 };
 
 export const ConfirmProvider = ({ children }) => {
-  const [state, setState] = useState(null);
-  const resolver = useRef(null);
+  // "popup" holds the current popup options, or null when nothing is shown.
+  const [popup, setPopup] = useState(null);
+  // We keep the promise "resolve" function here so we can call it later.
+  const resolveRef = useRef(null);
 
-  const confirm = useCallback((options = {}) => {
-    const opts = typeof options === "string" ? { message: options } : options;
-    setState({ ...DEFAULTS, ...opts });
+  // Open the popup. You can pass a string message or an options object.
+  const confirm = (options) => {
+    if (!options) {
+      options = {};
+    }
+    let chosenOptions;
+    if (typeof options === "string") {
+      chosenOptions = { message: options };
+    } else {
+      chosenOptions = options;
+    }
+    setPopup({ ...defaultOptions, ...chosenOptions });
+    // Return a promise. It finishes when the user clicks a button.
     return new Promise((resolve) => {
-      resolver.current = resolve;
+      resolveRef.current = resolve;
     });
-  }, []);
+  };
 
-  const close = useCallback(
-    (result) => {
-      setState(null);
-      if (resolver.current) {
-        resolver.current(result);
-        resolver.current = null;
-      }
-    },
-    []
-  );
+  // Close the popup and send back the result (true or false).
+  const close = (result) => {
+    setPopup(null);
+    if (resolveRef.current) {
+      resolveRef.current(result);
+      resolveRef.current = null;
+    }
+  };
 
+  // Let the user press Escape to cancel and Enter to confirm.
   useEffect(() => {
-    if (!state) return;
-    const onKey = (e) => {
-      if (e.key === "Escape") close(false);
-      if (e.key === "Enter") close(true);
+    if (!popup) {
+      return;
+    }
+    const handleKey = (event) => {
+      if (event.key === "Escape") {
+        close(false);
+      }
+      if (event.key === "Enter") {
+        close(true);
+      }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [state, close]);
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [popup]);
 
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
-      {state && (
+      {popup && (
         <div className="modal-overlay" onClick={() => close(false)}>
           <div
             className="modal"
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="confirm-title"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           >
-            <h3 className="modal-title" id="confirm-title">{state.title}</h3>
-            {state.message && <p className="modal-message">{state.message}</p>}
+            <h3 className="modal-title" id="confirm-title">{popup.title}</h3>
+            {popup.message && <p className="modal-message">{popup.message}</p>}
             <div className="modal-actions">
               <button type="button" className="btn btn-ghost" onClick={() => close(false)}>
-                {state.cancelLabel}
+                {popup.cancelLabel}
               </button>
               <button
                 type="button"
-                className={`btn ${state.tone === "danger" ? "btn-danger" : ""}`}
+                className={`btn ${popup.tone === "danger" ? "btn-danger" : ""}`}
                 onClick={() => close(true)}
                 autoFocus
               >
-                {state.confirmLabel}
+                {popup.confirmLabel}
               </button>
             </div>
           </div>

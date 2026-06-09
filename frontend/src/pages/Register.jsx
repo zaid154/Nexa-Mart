@@ -4,23 +4,36 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { BrandMark } from "../components/Icons.jsx";
 
-export default function Register() {
+// Register page where a new user creates an account.
+const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
+
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const submit = async (e) => {
     e.preventDefault();
-    const next = {};
-    if (!form.name.trim()) next.name = "Name is required";
-    if (!form.email.trim()) next.email = "Email is required";
-    if (!form.password) next.password = "Password is required";
-    else if (form.password.length < 8) next.password = "Password must be at least 8 characters";
-    setErrors(next);
-    if (Object.keys(next).length) return;
+
+    // Check each field and collect any error messages.
+    const newErrors = {};
+    if (!form.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required";
+    }
+    if (!form.password) {
+      newErrors.password = "Password is required";
+    } else if (form.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
 
     setLoading(true);
     try {
@@ -32,6 +45,24 @@ export default function Register() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Update the name field and clear its error.
+  const handleNameChange = (e) => {
+    setForm({ ...form, name: e.target.value });
+    setErrors({ ...errors, name: "" });
+  };
+
+  // Update the email field and clear its error.
+  const handleEmailChange = (e) => {
+    setForm({ ...form, email: e.target.value });
+    setErrors({ ...errors, email: "" });
+  };
+
+  // Update the password field and clear its error.
+  const handlePasswordChange = (e) => {
+    setForm({ ...form, password: e.target.value });
+    setErrors({ ...errors, password: "" });
   };
 
   return (
@@ -50,7 +81,7 @@ export default function Register() {
               id="name"
               className="input"
               value={form.name}
-              onChange={(e) => { setForm({ ...form, name: e.target.value }); setErrors({ ...errors, name: "" }); }}
+              onChange={handleNameChange}
               aria-invalid={!!errors.name}
               autoComplete="name"
             />
@@ -63,7 +94,7 @@ export default function Register() {
               className="input"
               type="email"
               value={form.email}
-              onChange={(e) => { setForm({ ...form, email: e.target.value }); setErrors({ ...errors, email: "" }); }}
+              onChange={handleEmailChange}
               aria-invalid={!!errors.email}
               autoComplete="email"
             />
@@ -76,7 +107,7 @@ export default function Register() {
               className="input"
               type="password"
               value={form.password}
-              onChange={(e) => { setForm({ ...form, password: e.target.value }); setErrors({ ...errors, password: "" }); }}
+              onChange={handlePasswordChange}
               aria-invalid={!!errors.password}
               autoComplete="new-password"
             />
@@ -93,4 +124,6 @@ export default function Register() {
       </div>
     </div>
   );
-}
+};
+
+export default Register;

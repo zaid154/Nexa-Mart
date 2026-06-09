@@ -14,42 +14,64 @@ import {
   BrandMark,
 } from "./Icons.jsx";
 
-export default function Navbar() {
+// The top navigation bar shown on every page.
+const Navbar = () => {
   const { user, logout, isAdmin } = useAuth();
   const { cart, wishlist } = useCart();
   const navigate = useNavigate();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [scrolled, setScrolled] = useState(false);
+
   const catRef = useRef(null);
   const profileRef = useRef(null);
 
+  // Load the list of categories from the server.
   useEffect(() => {
-    api.get("/products/filters").then((res) => setCategories(res.data.categories || []));
+    api.get("/products/filters").then((res) => {
+      setCategories(res.data.categories || []);
+    });
   }, []);
 
+  // Add a shadow to the navbar once the page is scrolled a little.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    const onClick = (e) => {
-      if (catRef.current && !catRef.current.contains(e.target)) setCatOpen(false);
-      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 8);
     };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close the dropdowns when the user clicks outside of them.
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    const handleClick = (event) => {
+      if (catRef.current && !catRef.current.contains(event.target)) {
+        setCatOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // Stop the page from scrolling while the mobile menu is open.
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [menuOpen]);
 
+  // Log out and go back to the home page.
   const handleLogout = async () => {
     await logout();
     setProfileOpen(false);
@@ -70,7 +92,7 @@ export default function Navbar() {
             <button
               type="button"
               className={`nav-categories-btn ${catOpen ? "open" : ""}`}
-              onClick={() => setCatOpen((o) => !o)}
+              onClick={() => setCatOpen((open) => !open)}
               aria-expanded={catOpen}
               aria-haspopup="true"
             >
@@ -81,14 +103,14 @@ export default function Navbar() {
                 <Link to="/products" role="menuitem" onClick={() => setCatOpen(false)}>
                   All Products
                 </Link>
-                {categories.map((c) => (
+                {categories.map((category) => (
                   <Link
-                    key={c}
-                    to={`/products?category=${encodeURIComponent(c)}`}
+                    key={category}
+                    to={`/products?category=${encodeURIComponent(category)}`}
                     role="menuitem"
                     onClick={() => setCatOpen(false)}
                   >
-                    {c}
+                    {category}
                   </Link>
                 ))}
               </div>
@@ -96,7 +118,6 @@ export default function Navbar() {
           </div>
 
           <SearchBar categories={categories} className="nav-search-desktop" />
-                {/* <h1 className="text-red-500">Hello World zaid</h1> */}
 
           <nav className="nav-links nav-links-desktop" aria-label="Main navigation">
             <Link to="/products" className="nav-link">Shop</Link>
@@ -118,7 +139,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   className="nav-icon-btn"
-                  onClick={() => setProfileOpen((o) => !o)}
+                  onClick={() => setProfileOpen((open) => !open)}
                   aria-label="Account menu"
                   aria-expanded={profileOpen}
                 >
@@ -144,7 +165,7 @@ export default function Navbar() {
           <button
             type="button"
             className="nav-mobile-toggle"
-            onClick={() => setMenuOpen((o) => !o)}
+            onClick={() => setMenuOpen((open) => !open)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
           >
@@ -161,13 +182,13 @@ export default function Navbar() {
         />
         <div className="mobile-menu-links">
           <Link to="/products" onClick={() => setMenuOpen(false)}>Shop All</Link>
-          {categories.map((c) => (
+          {categories.map((category) => (
             <Link
-            key={c}
-            to={`/products?category=${encodeURIComponent(c)}`}
-            onClick={() => setMenuOpen(false)}
+              key={category}
+              to={`/products?category=${encodeURIComponent(category)}`}
+              onClick={() => setMenuOpen(false)}
             >
-              {c}
+              {category}
             </Link>
           ))}
           {user ? (
@@ -186,4 +207,6 @@ export default function Navbar() {
       </div>
     </>
   );
-}
+};
+
+export default Navbar;

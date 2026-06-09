@@ -7,55 +7,85 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { IconHeart } from "./Icons.jsx";
 
-export default function ProductCard({ product }) {
+// One product box shown in the product grid.
+const ProductCard = ({ product }) => {
   const { user } = useAuth();
   const { addToCart, addToWishlist, removeFromWishlist, inWishlist } = useCart();
   const toast = useToast();
   const navigate = useNavigate();
 
-  const wished = inWishlist(product._id);
-  const img = product.images?.[0];
-  const discount =
-    product.mrp > product.price
-      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
-      : 0;
+  // Is this product already in the wishlist?
+  const isWished = inWishlist(product._id);
 
-  const handleWishlist = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!user) return navigate("/login");
+  // The first image of the product, if it has any.
+  let image = null;
+  if (product.images && product.images.length > 0) {
+    image = product.images[0];
+  }
+
+  // Work out the discount percentage (0 if there is no discount).
+  let discount = 0;
+  if (product.mrp > product.price) {
+    discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+  }
+
+  // Add or remove the product from the wishlist.
+  const handleWishlist = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     try {
-      if (wished) {
+      if (isWished) {
         await removeFromWishlist(product._id);
         toast.info("Removed from wishlist");
       } else {
         await addToWishlist(product._id);
         toast.success("Added to wishlist");
       }
-    } catch (err) {
-      toast.error(err.message);
+    } catch (error) {
+      toast.error(error.message);
     }
   };
 
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!user) return navigate("/login");
+  // Add the product to the cart.
+  const handleAdd = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     try {
       await addToCart(product._id, 1);
       toast.success("Added to cart");
-    } catch (err) {
-      toast.error(err.message);
+    } catch (error) {
+      toast.error(error.message);
     }
   };
+
+  // Text and disabled state for the add to cart button.
+  const outOfStock = product.countInStock === 0;
+  let addButtonText = "Add to cart";
+  if (outOfStock) {
+    addButtonText = "Out of stock";
+  }
+
+  // Title shown when hovering the wishlist button.
+  let wishlistTitle = "Add to wishlist";
+  if (isWished) {
+    wishlistTitle = "Remove from wishlist";
+  }
 
   return (
     <Link to={`/products/${product._id}`} className="product-card">
       <div className="product-thumb">
         {discount > 0 && <span className="discount-badge">-{discount}%</span>}
-        {img ? (
+        {image ? (
           <img
-            src={img}
+            src={image}
             alt={product.name}
             loading="lazy"
             onError={onProductImageError}
@@ -63,12 +93,12 @@ export default function ProductCard({ product }) {
         ) : null}
         <button
           type="button"
-          className={`wishlist-btn ${wished ? "active" : ""}`}
+          className={`wishlist-btn ${isWished ? "active" : ""}`}
           onClick={handleWishlist}
-          title={wished ? "Remove from wishlist" : "Add to wishlist"}
-          aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+          title={wishlistTitle}
+          aria-label={wishlistTitle}
         >
-          <IconHeart size={16} filled={wished} />
+          <IconHeart size={16} filled={isWished} />
         </button>
       </div>
       <div className="product-body">
@@ -88,11 +118,13 @@ export default function ProductCard({ product }) {
           type="button"
           className="btn product-add-btn"
           onClick={handleAdd}
-          disabled={product.countInStock === 0}
+          disabled={outOfStock}
         >
-          {product.countInStock === 0 ? "Out of stock" : "Add to cart"}
+          {addButtonText}
         </button>
       </div>
     </Link>
   );
-}
+};
+
+export default ProductCard;

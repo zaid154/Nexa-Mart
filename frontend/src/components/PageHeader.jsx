@@ -1,4 +1,5 @@
-export default function PageHeader({ eyebrow, title, subtitle, children }) {
+// A reusable header shown at the top of many pages.
+const PageHeader = ({ eyebrow, title, subtitle, children }) => {
   return (
     <header className="page-header">
       {eyebrow && <span className="eyebrow">{eyebrow}</span>}
@@ -11,4 +12,6 @@ export default function PageHeader({ eyebrow, title, subtitle, children }) {
       </div>
     </header>
   );
-}
+};
+
+export default PageHeader;

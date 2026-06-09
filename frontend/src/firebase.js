@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
+// Firebase project settings for NexaMart
 const firebaseConfig = {
   apiKey: "AIzaSyBRgjTzexhAH37ESXTtJbDx4FGXHUCbt00",
   authDomain: "nexamart-28c93.firebaseapp.com",
@@ -11,11 +12,20 @@ const firebaseConfig = {
   measurementId: "G-WQNVTCJ0XZ",
 };
 
+// Start Firebase app
 export const firebaseApp = initializeApp(firebaseConfig);
 
+// Start analytics only in browser when supported
 export const initAnalytics = async () => {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") {
+    return null;
+  }
+
   const supported = await isSupported();
-  if (!supported) return null;
+
+  if (!supported) {
+    return null;
+  }
+
   return getAnalytics(firebaseApp);
 };

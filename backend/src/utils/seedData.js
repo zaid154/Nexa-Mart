@@ -1,27 +1,44 @@
+// This file holds the sample data and the function that fills (seeds)
+// the database with demo users and products.
+
 import User from "../models/User.js";
 import Product from "../models/Product.js";
 import Review from "../models/Review.js";
 import Order from "../models/Order.js";
 
-const escapeXml = (s) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+// Make text safe to put inside an SVG/XML string.
+const escapeXml = (s) => {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+};
 
+// Split a long label into at most 2 lines so it fits on the placeholder image.
 const wrapLabel = (label, maxPerLine = 16) => {
   const words = label.split(" ");
   const lines = [];
   let current = "";
+
   for (const word of words) {
-    if ((current + " " + word).trim().length > maxPerLine && current) {
+    const combined = (current + " " + word).trim();
+
+    // If adding this word makes the line too long, start a new line.
+    if (combined.length > maxPerLine && current) {
       lines.push(current.trim());
       current = word;
     } else {
       current = `${current} ${word}`.trim();
     }
   }
-  if (current) lines.push(current.trim());
+
+  // Add the last line if there is anything left.
+  if (current) {
+    lines.push(current.trim());
+  }
+
+  // Keep only the first two lines.
   return lines.slice(0, 2);
 };
 
+// Build a simple SVG placeholder image (used when there is no real photo).
 export const makeImage = (label, brand) => {
   const lines = wrapLabel(label);
   const startY = lines.length > 1 ? 430 : 460;
@@ -50,8 +67,10 @@ export const makeImage = (label, brand) => {
   return { data: Buffer.from(svg), contentType: "image/svg+xml" };
 };
 
-const IMG = (id) =>
-  `https://images.unsplash.com/${id}?w=800&q=80&auto=format&fit=crop`;
+// Build a full Unsplash image URL from a photo id.
+const IMG = (id) => {
+  return `https://images.unsplash.com/${id}?w=800&q=80&auto=format&fit=crop`;
+};
 
 const productImages = {
   "iphone-15.jpg": IMG("photo-1695048133142-1a20484d2569"),
@@ -829,17 +848,19 @@ const products = [
   },
 ];
 
+// Fill the database with the demo users and products above.
+// By default it clears the old data first.
 export const seedDatabase = async ({ clear = true } = {}) => {
+  // Step 1: remove existing data if asked to.
   if (clear) {
     console.log("Clearing existing data...");
-    await Promise.all([
-      User.deleteMany({}),
-      Product.deleteMany({}),
-      Review.deleteMany({}),
-      Order.deleteMany({}),
-    ]);
+    await User.deleteMany({});
+    await Product.deleteMany({});
+    await Review.deleteMany({});
+    await Order.deleteMany({});
   }
 
+  // Step 2: create one admin and one normal demo user.
   console.log("Creating users...");
   await User.create({
     name: "Admin",
@@ -858,19 +879,30 @@ export const seedDatabase = async ({ clear = true } = {}) => {
     status: "active",
   });
 
+  // Step 3: create every product from the list above.
   console.log("Creating products...");
   for (const p of products) {
     const { image, ...data } = p;
+
+    // Build a base64 fallback image in case the online image is missing.
     const { data: svgData, contentType } = makeImage(data.name, data.brand);
     const fallbackUrl = `data:${contentType};base64,${svgData.toString("base64")}`;
+
+    // Use the mapped Unsplash URL if we have one, otherwise the fallback.
+    let imageUrl = productImages[image];
+    if (!imageUrl) {
+      imageUrl = fallbackUrl;
+    }
+
     await Product.create({
       ...data,
       status: "active",
       isActive: true,
-      images: [{ url: productImages[image] || fallbackUrl }],
+      images: [{ url: imageUrl }],
     });
   }
 
+  // Count how many products were marked as featured (for the summary log).
   const featured = products.filter((p) => p.isFeatured).length;
   console.log("\nSeed complete!");
   console.log("  Admin login:    admin@shop.com / Admin@123");

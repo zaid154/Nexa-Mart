@@ -9,18 +9,25 @@ import { SkeletonCart } from "../components/Skeleton.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import { onProductImageError } from "../utils/productImage.js";
 
+// Coupon codes and the discount fraction each one gives.
 const COUPONS = { NEXA15: 0.15, WELCOME10: 0.1 };
 
-export default function Cart() {
+// Shopping cart page where the user reviews and edits items before checkout.
+const Cart = () => {
   const { cart, loading, updateCartItem, removeFromCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
+
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
 
-  if (loading) return <SkeletonCart />;
+  // Show a skeleton while the cart is loading.
+  if (loading) {
+    return <SkeletonCart />;
+  }
 
+  // The user must be signed in to view a cart.
   if (!user) {
     return (
       <EmptyState
@@ -33,6 +40,7 @@ export default function Cart() {
     );
   }
 
+  // Show an empty message when there are no items.
   if (cart.items.length === 0) {
     return (
       <EmptyState
@@ -45,6 +53,7 @@ export default function Cart() {
     );
   }
 
+  // Change the quantity of one product in the cart.
   const change = async (productId, quantity) => {
     try {
       await updateCartItem(productId, quantity);
@@ -53,6 +62,7 @@ export default function Cart() {
     }
   };
 
+  // Remove one product from the cart.
   const remove = async (productId) => {
     try {
       await removeFromCart(productId);
@@ -62,9 +72,12 @@ export default function Cart() {
     }
   };
 
+  // Check the typed coupon code and apply its discount if valid.
   const applyCoupon = () => {
     const code = coupon.trim().toUpperCase();
-    if (!code) return;
+    if (!code) {
+      return;
+    }
     if (COUPONS[code]) {
       setDiscount(COUPONS[code]);
       toast.success(`Coupon ${code} applied (${COUPONS[code] * 100}% off)`);
@@ -74,73 +87,91 @@ export default function Cart() {
     }
   };
 
+  // Work out all the price totals.
   const discountAmount = Math.round(cart.subtotal * discount);
   const discountedSubtotal = cart.subtotal - discountAmount;
-  const shipping = discountedSubtotal >= 5000 ? 0 : 99;
+
+  let shipping = 99;
+  if (discountedSubtotal >= 5000) {
+    shipping = 0;
+  }
+
   const tax = Math.round(discountedSubtotal * 0.18);
   const total = discountedSubtotal + shipping + tax;
+
+  // Add an "s" to "item" when there is more than one.
+  let itemWord = "item";
+  if (cart.count > 1) {
+    itemWord = "items";
+  }
 
   return (
     <div className="animate-fade-in">
       <PageHeader
         eyebrow="Your bag"
         title="Shopping Cart"
-        subtitle={`${cart.count} item${cart.count > 1 ? "s" : ""} in your cart`}
+        subtitle={`${cart.count} ${itemWord} in your cart`}
       />
 
       <div className="cart-layout">
         <div className="cart-items-list">
-          {cart.items.map(({ product, quantity, lineTotal }) => (
-            <div key={product._id} className="cart-line">
-              <Link to={`/products/${product._id}`}>
-                <img
-                  src={product.images?.[0]}
-                  alt={product.name}
-                  className="cart-line-img"
-                  loading="lazy"
-                  onError={onProductImageError}
-                />
-              </Link>
-              <div className="cart-line-info">
+          {cart.items.map((item) => {
+            const product = item.product;
+            const quantity = item.quantity;
+            const lineTotal = item.lineTotal;
+
+            return (
+              <div key={product._id} className="cart-line">
                 <Link to={`/products/${product._id}`}>
-                  <h3>{product.name}</h3>
+                  <img
+                    src={product.images?.[0]}
+                    alt={product.name}
+                    className="cart-line-img"
+                    loading="lazy"
+                    onError={onProductImageError}
+                  />
                 </Link>
-                <span className="muted font-sm">{product.brand}</span>
-                <div className="row gap-3 mt-3">
-                  <div className="qty">
+                <div className="cart-line-info">
+                  <Link to={`/products/${product._id}`}>
+                    <h3>{product.name}</h3>
+                  </Link>
+                  <span className="muted font-sm">{product.brand}</span>
+                  <div className="row gap-3 mt-3">
+                    <div className="qty">
+                      <button
+                        type="button"
+                        onClick={() => change(product._id, quantity - 1)}
+                        disabled={quantity <= 1}
+                        aria-label="Decrease quantity"
+                      >
+                        −
+                      </button>
+                      <span>{quantity}</span>
+                      <button
+                        type="button"
+                        onClick={() => change(product._id, quantity + 1)}
+                        disabled={quantity >= product.countInStock}
+                        aria-label="Increase quantity"
+                      >
+                        +
+                      </button>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => change(product._id, quantity - 1)}
-                      disabled={quantity <= 1}
-                      aria-label="Decrease quantity"
+                      className="btn-ghost btn-sm"
+                      onClick={() => remove(product._id)}
                     >
-                      −
-                    </button>
-                    <span>{quantity}</span>
-                    <button
-                      type="button"
-                      onClick={() => change(product._id, quantity + 1)}
-                      disabled={quantity >= product.countInStock}
-                      aria-label="Increase quantity"
-                    >
-                      +
+                      Remove
                     </button>
                   </div>
-                  <button
-                    type="button"
-                    className="btn-ghost btn-sm"
-                    onClick={() => remove(product._id)}
-                  >
-                    Remove
-                  </button>
+                </div>
+                <div className="cart-line-price">
+                  <strong>{formatINR(lineTotal)}</strong>
+                  <span className="muted font-sm">{formatINR(product.price)} each</span>
                 </div>
               </div>
-              <div className="cart-line-price">
-                <strong>{formatINR(lineTotal)}</strong>
-                <span className="muted font-sm">{formatINR(product.price)} each</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="cart-summary card">
@@ -191,4 +222,6 @@ export default function Cart() {
       </div>
     </div>
   );
-}
+};
+
+export default Cart;

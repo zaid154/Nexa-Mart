@@ -1,26 +1,35 @@
-export const formatINR = (amount) =>
-  new Intl.NumberFormat("en-IN", {
+// Format price in Indian Rupees (e.g. ₹1,299)
+export const formatINR = (amount) => {
+  const value = amount || 0;
+
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
-  }).format(amount || 0);
+  }).format(value);
+};
 
-export const formatDate = (date) =>
-  new Date(date).toLocaleDateString("en-IN", {
+// Format date like "9 Jun 2026"
+export const formatDate = (date) => {
+  return new Date(date).toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
     year: "numeric",
   });
+};
 
-export const formatDateTime = (date) =>
-  new Date(date).toLocaleString("en-IN", {
+// Format date and time like "9 Jun 2026, 02:30 pm"
+export const formatDateTime = (date) => {
+  return new Date(date).toLocaleString("en-IN", {
     day: "numeric",
     month: "short",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
+};
 
+// Order status labels shown to user
 const STATUS_LABELS = {
   pending: "Pending",
   confirmed: "Confirmed",
@@ -36,6 +45,7 @@ const STATUS_LABELS = {
   returned: "Returned",
 };
 
+// Refund status labels
 const REFUND_LABELS = {
   none: "No refund",
   pending: "Refund pending",
@@ -45,36 +55,89 @@ const REFUND_LABELS = {
   failed: "Refund failed",
 };
 
-export const statusLabel = (s) => STATUS_LABELS[s] || s;
+// Get readable order status text
+export const statusLabel = (status) => {
+  if (STATUS_LABELS[status]) {
+    return STATUS_LABELS[status];
+  }
+  return status;
+};
 
-export const refundStatusLabel = (s) => REFUND_LABELS[s] || s;
+// Get readable refund status text
+export const refundStatusLabel = (status) => {
+  if (REFUND_LABELS[status]) {
+    return REFUND_LABELS[status];
+  }
+  return status;
+};
 
-export const statusBadgeClass = (s) => {
-  if (["delivered", "return_approved", "returned"].includes(s)) return "badge-success";
-  if (["cancelled", "return_rejected"].includes(s)) return "badge-danger";
-  if (["pending", "return_requested"].includes(s)) return "badge-warning";
-  if (["confirmed", "processing", "packed", "shipped", "out_for_delivery"].includes(s))
+// CSS class for order status badge color
+export const statusBadgeClass = (status) => {
+  if (["delivered", "return_approved", "returned"].includes(status)) {
+    return "badge-success";
+  }
+
+  if (["cancelled", "return_rejected"].includes(status)) {
+    return "badge-danger";
+  }
+
+  if (["pending", "return_requested"].includes(status)) {
+    return "badge-warning";
+  }
+
+  if (["confirmed", "processing", "packed", "shipped", "out_for_delivery"].includes(status)) {
     return "badge-info";
+  }
+
   return "badge-info";
 };
 
-export const refundBadgeClass = (s) => {
-  if (s === "completed") return "badge-success";
-  if (s === "failed") return "badge-danger";
-  if (["pending", "initiated", "processing"].includes(s)) return "badge-warning";
+// CSS class for refund status badge color
+export const refundBadgeClass = (status) => {
+  if (status === "completed") {
+    return "badge-success";
+  }
+
+  if (status === "failed") {
+    return "badge-danger";
+  }
+
+  if (["pending", "initiated", "processing"].includes(status)) {
+    return "badge-warning";
+  }
+
   return "badge-info";
 };
 
-export const paymentMethodLabel = (m) => (m === "cod" ? "Cash on Delivery" : "Online (Razorpay)");
+// Show payment method name
+export const paymentMethodLabel = (method) => {
+  if (method === "cod") {
+    return "Cash on Delivery";
+  }
+  return "Online (Razorpay)";
+};
 
+// Statuses where user can cancel order
 const CANCELLABLE = ["pending", "confirmed", "processing", "packed"];
 
-export const orderActions = (order) => ({
-  canCancel: CANCELLABLE.includes(order.status),
-  canReturn: order.status === "delivered",
-  canPay: order.paymentMethod === "razorpay" && !order.isPaid && order.status === "pending",
-});
+// Check what actions user can do on an order
+export const orderActions = (order) => {
+  const canCancel = CANCELLABLE.includes(order.status);
+  const canReturn = order.status === "delivered";
 
+  let canPay = false;
+  if (order.paymentMethod === "razorpay" && !order.isPaid && order.status === "pending") {
+    canPay = true;
+  }
+
+  return {
+    canCancel: canCancel,
+    canReturn: canReturn,
+    canPay: canPay,
+  };
+};
+
+// Steps shown in order tracking timeline
 export const ORDER_STEPS = [
   "pending",
   "confirmed",
@@ -85,6 +148,7 @@ export const ORDER_STEPS = [
   "delivered",
 ];
 
+// Statuses admin can move order forward to
 export const ADMIN_FORWARD_STATUSES = [
   "confirmed",
   "processing",

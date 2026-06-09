@@ -1,3 +1,7 @@
+// A one-off script that regenerates placeholder images for products
+// that do not already have a real (URL) image.
+// Run it with:  node src/utils/regenProductImages.js
+
 import "../config/env.js";
 import { connectDB, disconnectDB } from "../config/db.js";
 import Product from "../models/Product.js";
@@ -11,9 +15,13 @@ const run = async () => {
   let updated = 0;
 
   for (const product of products) {
+    // Skip products that already have at least one real image URL.
     const hasRealImage = (product.images || []).some((img) => img.url);
-    if (hasRealImage) continue;
+    if (hasRealImage) {
+      continue;
+    }
 
+    // Replace the images with a freshly generated placeholder.
     product.images = [makeImage(product.name, product.brand || "NexaMart")];
     await product.save();
     updated++;

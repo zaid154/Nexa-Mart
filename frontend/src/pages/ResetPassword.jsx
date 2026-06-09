@@ -4,12 +4,20 @@ import { useToast } from "../context/ToastContext.jsx";
 import api from "../api/client.js";
 import { BrandMark } from "../components/Icons.jsx";
 
-export default function ResetPassword() {
+// Page where the user enters the reset code and a new password.
+const ResetPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
+
+  // The email may come from the forgot-password page.
+  let emailFromState = "";
+  if (location.state && location.state.email) {
+    emailFromState = location.state.email;
+  }
+
   const [form, setForm] = useState({
-    email: location.state?.email || "",
+    email: emailFromState,
     code: "",
     password: "",
     confirm: "",
@@ -19,13 +27,25 @@ export default function ResetPassword() {
 
   const submit = async (e) => {
     e.preventDefault();
-    const next = {};
-    if (!form.email.trim()) next.email = "Email is required";
-    if (!form.code.trim()) next.code = "Reset code is required";
-    if (!form.password) next.password = "Password is required";
-    if (form.password !== form.confirm) next.confirm = "Passwords do not match";
-    setErrors(next);
-    if (Object.keys(next).length) return;
+
+    // Validate all fields and collect error messages.
+    const newErrors = {};
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required";
+    }
+    if (!form.code.trim()) {
+      newErrors.code = "Reset code is required";
+    }
+    if (!form.password) {
+      newErrors.password = "Password is required";
+    }
+    if (form.password !== form.confirm) {
+      newErrors.confirm = "Passwords do not match";
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
 
     setLoading(true);
     try {
@@ -41,6 +61,27 @@ export default function ResetPassword() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Update the email field.
+  const handleEmailChange = (e) => {
+    setForm({ ...form, email: e.target.value });
+  };
+
+  // Update the reset code field, allowing only digits.
+  const handleCodeChange = (e) => {
+    const onlyDigits = e.target.value.replace(/\D/g, "");
+    setForm({ ...form, code: onlyDigits });
+  };
+
+  // Update the new password field.
+  const handlePasswordChange = (e) => {
+    setForm({ ...form, password: e.target.value });
+  };
+
+  // Update the confirm password field.
+  const handleConfirmChange = (e) => {
+    setForm({ ...form, confirm: e.target.value });
   };
 
   return (
@@ -59,7 +100,7 @@ export default function ResetPassword() {
               className="input"
               type="email"
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onChange={handleEmailChange}
               aria-invalid={!!errors.email}
             />
             {errors.email && <span className="field-error">{errors.email}</span>}
@@ -71,7 +112,7 @@ export default function ResetPassword() {
               className="input"
               maxLength={6}
               value={form.code}
-              onChange={(e) => setForm({ ...form, code: e.target.value.replace(/\D/g, "") })}
+              onChange={handleCodeChange}
               aria-invalid={!!errors.code}
             />
             {errors.code && <span className="field-error">{errors.code}</span>}
@@ -83,7 +124,7 @@ export default function ResetPassword() {
               className="input"
               type="password"
               value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              onChange={handlePasswordChange}
               aria-invalid={!!errors.password}
             />
             {errors.password && <span className="field-error">{errors.password}</span>}
@@ -95,7 +136,7 @@ export default function ResetPassword() {
               className="input"
               type="password"
               value={form.confirm}
-              onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+              onChange={handleConfirmChange}
               aria-invalid={!!errors.confirm}
             />
             {errors.confirm && <span className="field-error">{errors.confirm}</span>}
@@ -110,4 +151,6 @@ export default function ResetPassword() {
       </div>
     </div>
   );
-}
+};
+
+export default ResetPassword;

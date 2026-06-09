@@ -4,6 +4,7 @@ import api from "../../api/client.js";
 import Loader from "../../components/Loader.jsx";
 import { formatINR, formatDate, statusLabel, statusBadgeClass } from "../../utils/format.js";
 
+// All order statuses for the filter dropdown ("" means all).
 const STATUSES = [
   "",
   "pending",
@@ -20,6 +21,7 @@ const STATUSES = [
   "returned",
 ];
 
+// The bulk actions that can be applied to selected orders.
 const BULK_ACTIONS = [
   { value: "processing", label: "Mark Processing" },
   { value: "packed", label: "Mark Packed" },
@@ -27,7 +29,8 @@ const BULK_ACTIONS = [
   { value: "delivered", label: "Mark Delivered" },
 ];
 
-export default function AdminOrders() {
+// Admin page to search, filter, paginate, and bulk-update orders.
+const AdminOrders = () => {
   const [data, setData] = useState({ orders: [], page: 1, pages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -39,6 +42,7 @@ export default function AdminOrders() {
   const [selected, setSelected] = useState([]);
   const [bulkAction, setBulkAction] = useState("");
 
+  // Load orders that match the current filters and page.
   const load = () => {
     setLoading(true);
     api
@@ -62,16 +66,24 @@ export default function AdminOrders() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, paymentStatus, from, to, page]);
 
+  // Run the search from the search box.
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
     load();
   };
 
+  // Select or unselect one order row.
   const toggleSelect = (id) => {
-    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setSelected((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((x) => x !== id);
+      }
+      return [...prev, id];
+    });
   };
 
+  // Select all rows, or clear the selection if all were already selected.
   const toggleAll = () => {
     if (selected.length === data.orders.length) {
       setSelected([]);
@@ -80,8 +92,11 @@ export default function AdminOrders() {
     }
   };
 
+  // Apply the chosen bulk action to the selected orders.
   const runBulk = async () => {
-    if (!bulkAction || selected.length === 0) return;
+    if (!bulkAction || selected.length === 0) {
+      return;
+    }
     try {
       const res = await api.post("/admin/orders/bulk", {
         ids: selected,
@@ -94,6 +109,9 @@ export default function AdminOrders() {
       alert(err.message);
     }
   };
+
+  // True when every visible row is selected.
+  const allSelected = selected.length === data.orders.length && data.orders.length > 0;
 
   return (
     <div>
@@ -158,54 +176,54 @@ export default function AdminOrders() {
         <>
           <div className="card table-card">
             <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>
-                    <input type="checkbox" checked={selected.length === data.orders.length && data.orders.length > 0} onChange={toggleAll} />
-                  </th>
-                  <th>Order</th>
-                  <th>Customer</th>
-                  <th>Date</th>
-                  <th>Total</th>
-                  <th>Payment</th>
-                  <th>Status</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.orders.map((o) => (
-                  <tr key={o._id}>
-                    <td>
-                      <input type="checkbox" checked={selected.includes(o._id)} onChange={() => toggleSelect(o._id)} />
-                    </td>
-                    <td>#{o._id.slice(-8).toUpperCase()}</td>
-                    <td>
-                      {o.user?.name}
-                      <br />
-                      <span className="muted font-xs">
-                        {o.user?.email}
-                      </span>
-                    </td>
-                    <td>{formatDate(o.createdAt)}</td>
-                    <td>{formatINR(o.totalPrice)}</td>
-                    <td>
-                      <span className={`badge ${o.isPaid ? "badge-success" : "badge-warning"}`}>
-                        {o.isPaid ? "Paid" : "Unpaid"}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`badge ${statusBadgeClass(o.status)}`}>{statusLabel(o.status)}</span>
-                    </td>
-                    <td>
-                      <Link to={`/admin/orders/${o._id}`} className="btn btn-outline btn-sm">
-                        View
-                      </Link>
-                    </td>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>
+                      <input type="checkbox" checked={allSelected} onChange={toggleAll} />
+                    </th>
+                    <th>Order</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.orders.map((o) => (
+                    <tr key={o._id}>
+                      <td>
+                        <input type="checkbox" checked={selected.includes(o._id)} onChange={() => toggleSelect(o._id)} />
+                      </td>
+                      <td>#{o._id.slice(-8).toUpperCase()}</td>
+                      <td>
+                        {o.user?.name}
+                        <br />
+                        <span className="muted font-xs">
+                          {o.user?.email}
+                        </span>
+                      </td>
+                      <td>{formatDate(o.createdAt)}</td>
+                      <td>{formatINR(o.totalPrice)}</td>
+                      <td>
+                        <span className={`badge ${o.isPaid ? "badge-success" : "badge-warning"}`}>
+                          {o.isPaid ? "Paid" : "Unpaid"}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`badge ${statusBadgeClass(o.status)}`}>{statusLabel(o.status)}</span>
+                      </td>
+                      <td>
+                        <Link to={`/admin/orders/${o._id}`} className="btn btn-outline btn-sm">
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -226,4 +244,6 @@ export default function AdminOrders() {
       )}
     </div>
   );
-}
+};
+
+export default AdminOrders;

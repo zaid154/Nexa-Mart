@@ -1,3 +1,6 @@
+// A script that fills the database with sample users and products.
+// Run it with:  node src/utils/seed.js
+
 import "../config/env.js";
 
 import { connectDB, disconnectDB } from "../config/db.js";

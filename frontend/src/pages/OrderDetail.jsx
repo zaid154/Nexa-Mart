@@ -16,10 +16,15 @@ import {
   ORDER_STEPS,
 } from "../utils/format.js";
 
-export default function OrderDetail() {
+// The statuses that mean the order is in a return flow.
+const RETURN_STATUSES = ["return_requested", "return_approved", "return_rejected", "returned"];
+
+// Page where a customer views one order and can cancel or request a return.
+const OrderDetail = () => {
   const { id } = useParams();
   const toast = useToast();
   const confirm = useConfirm();
+
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [returnReasons, setReturnReasons] = useState([]);
@@ -27,6 +32,7 @@ export default function OrderDetail() {
   const [submittingReturn, setSubmittingReturn] = useState(false);
   const [showReturnForm, setShowReturnForm] = useState(false);
 
+  // Load this order from the server.
   const load = () => {
     setLoading(true);
     api
@@ -42,7 +48,9 @@ export default function OrderDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  if (loading) return <Loader full />;
+  if (loading) {
+    return <Loader full />;
+  }
   if (!order) {
     return (
       <div className="empty-state">
@@ -56,10 +64,9 @@ export default function OrderDetail() {
   const actions = orderActions(order);
   const a = order.shippingAddress || {};
   const currentStep = ORDER_STEPS.indexOf(order.status);
-  const isReturnFlow = ["return_requested", "return_approved", "return_rejected", "returned"].includes(
-    order.status
-  );
+  const isReturnFlow = RETURN_STATUSES.includes(order.status);
 
+  // Ask the user to confirm, then cancel the order.
   const cancel = async () => {
     const ok = await confirm({
       title: "Cancel order?",
@@ -67,7 +74,9 @@ export default function OrderDetail() {
       confirmLabel: "Cancel order",
       cancelLabel: "Keep order",
     });
-    if (!ok) return;
+    if (!ok) {
+      return;
+    }
     try {
       await api.put(`/orders/${order._id}/cancel`);
       toast.success("Order cancelled");
@@ -77,9 +86,15 @@ export default function OrderDetail() {
     }
   };
 
+  // Send a return request (with optional photos) to the server.
   const submitReturn = async (e) => {
     e.preventDefault();
-    if (!returnForm.reason) return toast.error("Please select a return reason");
+
+    if (!returnForm.reason) {
+      toast.error("Please select a return reason");
+      return;
+    }
+
     setSubmittingReturn(true);
     try {
       const fd = new FormData();
@@ -95,6 +110,66 @@ export default function OrderDetail() {
     } finally {
       setSubmittingReturn(false);
     }
+  };
+
+  // Keep at most 3 selected files for the return photos.
+  const handleReturnFiles = (e) => {
+    const chosen = Array.from(e.target.files).slice(0, 3);
+    setReturnForm({ ...returnForm, files: chosen });
+  };
+
+  // Decide what to show in the tracking box based on the order status.
+  const renderTracking = () => {
+    if (order.status === "cancelled") {
+      return <p className="badge badge-danger">This order was cancelled.</p>;
+    }
+
+    if (isReturnFlow) {
+      return (
+        <div className="return-panel">
+          <span className={`badge ${statusBadgeClass(order.status)}`}>
+            {statusLabel(order.status)}
+          </span>
+          {order.returnInfo && (
+            <div className="mt-3">
+              <p>
+                <strong>Reason:</strong> {order.returnInfo.reason}
+              </p>
+              {order.returnInfo.description && (
+                <p className="muted">{order.returnInfo.description}</p>
+              )}
+              {order.returnInfo.adminNote && (
+                <p className="muted">
+                  <strong>Admin note:</strong> {order.returnInfo.adminNote}
+                </p>
+              )}
+              {order.returnInfo.imageUrls?.length > 0 && (
+                <div className="row image-grid mt-3">
+                  {order.returnInfo.imageUrls.map((url, i) => (
+                    <img key={i} src={url} alt="" className="thumb-lg" />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <ul className="timeline">
+        {ORDER_STEPS.map((s, i) => {
+          const isDone = i <= currentStep;
+          return (
+            <li key={s} className={isDone ? "done" : ""}>
+              <strong className={isDone ? "timeline-step-done" : "timeline-step-pending"}>
+                {statusLabel(s)}
+              </strong>
+            </li>
+          );
+        })}
+      </ul>
+    );
   };
 
   return (
@@ -127,47 +202,7 @@ export default function OrderDetail() {
               Payment: {paymentMethodLabel(order.paymentMethod)}
             </p>
 
-            {order.status === "cancelled" ? (
-              <p className="badge badge-danger">This order was cancelled.</p>
-            ) : isReturnFlow ? (
-              <div className="return-panel">
-                <span className={`badge ${statusBadgeClass(order.status)}`}>
-                  {statusLabel(order.status)}
-                </span>
-                {order.returnInfo && (
-                  <div className="mt-3">
-                    <p>
-                      <strong>Reason:</strong> {order.returnInfo.reason}
-                    </p>
-                    {order.returnInfo.description && (
-                      <p className="muted">{order.returnInfo.description}</p>
-                    )}
-                    {order.returnInfo.adminNote && (
-                      <p className="muted">
-                        <strong>Admin note:</strong> {order.returnInfo.adminNote}
-                      </p>
-                    )}
-                    {order.returnInfo.imageUrls?.length > 0 && (
-                      <div className="row image-grid mt-3">
-                        {order.returnInfo.imageUrls.map((url, i) => (
-                          <img key={i} src={url} alt="" className="thumb-lg" />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <ul className="timeline">
-                {ORDER_STEPS.map((s, i) => (
-                  <li key={s} className={i <= currentStep ? "done" : ""}>
-                    <strong className={i <= currentStep ? "timeline-step-done" : "timeline-step-pending"}>
-                      {statusLabel(s)}
-                    </strong>
-                  </li>
-                ))}
-              </ul>
-            )}
+            {renderTracking()}
 
             {order.trackingHistory?.length > 0 && (
               <>
@@ -248,9 +283,7 @@ export default function OrderDetail() {
                   type="file"
                   accept="image/*"
                   multiple
-                  onChange={(e) =>
-                    setReturnForm({ ...returnForm, files: Array.from(e.target.files).slice(0, 3) })
-                  }
+                  onChange={handleReturnFiles}
                 />
               </div>
               <div className="row">
@@ -336,4 +369,6 @@ export default function OrderDetail() {
       </div>
     </div>
   );
-}
+};
+
+export default OrderDetail;

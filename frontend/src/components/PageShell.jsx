@@ -1,20 +1,35 @@
 import { useLocation } from "react-router-dom";
 
-export default function PageShell({ children }) {
-  const { pathname } = useLocation();
-  const isAdmin = pathname.startsWith("/admin");
-  const isAuth =
-    pathname === "/login" ||
-    pathname === "/register" ||
-    pathname === "/verify-otp" ||
-    pathname === "/forgot-password" ||
-    pathname === "/reset-password";
+// Wraps the page content. Admin pages and auth pages get different layouts.
+const PageShell = ({ children }) => {
+  const location = useLocation();
+  const path = location.pathname;
 
-  if (isAdmin) return children;
+  // Admin pages bring their own layout, so we just return the content.
+  const isAdminPage = path.startsWith("/admin");
 
-  return (
-    <div className={`page-shell ${isAuth ? "page-shell-auth" : ""}`}>
-      {children}
-    </div>
-  );
-}
+  // These are the login / register style pages.
+  let isAuthPage = false;
+  if (
+    path === "/login" ||
+    path === "/register" ||
+    path === "/verify-otp" ||
+    path === "/forgot-password" ||
+    path === "/reset-password"
+  ) {
+    isAuthPage = true;
+  }
+
+  if (isAdminPage) {
+    return children;
+  }
+
+  let shellClass = "page-shell";
+  if (isAuthPage) {
+    shellClass = "page-shell page-shell-auth";
+  }
+
+  return <div className={shellClass}>{children}</div>;
+};
+
+export default PageShell;

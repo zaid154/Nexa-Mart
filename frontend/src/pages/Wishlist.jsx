@@ -5,20 +5,25 @@ import PageHeader from "../components/PageHeader.jsx";
 import { SkeletonCard } from "../components/Skeleton.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 
-export default function Wishlist() {
+// Page that shows the products the user has saved to their wishlist.
+const Wishlist = () => {
   const { wishlist, loading } = useCart();
 
+  // While loading, show placeholder skeleton cards.
   if (loading) {
     return (
       <div>
         <div className="skeleton skeleton-section-title" />
         <div className="product-grid">
-          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
       </div>
     );
   }
 
+  // If there is nothing saved, show an empty message.
   if (wishlist.length === 0) {
     return (
       <EmptyState
@@ -31,12 +36,18 @@ export default function Wishlist() {
     );
   }
 
+  // Add an "s" to the word "item" when there is more than one.
+  let itemWord = "item";
+  if (wishlist.length > 1) {
+    itemWord = "items";
+  }
+
   return (
     <div className="animate-fade-in">
       <PageHeader
         eyebrow="Saved items"
         title="My Wishlist"
-        subtitle={`${wishlist.length} item${wishlist.length > 1 ? "s" : ""} saved for later`}
+        subtitle={`${wishlist.length} ${itemWord} saved for later`}
       />
       <div className="product-grid">
         {wishlist.map((p) => (
@@ -45,4 +56,6 @@ export default function Wishlist() {
       </div>
     </div>
   );
-}
+};
+
+export default Wishlist;

@@ -1,8 +1,8 @@
 # NexaMart — Electronics E-Commerce Marketplace
 
-NexaMart is a full-featured online store for selling electronics (smartphones, laptops, headphones, smart watches, tablets, gaming devices, and accessories). It is built with the **MERN stack** (MongoDB, Express, React, Node.js) and includes everything a real shop needs: product browsing, cart, checkout, payments, order tracking, returns, and a complete **admin dashboard**.
+NexaMart is a full online store for selling electronics (smartphones, laptops, headphones, smart watches, tablets, gaming devices, and accessories). It is built with the **MERN stack** (MongoDB, Express, React, Node.js) and includes everything a real shop needs: product browsing, cart, wishlist, checkout, online payments, order tracking, returns, and a complete **admin dashboard**.
 
-This README explains the whole project in simple language so anyone — even someone new to coding — can understand what it does and how to run it.
+This README explains the whole project in simple language so anyone — even someone new to coding — can understand what it does, how to run it, and how to deploy it for free.
 
 ---
 
@@ -12,13 +12,17 @@ This README explains the whole project in simple language so anyone — even som
 2. [Tech stack](#tech-stack)
 3. [How the project is organized](#how-the-project-is-organized)
 4. [How it all works (the flow)](#how-it-all-works-the-flow)
-5. [Getting started](#getting-started)
+5. [Getting started (run locally)](#getting-started-run-locally)
 6. [Demo login accounts](#demo-login-accounts)
 7. [Environment variables explained](#environment-variables-explained)
 8. [Available commands](#available-commands)
 9. [API overview](#api-overview)
 10. [Data models](#data-models)
-11. [Good to know](#good-to-know)
+11. [Admin dashboard features](#admin-dashboard-features)
+12. [Deployment A to Z (100% free)](#deployment-a-to-z-100-free)
+13. [Redeploy after making changes](#redeploy-after-making-changes)
+14. [Troubleshooting](#troubleshooting)
+15. [Good to know](#good-to-know)
 
 ---
 
@@ -30,10 +34,10 @@ This README explains the whole project in simple language so anyone — even som
 - **Product details page** with images, specifications, ratings, and customer reviews.
 - **Wishlist** — save products you like for later.
 - **Shopping cart** — add items, change quantities, see the total.
-- **Checkout** — enter a shipping address, choose a delivery and payment method.
+- **Checkout** — enter a shipping address, choose delivery and payment method.
 - **Online payments** through Razorpay (test mode), or Cash on Delivery.
 - **Track orders** — see order status step by step, download an invoice.
-- **Returns** — request a return with photos and a reason.
+- **Returns** — request a return with a reason.
 - **Account** — register with email + OTP verification, login, reset password, edit profile.
 
 ### For admins (shop owners)
@@ -42,7 +46,8 @@ This README explains the whole project in simple language so anyone — even som
 - **Manage orders** — update status, mark payments, add notes, bulk update.
 - **Handle returns** — approve or reject return requests and process refunds.
 - **Manage users** — change roles, suspend accounts, delete users.
-- **Store settings** and **activity logs**.
+- **Store settings** — SMTP, email templates, site info, company info, security, **Razorpay keys**, and **social media links**.
+- **Activity logs** — record of admin actions.
 - **Export** orders and products to CSV.
 
 ---
@@ -51,9 +56,9 @@ This README explains the whole project in simple language so anyone — even som
 
 | Layer | Technology |
 |-------|------------|
-| **Frontend** | React 18, React Router, Vite, Axios, Recharts (charts) |
-| **Backend** | Node.js, Express |
-| **Database** | MongoDB (with Mongoose) |
+| **Frontend** | React 18, React Router 6, Vite 5, Axios, Recharts (charts), Firebase (analytics) |
+| **Backend** | Node.js 20, Express 4 |
+| **Database** | MongoDB (with Mongoose 8) |
 | **Auth** | JWT (access + refresh tokens), bcrypt for passwords |
 | **Payments** | Razorpay |
 | **Email/OTP** | Nodemailer (SMTP) |
@@ -69,23 +74,29 @@ NexaMart/
 ├── package.json          # Root scripts (run everything together)
 ├── .env                  # Your secret config (you create this)
 ├── .env.example          # Template showing what goes in .env
+├── render.yaml           # Render backend deploy config
+├── firebase.json         # Firebase Hosting config
+├── .firebaserc           # Default Firebase project
 │
 ├── backend/              # The server (API)
 │   ├── server.js         # App entry point — starts the server
+│   ├── firebaseApi.js    # Optional: run the API as a Firebase Function
 │   └── src/
 │       ├── config/       # Database, env, Cloudinary, Razorpay setup
-│       ├── models/       # Database shapes (User, Product, Order, etc.)
+│       ├── models/       # Database shapes (User, Product, Order, Settings, etc.)
 │       ├── controllers/  # The logic for each feature
 │       ├── routes/       # The API URLs (endpoints)
 │       ├── middleware/   # Auth checks, error handling, file uploads
-│       ├── validators/   # Input validation rules
+│       ├── validators/   # Input validation rules (Zod)
 │       └── utils/        # Helpers (email, tokens, seed data, etc.)
 │
 └── frontend/             # The website (what users see)
     ├── index.html
+    ├── vite.config.js
     └── src/
         ├── main.jsx       # App entry point
         ├── App.jsx        # All the page routes
+        ├── firebase.js    # Firebase analytics init
         ├── pages/         # Each screen (Home, Cart, Checkout, Admin, ...)
         ├── components/    # Reusable pieces (Navbar, Footer, ProductCard, ...)
         ├── context/       # Shared state (Auth, Cart, Toast, Confirm)
@@ -98,6 +109,8 @@ NexaMart/
 - The **frontend** is the shop you see and click on.
 - The **backend** is the brain that stores data and makes decisions.
 - The **database** is the warehouse where everything (products, users, orders) is kept.
+
+> Note: The frontend uses React **Context API** (not Redux) for shared state — see `frontend/src/context/`.
 
 ---
 
@@ -113,7 +126,7 @@ flowchart LR
     db[("MongoDB Database")]
     services["Razorpay / Email / Cloudinary"]
 
-    user -->|clicks & views| frontend
+    user -->|clicks and views| frontend
     frontend -->|API calls via /api| backend
     backend -->|read / write| db
     backend -->|payments, emails, images| services
@@ -147,7 +160,7 @@ flowchart TD
     cart --> checkout["Go to checkout"]
     checkout --> address["Enter shipping address"]
     address --> pay{"Choose payment"}
-    pay -->|Razorpay| online["Pay online & verify"]
+    pay -->|Razorpay| online["Pay online and verify"]
     pay -->|Cash on Delivery| cod["Place order directly"]
     online --> placed["Order placed"]
     cod --> placed
@@ -156,24 +169,13 @@ flowchart TD
     deliver --> ret["Optional: request a return"]
 ```
 
-### Admin flow
-
-```mermaid
-flowchart TD
-    login["Admin logs in"] --> dash["Open Admin Dashboard"]
-    dash --> prod["Manage products (add/edit/delete)"]
-    dash --> ord["Manage orders (update status, refunds)"]
-    dash --> retn["Approve / reject returns"]
-    dash --> usr["Manage users"]
-```
-
 ---
 
-## Getting started
+## Getting started (run locally)
 
 ### 1. Prerequisites
 You need these installed on your computer:
-- **Node.js** (v18 or newer) — [download here](https://nodejs.org)
+- **Node.js** (v20 recommended) — [download here](https://nodejs.org)
 - **A MongoDB database** — easiest is a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster.
 
 ### 2. Install everything
@@ -197,7 +199,7 @@ cp .env.example .env        # macOS / Linux
 At minimum, set your `MONGO_URI` (your MongoDB connection string) and the `JWT_SECRET` values. See [Environment variables explained](#environment-variables-explained) below.
 
 ### 4. Add sample data (seeding)
-This fills the database with 33 realistic electronics products and demo accounts:
+This fills the database with realistic electronics products and demo accounts:
 
 ```bash
 npm run seed
@@ -214,7 +216,7 @@ Now open:
 - **Website:** http://localhost:5173
 - **API health check:** http://localhost:5000/api/health
 
-> Tip: `npm run setup` does steps 2, 4 in one shot (install + seed).
+> Tip: `npm run setup` does install + seed in one shot.
 
 ---
 
@@ -245,12 +247,13 @@ These go in your `.env` file (in the project root). Here is what each one means:
 | `JWT_EXPIRES_IN` | How long an access token lasts (e.g. `15m`). |
 | `JWT_REFRESH_SECRET` | Secret for refresh tokens. Use a different long random string. |
 | `JWT_REFRESH_EXPIRES_IN` | How long a refresh token lasts (e.g. `7d`). |
-| `SMTP_*` | Email settings for sending OTP and reset emails. |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_SECURE` | Email server settings for sending OTP and reset emails. |
+| `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | Email login + the "from" address. |
 | `OTP_EXPIRES_MIN` / `OTP_LENGTH` | How long an OTP is valid and how many digits. |
-| `RATE_LIMIT_*` | Limits how many requests a user can make (anti-abuse). |
+| `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | Limits how many requests a user can make (anti-abuse). |
 | `COOKIE_SECURE` | Set `true` in production (HTTPS) for secure cookies. |
-| `CLOUDINARY_*` | Optional — for storing uploaded product images in the cloud. |
-| `RAZORPAY_*` | Test keys from Razorpay for online payments. |
+| `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Optional — for storing uploaded product images in the cloud. |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay keys for online payments (can also be set from the admin dashboard). |
 
 > If you leave `SMTP_*`, `CLOUDINARY_*`, or `RAZORPAY_*` empty, the core app still works — those just enable email, cloud images, and online payments.
 
@@ -267,10 +270,12 @@ Run these from the **project root**:
 | `npm run seed` | Fills the database with demo products and accounts. |
 | `npm run setup` | Installs everything and seeds the database. |
 | `npm run build` | Builds the frontend for production. |
+| `npm run deploy:hosting` | Builds + deploys the frontend to Firebase Hosting. |
 
 Backend-only (run inside `backend/`):
 - `npm start` — run the server in production mode.
 - `npm run dev` — run the server with auto-reload (nodemon).
+- `npm run seed` — seed the database.
 
 ---
 
@@ -288,7 +293,7 @@ All endpoints start with `/api`. Here are the main groups:
 | Orders | `/api/orders` | Place orders, view orders, cancel, request returns. |
 | Payment | `/api/payment` | Create and verify Razorpay payments. |
 | Admin | `/api/admin` | Stats, orders, returns, users, exports, logs. |
-| Settings | `/api/admin/settings` | Store settings. |
+| Settings | `/api/admin/settings` | Store settings (admin). Public part at `/api/admin/settings/public`. |
 
 **Example auth endpoints:**
 ```
@@ -309,21 +314,44 @@ The main "things" stored in the database:
 - **Product** — name, brand, category, description, price, MRP, stock, images, specs, rating, reviews, featured flag.
 - **Order** — the buyer, list of items, shipping address, totals, status, payment info, tracking events, returns.
 - **Review** — a product rating + comment by a user.
-- **Settings** — store-wide configuration.
+- **Settings** — store-wide config: SMTP, email templates, site, company, security, Razorpay keys, and social media links.
 - **Otp** — one-time codes for email verification.
 - **ActivityLog** — record of admin actions for auditing.
 
 ---
 
-## Deployment (A to Z) — 100% Free
+## Admin dashboard features
 
-This project is deployed **completely free** using two services:
+Open **`/admin`** (admin login required). The **Settings** page has these tabs:
 
-- **Frontend** → **Firebase Hosting** (free)
-- **Backend API** → **Render** (free web service)
-- **Database** → **MongoDB Atlas** (free M0 cluster)
+| Tab | What you can set |
+|-----|------------------|
+| **SMTP** | Email server host, port, user, password, from address. Send a test email. |
+| **Email Templates** | Edit OTP, reset password, and order confirmation email text. |
+| **Site** | Site name and support email. |
+| **Company** | Company name, address, GSTIN. |
+| **Security** | OTP expiry minutes and max login attempts. |
+| **API** | **Razorpay Key ID + Key Secret.** Leave blank to use the keys from `.env`. |
+| **Social** | **Facebook, Instagram, Twitter/X, YouTube, LinkedIn, WhatsApp links.** These show in the website footer (empty ones are hidden). |
 
-> Why two services? Firebase Hosting only serves static files. The Node/Express backend needs a real server, so it runs on Render. Firebase's own backend (Cloud Functions) would require the paid Blaze plan, so we use Render to keep everything free.
+**How Razorpay keys are picked at payment time:**
+1. First, the keys set in **Admin → Settings → API** (saved in the database).
+2. If those are blank, the keys from the server **`.env`** file.
+3. If both are blank, payment shows a clear "keys missing" error.
+
+> The Razorpay secret and SMTP password are never sent back to the browser in plain text — they show as `********`.
+
+---
+
+## Deployment A to Z (100% free)
+
+This project is deployed **completely free** using:
+
+- **Frontend** -> **Firebase Hosting** (free)
+- **Backend API** -> **Render** (free web service)
+- **Database** -> **MongoDB Atlas** (free M0 cluster)
+
+> Why two services? Firebase Hosting only serves static files. The Node/Express backend needs a real server, so it runs on Render. This keeps everything free.
 
 **Live URLs**
 | What | URL |
@@ -367,10 +395,10 @@ The React app is built with `VITE_API_URL=https://nexa-mart.onrender.com/api`, s
 ### Part 1 — MongoDB Atlas (database)
 
 1. Create a free cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas).
-2. **Database Access** → create a user with a username + password.
-3. **Network Access** → **Add IP Address** → **Allow access from anywhere** (`0.0.0.0/0`).
+2. **Database Access** -> create a user with a username + password.
+3. **Network Access** -> **Add IP Address** -> **Allow access from anywhere** (`0.0.0.0/0`).
    - Required because Render's free IP changes. Without this, the API cannot connect.
-4. **Connect** → copy your connection string. It looks like:
+4. **Connect** -> copy your connection string. It looks like:
    ```
    mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/ecommerce
    ```
@@ -406,20 +434,21 @@ git push
 
 ### Part 3 — Backend on Render (free)
 
-1. Go to [dashboard.render.com](https://dashboard.render.com) → **Sign in with GitHub**.
-2. **New +** → **Web Service** → connect the `Nexa-Mart` repo.
-3. Use these settings (Render also reads `render.yaml`):
+1. Go to [dashboard.render.com](https://dashboard.render.com) -> **Sign in with GitHub**.
+2. **New +** -> **Web Service** -> connect the `Nexa-Mart` repo.
+3. Render reads `render.yaml`, but confirm these settings:
 
    | Field | Value |
    |-------|-------|
-   | **Name** | `nexa-mart` |
+   | **Name** | `nexamart-api` |
    | **Root Directory** | `backend` |
    | **Runtime** | Node |
    | **Build Command** | `npm install` |
    | **Start Command** | `node server.js` |
+   | **Health Check Path** | `/api/health` |
    | **Instance Type** | **Free** |
 
-4. Add **Environment Variables** (easiest: click **Add from .env** and paste your `.env`). Minimum required:
+4. Add **Environment Variables** (the ones marked `sync: false` in `render.yaml` must be added by hand). Minimum required:
 
    | Key | Value |
    |-----|-------|
@@ -428,13 +457,14 @@ git push
    | `JWT_REFRESH_SECRET` | another long random string |
    | `CLIENT_URL` | `https://nexamart-28c93.web.app` |
    | `NODE_ENV` | `production` |
+   | `COOKIE_SECURE` | `true` |
 
-   Optional (enable email OTP / payments): `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`.
+   Optional (enable email OTP / payments): `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`.
 
-5. **Create Web Service** → wait 2–3 minutes. You will get a URL like `https://nexa-mart.onrender.com`.
+5. **Create Web Service** -> wait 2–3 minutes. You will get a URL like `https://nexa-mart.onrender.com`.
 6. Test it:
    ```
-   https://nexa-mart.onrender.com/api/health   →   {"status":"ok"}
+   https://nexa-mart.onrender.com/api/health   ->   {"status":"ok"}
    ```
 
 > **Free tier sleep:** Render free services spin down after ~15 minutes of inactivity. The first request after sleeping takes ~30–50 seconds to "wake up", then it is fast again. The frontend automatically retries during wake-up.
@@ -482,26 +512,32 @@ Run all from the **project root**:
 | `firebase use nexamart-28c93` | Select the Firebase project. |
 | `npm run deploy:hosting` | Build + deploy the frontend to Firebase. |
 | `firebase deploy --only hosting` | Same as above (direct CLI form). |
-| `firebase open hosting:site` | Open the live site. |
 
-### Redeploy after making changes
+---
+
+## Redeploy after making changes
 
 | You changed... | Do this |
 |----------------|---------|
-| **Backend** (`backend/`) | `git push` → Render auto-redeploys. Or click **Manual Deploy → Deploy latest commit** in Render. |
+| **Backend** (`backend/`) | `git push` -> Render auto-redeploys. Or click **Manual Deploy -> Deploy latest commit** in Render. |
 | **Frontend** (`frontend/`) | `npm run deploy:hosting` from the project root. |
 | **Both** | `git push`, then `npm run deploy:hosting`. |
+| **Environment variables** | Update them in the **Render dashboard** (they are not pushed via git). |
 
-### Troubleshooting
+---
+
+## Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
 | Site shows "Could not load store data" | Render server is asleep — wait 30–50s, click **Try again**. |
-| `Could not connect to ... MongoDB Atlas` in Render logs | Add `0.0.0.0/0` in Atlas → Network Access. |
+| `Could not connect to MongoDB Atlas` in Render logs | Add `0.0.0.0/0` in Atlas -> Network Access. |
 | Products load locally but not live | Check `frontend/.env.production` has the correct Render URL, then redeploy hosting. |
 | CORS error in browser console | Ensure `CLIENT_URL=https://nexamart-28c93.web.app` is set in Render env vars. |
 | Render deploy "Exited with status 1" | Check that `MONGO_URI`, `JWT_SECRET`, `JWT_REFRESH_SECRET` are set in Render env vars. |
 | `nexa-mart.onrender.com` shows "Not Found" | Normal — that is the API root. Use `/api/health` or open the Firebase site. |
+| Razorpay "keys missing" error | Set keys in **Admin -> Settings -> API**, or in the server `.env`. |
+| Footer social icons not showing | Add the links in **Admin -> Settings -> Social** and save. |
 
 ---
 
@@ -511,6 +547,7 @@ Run all from the **project root**:
 - **Images:** seeded products use online image URLs; admin uploads can use Cloudinary (if configured) or be stored in MongoDB. If an image fails to load, a branded placeholder is shown.
 - **Tokens auto-refresh:** users stay logged in smoothly without re-entering passwords often.
 - **Responsive design:** the site works on mobile, tablet, and desktop.
+- **Beginner-friendly code:** the codebase uses simple React + Context API and plain Express, written to be easy to read and explain.
 
 ---
 

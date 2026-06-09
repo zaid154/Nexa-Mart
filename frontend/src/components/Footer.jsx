@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { useToast } from "../context/ToastContext.jsx";
 import api from "../api/client.js";
 
-const SOCIAL_LINKS = [
+// The social media links we can show. "short" is the small label on the button.
+const socialLinks = [
   { key: "instagram", label: "Instagram", short: "IG" },
   { key: "twitter", label: "Twitter / X", short: "X" },
   { key: "facebook", label: "Facebook", short: "FB" },
@@ -12,24 +13,36 @@ const SOCIAL_LINKS = [
   { key: "whatsapp", label: "WhatsApp", short: "WA" },
 ];
 
-export default function Footer() {
+const Footer = () => {
   const toast = useToast();
   const [email, setEmail] = useState("");
   const [social, setSocial] = useState({});
 
+  // Load the social media links saved by the admin.
   useEffect(() => {
     api
       .get("/admin/settings/public")
-      .then((res) => setSocial(res.data.social || {}))
+      .then((res) => {
+        setSocial(res.data.social || {});
+      })
       .catch(() => {});
   }, []);
 
-  const handleNewsletter = (e) => {
-    e.preventDefault();
-    if (!email) return;
+  // Handle the newsletter sign up form.
+  const handleNewsletter = (event) => {
+    event.preventDefault();
+    if (!email) {
+      return;
+    }
     toast.success("Thanks for subscribing!");
     setEmail("");
   };
+
+  // Only show social buttons that the admin has actually set a link for.
+  const activeSocial = socialLinks.filter((item) => social[item.key]);
+
+  // The year shown in the copyright line.
+  const currentYear = new Date().getFullYear();
 
   return (
     <footer className="footer">
@@ -49,7 +62,7 @@ export default function Footer() {
                 className="input"
                 placeholder="Email for deals"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(event) => setEmail(event.target.value)}
                 required
                 aria-label="Newsletter email"
               />
@@ -92,15 +105,15 @@ export default function Footer() {
           <div className="footer-col">
             <h4>Follow us</h4>
             <div className="footer-social">
-              {SOCIAL_LINKS.filter((s) => social[s.key]).map((s) => (
+              {activeSocial.map((item) => (
                 <a
-                  key={s.key}
-                  href={social[s.key]}
+                  key={item.key}
+                  href={social[item.key]}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={s.label}
+                  aria-label={item.label}
                 >
-                  {s.short}
+                  {item.short}
                 </a>
               ))}
             </div>
@@ -108,7 +121,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <span>&copy; {new Date().getFullYear()} NexaMart. All rights reserved.</span>
+          <span>&copy; {currentYear} NexaMart. All rights reserved.</span>
           <div className="row gap-3">
             <Link to="/products">Terms</Link>
             <Link to="/products">Privacy</Link>
@@ -118,4 +131,6 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

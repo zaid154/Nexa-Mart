@@ -9,11 +9,13 @@ import {
   paymentMethodLabel,
 } from "../utils/format.js";
 
-export default function Invoice() {
+// A printable invoice page for a single order.
+const Invoice = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Load the order so we can show its invoice.
   useEffect(() => {
     api
       .get(`/orders/${id}`)
@@ -21,10 +23,20 @@ export default function Invoice() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <Loader full />;
-  if (!order) return <div className="empty-state">Invoice not found.</div>;
+  if (loading) {
+    return <Loader full />;
+  }
+  if (!order) {
+    return <div className="empty-state">Invoice not found.</div>;
+  }
 
   const a = order.shippingAddress || {};
+
+  // Show "Paid" or "Unpaid" based on the order.
+  let paymentText = "Unpaid";
+  if (order.isPaid) {
+    paymentText = "Paid";
+  }
 
   return (
     <div className="invoice-page">
@@ -68,7 +80,7 @@ export default function Invoice() {
               <br />
               Payment: {paymentMethodLabel(order.paymentMethod)}
               <br />
-              {order.isPaid ? "Paid" : "Unpaid"}
+              {paymentText}
               {order.couponCode && (
                 <>
                   <br />
@@ -131,4 +143,6 @@ export default function Invoice() {
       </div>
     </div>
   );
-}
+};
+
+export default Invoice;

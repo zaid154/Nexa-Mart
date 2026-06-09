@@ -1,13 +1,23 @@
 import { IconEmptyCart, IconEmptyWishlist, IconEmptyBox } from "./Icons.jsx";
 
-const ICONS = {
+// Pick the right icon based on the "icon" name we are given.
+const icons = {
   cart: IconEmptyCart,
   wishlist: IconEmptyWishlist,
   default: IconEmptyBox,
 };
 
-export default function EmptyState({ eyebrow, title, message, action, icon = "default" }) {
-  const Icon = ICONS[icon] || ICONS.default;
+// Shown when a list (cart, wishlist, search results...) has nothing in it.
+const EmptyState = ({ eyebrow, title, message, action, icon = "default" }) => {
+  let Icon = icons[icon];
+  if (!Icon) {
+    Icon = icons.default;
+  }
+
+  let titleText = title;
+  if (!titleText) {
+    titleText = "Nothing here yet";
+  }
 
   return (
     <div className="empty-state card">
@@ -15,9 +25,11 @@ export default function EmptyState({ eyebrow, title, message, action, icon = "de
         <Icon />
       </div>
       {eyebrow && <span className="eyebrow">{eyebrow}</span>}
-      <p className="empty-state-title">{title || "Nothing here yet"}</p>
+      <p className="empty-state-title">{titleText}</p>
       {message && <p className="muted">{message}</p>}
       {action}
     </div>
   );
-}
+};
+
+export default EmptyState;

@@ -1,5 +1,8 @@
+// This file describes how a Product is stored in the database.
+
 import mongoose from "mongoose";
 
+// A single product image. It can be a URL (Cloudinary) or raw data (Buffer).
 const imageSchema = new mongoose.Schema(
   {
     url: { type: String },
@@ -10,6 +13,7 @@ const imageSchema = new mongoose.Schema(
   { _id: true }
 );
 
+// A variant is a version of the product (for example a different color or size).
 const variantSchema = new mongoose.Schema(
   {
     attributes: { type: Map, of: String, default: {} },
@@ -21,6 +25,7 @@ const variantSchema = new mongoose.Schema(
   { _id: true }
 );
 
+// The main product schema.
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: [true, "Product name is required"], trim: true },
@@ -55,29 +60,36 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes to make searching and filtering products faster.
 productSchema.index({ name: "text", description: "text", brand: "text", category: "text" });
 productSchema.index({ status: 1, category: 1 });
 productSchema.index({ name: 1, brand: 1 });
 
+// Before saving, build a slug and keep the status/stock in sync.
 productSchema.pre("save", function (next) {
+  // Create a URL-friendly slug from the name if needed.
   if (this.isModified("name") || !this.slug) {
-    this.slug =
-      this.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "") +
-      "-" +
-      Math.random().toString(36).slice(2, 7);
+    const baseSlug = this.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    const randomPart = Math.random().toString(36).slice(2, 7);
+    this.slug = baseSlug + "-" + randomPart;
   }
 
+  // If an active product has no stock, mark it out of stock.
   if (this.status === "active" && this.countInStock <= 0) {
     this.status = "out_of_stock";
   }
+
+  // If an out-of-stock product gets stock again, mark it active.
   if (this.status === "out_of_stock" && this.countInStock > 0) {
     this.status = "active";
   }
 
+  // isActive is true only when the product is active.
   this.isActive = this.status === "active";
+
   next();
 });
 

@@ -1,3 +1,7 @@
+// This file stores the site-wide admin Settings (SMTP, email templates,
+// company info, security, API keys and social links).
+// There is only ever ONE settings document in the database.
+
 import mongoose from "mongoose";
 
 const settingsSchema = new mongoose.Schema(
@@ -57,6 +61,8 @@ const settingsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Get the single settings document. If it does not exist yet, create it.
+// We also select the hidden fields (smtp.pass and razorpayKeySecret).
 settingsSchema.statics.getSingleton = async function () {
   let doc = await this.findOne().select("+smtp.pass +api.razorpayKeySecret");
   if (!doc) {

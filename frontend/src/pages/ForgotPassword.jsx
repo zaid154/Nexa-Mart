@@ -4,19 +4,23 @@ import { useToast } from "../context/ToastContext.jsx";
 import api from "../api/client.js";
 import { BrandMark } from "../components/Icons.jsx";
 
-export default function ForgotPassword() {
+// Page where the user enters their email to receive a password reset code.
+const ForgotPassword = () => {
   const navigate = useNavigate();
   const toast = useToast();
+
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const submit = async (e) => {
     e.preventDefault();
+
     if (!email.trim()) {
       setError("Email is required");
       return;
     }
+
     setError("");
     setLoading(true);
     try {
@@ -28,6 +32,12 @@ export default function ForgotPassword() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Update the email field and clear any error message.
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    setError("");
   };
 
   return (
@@ -47,7 +57,7 @@ export default function ForgotPassword() {
               className="input"
               type="email"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setError(""); }}
+              onChange={handleEmailChange}
               aria-invalid={!!error}
               autoComplete="email"
             />
@@ -63,4 +73,6 @@ export default function ForgotPassword() {
       </div>
     </div>
   );
-}
+};
+
+export default ForgotPassword;

@@ -2,24 +2,29 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconSearch } from "./Icons.jsx";
 
-const POPULAR = ["iPhone", "MacBook", "Samsung Galaxy", "Headphones", "Gaming laptop"];
-const RECENT_KEY = "nexamart_recent_searches";
+// Some common searches we suggest to the user.
+const popularSearches = ["iPhone", "MacBook", "Samsung Galaxy", "Headphones", "Gaming laptop"];
+// The key we use to save recent searches in the browser.
+const recentKey = "nexamart_recent_searches";
 
-function getRecent() {
+// Read the recent searches saved in the browser.
+const getRecent = () => {
   try {
-    return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+    const saved = localStorage.getItem(recentKey) || "[]";
+    return JSON.parse(saved);
   } catch {
     return [];
   }
-}
+};
 
-function saveRecent(term) {
-  const recent = getRecent().filter((r) => r !== term);
+// Save a search term to the top of the recent list (keep only 5).
+const saveRecent = (term) => {
+  const recent = getRecent().filter((item) => item !== term);
   recent.unshift(term);
-  localStorage.setItem(RECENT_KEY, JSON.stringify(recent.slice(0, 5)));
-}
+  localStorage.setItem(recentKey, JSON.stringify(recent.slice(0, 5)));
+};
 
-export default function SearchBar({ categories = [], className = "", onNavigate }) {
+const SearchBar = ({ categories = [], className = "", onNavigate }) => {
   const navigate = useNavigate();
   const [term, setTerm] = useState("");
   const [open, setOpen] = useState(false);
@@ -27,27 +32,41 @@ export default function SearchBar({ categories = [], className = "", onNavigate 
   const [activeIndex, setActiveIndex] = useState(-1);
   const wrapRef = useRef(null);
 
+  // Close the dropdown when the user clicks outside of it.
   useEffect(() => {
-    const onClick = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    const handleClick = (event) => {
+      if (wrapRef.current && !wrapRef.current.contains(event.target)) {
+        setOpen(false);
+      }
     };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const suggestions = [
-    ...recent.map((r) => ({ type: "recent", label: r })),
-    ...POPULAR.filter((p) => !recent.includes(p)).map((p) => ({ type: "popular", label: p })),
-    ...categories.slice(0, 4).map((c) => ({ type: "category", label: c })),
-  ].slice(0, 8);
+  // Build the list of suggestions: recent, then popular, then a few categories.
+  const recentItems = recent.map((item) => ({ type: "recent", label: item }));
+  const popularItems = popularSearches
+    .filter((item) => !recent.includes(item))
+    .map((item) => ({ type: "popular", label: item }));
+  const categoryItems = categories
+    .slice(0, 4)
+    .map((item) => ({ type: "category", label: item }));
+  const suggestions = [...recentItems, ...popularItems, ...categoryItems].slice(0, 8);
 
+  // Go to the products page for the given search value.
   const go = (value, isCategory = false) => {
-    if (!value) return;
-    if (!isCategory) saveRecent(value);
+    if (!value) {
+      return;
+    }
+    if (!isCategory) {
+      saveRecent(value);
+    }
     setRecent(getRecent());
     setOpen(false);
     setTerm("");
-    onNavigate?.();
+    if (onNavigate) {
+      onNavigate();
+    }
     if (isCategory) {
       navigate(`/products?category=${encodeURIComponent(value)}`);
     } else {
@@ -55,24 +74,28 @@ export default function SearchBar({ categories = [], className = "", onNavigate 
     }
   };
 
-  const onSubmit = (e) => {
-    e.preventDefault();
+  // When the user presses the search button or hits Enter in the box.
+  const onSubmit = (event) => {
+    event.preventDefault();
     go(term.trim());
   };
 
-  const onKeyDown = (e) => {
-    if (!open) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveIndex((i) => Math.min(i + 1, suggestions.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveIndex((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Enter" && activeIndex >= 0) {
-      e.preventDefault();
-      const s = suggestions[activeIndex];
-      go(s.label, s.type === "category");
-    } else if (e.key === "Escape") {
+  // Handle the arrow keys, Enter and Escape inside the search box.
+  const onKeyDown = (event) => {
+    if (!open) {
+      return;
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveIndex((index) => Math.min(index + 1, suggestions.length - 1));
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((index) => Math.max(index - 1, 0));
+    } else if (event.key === "Enter" && activeIndex >= 0) {
+      event.preventDefault();
+      const selected = suggestions[activeIndex];
+      go(selected.label, selected.type === "category");
+    } else if (event.key === "Escape") {
       setOpen(false);
     }
   };
@@ -88,8 +111,8 @@ export default function SearchBar({ categories = [], className = "", onNavigate 
           type="search"
           placeholder="Search electronics..."
           value={term}
-          onChange={(e) => {
-            setTerm(e.target.value);
+          onChange={(event) => {
+            setTerm(event.target.value);
             setActiveIndex(-1);
           }}
           onFocus={() => setOpen(true)}
@@ -108,17 +131,21 @@ export default function SearchBar({ categories = [], className = "", onNavigate 
           {recent.length > 0 && (
             <li className="search-dropdown-label" role="presentation">Recent</li>
           )}
-          {suggestions.map((s, i) => (
-            <li key={`${s.type}-${s.label}`} role="option" aria-selected={i === activeIndex}>
+          {suggestions.map((suggestion, index) => (
+            <li
+              key={`${suggestion.type}-${suggestion.label}`}
+              role="option"
+              aria-selected={index === activeIndex}
+            >
               <button
                 type="button"
-                className={`search-dropdown-item ${i === activeIndex ? "active" : ""}`}
-                onMouseDown={() => go(s.label, s.type === "category")}
+                className={`search-dropdown-item ${index === activeIndex ? "active" : ""}`}
+                onMouseDown={() => go(suggestion.label, suggestion.type === "category")}
               >
                 <IconSearch size={14} />
-                <span>{s.label}</span>
-                {s.type === "category" && <span className="search-tag">Category</span>}
-                {s.type === "popular" && <span className="search-tag">Popular</span>}
+                <span>{suggestion.label}</span>
+                {suggestion.type === "category" && <span className="search-tag">Category</span>}
+                {suggestion.type === "popular" && <span className="search-tag">Popular</span>}
               </button>
             </li>
           ))}
@@ -126,4 +153,6 @@ export default function SearchBar({ categories = [], className = "", onNavigate 
       )}
     </div>
   );
-}
+};
+
+export default SearchBar;

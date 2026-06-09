@@ -5,12 +5,19 @@ import { useToast } from "../context/ToastContext.jsx";
 import api from "../api/client.js";
 import { BrandMark } from "../components/Icons.jsx";
 
-export default function VerifyOtp() {
+// Page where the user types the OTP code sent to their email to verify it.
+const VerifyOtp = () => {
   const { verifyOtp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
-  const email = location.state?.email || "";
+
+  // The email is passed from the register page through navigation state.
+  let email = "";
+  if (location.state && location.state.email) {
+    email = location.state.email;
+  }
+
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -18,11 +25,16 @@ export default function VerifyOtp() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!email) return toast.error("Email missing. Please register again.");
+
+    if (!email) {
+      toast.error("Email missing. Please register again.");
+      return;
+    }
     if (!code.trim()) {
       setError("OTP code is required");
       return;
     }
+
     setError("");
     setLoading(true);
     try {
@@ -36,8 +48,11 @@ export default function VerifyOtp() {
     }
   };
 
+  // Ask the server to send the OTP again.
   const resend = async () => {
-    if (!email) return;
+    if (!email) {
+      return;
+    }
     setResending(true);
     try {
       await api.post("/auth/resend-otp", { email, purpose: "verify" });
@@ -47,6 +62,13 @@ export default function VerifyOtp() {
     } finally {
       setResending(false);
     }
+  };
+
+  // Only allow digits in the OTP input and clear any error.
+  const handleCodeChange = (e) => {
+    const onlyDigits = e.target.value.replace(/\D/g, "");
+    setCode(onlyDigits);
+    setError("");
   };
 
   return (
@@ -68,7 +90,7 @@ export default function VerifyOtp() {
               className="input"
               maxLength={6}
               value={code}
-              onChange={(e) => { setCode(e.target.value.replace(/\D/g, "")); setError(""); }}
+              onChange={handleCodeChange}
               placeholder="000000"
               aria-invalid={!!error}
               inputMode="numeric"
@@ -91,4 +113,6 @@ export default function VerifyOtp() {
       </div>
     </div>
   );
-}
+};
+
+export default VerifyOtp;

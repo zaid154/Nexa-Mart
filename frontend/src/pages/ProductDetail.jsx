@@ -12,7 +12,8 @@ import { useToast } from "../context/ToastContext.jsx";
 import { IconHeart } from "../components/Icons.jsx";
 import { onProductImageError } from "../utils/productImage.js";
 
-export default function ProductDetail() {
+// Single product page with images, variants, reviews, and related products.
+const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -31,6 +32,7 @@ export default function ProductDetail() {
   const [form, setForm] = useState({ rating: 5, comment: "" });
   const [submitting, setSubmitting] = useState(false);
 
+  // Load the product, its reviews, and a few related products.
   const load = () => {
     setLoading(true);
     setError("");
@@ -39,15 +41,16 @@ export default function ProductDetail() {
       .then((res) => {
         setProduct(res.data.product);
         setReviews(res.data.reviews);
+
         if (res.data.product?.category) {
           api
             .get("/products", {
               params: { category: res.data.product.category, limit: 4 },
             })
             .then((r) => {
-              setRelated(
-                r.data.products.filter((p) => p._id !== res.data.product._id).slice(0, 4)
-              );
+              // Remove the current product, then keep up to 4 related ones.
+              const others = r.data.products.filter((p) => p._id !== res.data.product._id);
+              setRelated(others.slice(0, 4));
             });
         }
       })
@@ -65,8 +68,12 @@ export default function ProductDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  if (loading) return <SkeletonDetail />;
-  if (error) return <ErrorState title="Failed to load product" message={error} onRetry={load} />;
+  if (loading) {
+    return <SkeletonDetail />;
+  }
+  if (error) {
+    return <ErrorState title="Failed to load product" message={error} onRetry={load} />;
+  }
   if (!product) {
     return (
       <div className="empty-state card">
@@ -82,15 +89,31 @@ export default function ProductDetail() {
   const specs = product.specs || {};
   const variants = product.variants || [];
   const activeVariant = variants[selectedVariant];
-  const displayPrice = activeVariant?.price ?? product.price;
-  const displayStock = activeVariant?.countInStock ?? product.countInStock;
-  const discount =
-    product.mrp > displayPrice
-      ? Math.round(((product.mrp - displayPrice) / product.mrp) * 100)
-      : 0;
 
+  // Use the selected variant's price/stock if there is one, else the product's.
+  let displayPrice = product.price;
+  let displayStock = product.countInStock;
+  if (activeVariant) {
+    if (activeVariant.price !== undefined && activeVariant.price !== null) {
+      displayPrice = activeVariant.price;
+    }
+    if (activeVariant.countInStock !== undefined && activeVariant.countInStock !== null) {
+      displayStock = activeVariant.countInStock;
+    }
+  }
+
+  // Work out the discount percentage if the MRP is higher than the price.
+  let discount = 0;
+  if (product.mrp > displayPrice) {
+    discount = Math.round(((product.mrp - displayPrice) / product.mrp) * 100);
+  }
+
+  // Add the product to the cart (after making sure the user is signed in).
   const handleAdd = async () => {
-    if (!user) return navigate("/login");
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     try {
       await addToCart(product._id, qty);
       toast.success("Added to cart");
@@ -99,8 +122,12 @@ export default function ProductDetail() {
     }
   };
 
+  // Add to cart and go straight to checkout.
   const handleBuyNow = async () => {
-    if (!user) return navigate("/login");
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     try {
       await addToCart(product._id, qty);
       navigate("/checkout");
@@ -109,16 +136,26 @@ export default function ProductDetail() {
     }
   };
 
+  // Add or remove the product from the wishlist.
   const handleWishlist = async () => {
-    if (!user) return navigate("/login");
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     try {
-      wished ? await removeFromWishlist(product._id) : await addToWishlist(product._id);
-      toast.success(wished ? "Removed from wishlist" : "Added to wishlist");
+      if (wished) {
+        await removeFromWishlist(product._id);
+        toast.success("Removed from wishlist");
+      } else {
+        await addToWishlist(product._id);
+        toast.success("Added to wishlist");
+      }
     } catch (err) {
       toast.error(err.message);
     }
   };
 
+  // Send a new review to the server.
   const submitReview = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -132,6 +169,16 @@ export default function ProductDetail() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Decrease the quantity, but never below 1.
+  const decreaseQty = () => {
+    setQty((q) => Math.max(1, q - 1));
+  };
+
+  // Increase the quantity, but never above the available stock.
+  const increaseQty = () => {
+    setQty((q) => Math.min(displayStock, q + 1));
   };
 
   return (
@@ -190,13 +237,20 @@ export default function ProductDetail() {
               <label>Options</label>
               <div className="row wrap gap-2">
                 {variants.map((v, i) => {
-                  const label = Object.values(v.attributes || {}).join(" / ") || `Option ${i + 1}`;
+                  // Build a readable label from the variant attributes.
+                  let label = Object.values(v.attributes || {}).join(" / ");
+                  if (!label) {
+                    label = `Option ${i + 1}`;
+                  }
                   return (
                     <button
                       key={i}
                       type="button"
                       className={`chip ${selectedVariant === i ? "active" : ""}`}
-                      onClick={() => { setSelectedVariant(i); setQty(1); }}
+                      onClick={() => {
+                        setSelectedVariant(i);
+                        setQty(1);
+                      }}
                     >
                       {label}
                     </button>
@@ -216,9 +270,9 @@ export default function ProductDetail() {
 
           <div className="row detail-actions">
             <div className="qty">
-              <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease quantity">−</button>
+              <button type="button" onClick={decreaseQty} aria-label="Decrease quantity">−</button>
               <span>{qty}</span>
-              <button type="button" onClick={() => setQty((q) => Math.min(displayStock, q + 1))} aria-label="Increase quantity">+</button>
+              <button type="button" onClick={increaseQty} aria-label="Increase quantity">+</button>
             </div>
             <button type="button" className="btn" onClick={handleAdd} disabled={displayStock === 0}>
               Add to cart
@@ -240,19 +294,23 @@ export default function ProductDetail() {
       </div>
 
       <div className="detail-tabs" role="tablist">
-        {["description", "specifications", "reviews"].map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            role="tab"
-            className={`detail-tab ${activeTab === tab ? "active" : ""}`}
-            onClick={() => setActiveTab(tab)}
-            aria-selected={activeTab === tab}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            {tab === "reviews" && ` (${reviews.length})`}
-          </button>
-        ))}
+        {["description", "specifications", "reviews"].map((tab) => {
+          // Capitalize the first letter for the tab label.
+          const tabLabel = tab.charAt(0).toUpperCase() + tab.slice(1);
+          return (
+            <button
+              key={tab}
+              type="button"
+              role="tab"
+              className={`detail-tab ${activeTab === tab ? "active" : ""}`}
+              onClick={() => setActiveTab(tab)}
+              aria-selected={activeTab === tab}
+            >
+              {tabLabel}
+              {tab === "reviews" && ` (${reviews.length})`}
+            </button>
+          );
+        })}
       </div>
 
       {activeTab === "description" && (
@@ -265,10 +323,10 @@ export default function ProductDetail() {
         <section className="section-block card">
           <table className="spec-table">
             <tbody>
-              {Object.entries(specs).map(([k, v]) => (
-                <tr key={k}>
-                  <td>{k}</td>
-                  <td>{v}</td>
+              {Object.entries(specs).map(([key, value]) => (
+                <tr key={key}>
+                  <td>{key}</td>
+                  <td>{value}</td>
                 </tr>
               ))}
             </tbody>
@@ -349,4 +407,6 @@ export default function ProductDetail() {
       )}
     </div>
   );
-}
+};
+
+export default ProductDetail;

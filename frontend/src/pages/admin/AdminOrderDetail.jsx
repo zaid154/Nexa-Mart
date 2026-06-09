@@ -14,9 +14,14 @@ import {
   ADMIN_FORWARD_STATUSES,
 } from "../../utils/format.js";
 
-export default function AdminOrderDetail() {
+// The choices in the refund status dropdown.
+const REFUND_STATUSES = ["none", "pending", "initiated", "processing", "completed", "failed"];
+
+// Admin page to manage one order: status, payment, returns, refunds, notes.
+const AdminOrderDetail = () => {
   const { id } = useParams();
   const toast = useToast();
+
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [newStatus, setNewStatus] = useState("");
@@ -31,6 +36,7 @@ export default function AdminOrderDetail() {
     notes: "",
   });
 
+  // Load the order and copy its refund info into the refund form.
   const load = () => {
     setLoading(true);
     api
@@ -55,13 +61,20 @@ export default function AdminOrderDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  if (loading) return <Loader full />;
-  if (!order) return <div className="empty-state">Order not found.</div>;
+  if (loading) {
+    return <Loader full />;
+  }
+  if (!order) {
+    return <div className="empty-state">Order not found.</div>;
+  }
 
   const a = order.shippingAddress || {};
 
+  // Move the order to the chosen next status.
   const updateStatus = async () => {
-    if (!newStatus) return;
+    if (!newStatus) {
+      return;
+    }
     try {
       await api.put(`/admin/orders/${order._id}/status`, { status: newStatus, note: statusNote });
       toast.success("Status updated");
@@ -73,6 +86,7 @@ export default function AdminOrderDetail() {
     }
   };
 
+  // Flip the order between paid and unpaid.
   const togglePayment = async () => {
     try {
       await api.put(`/admin/orders/${order._id}/payment`, { isPaid: !order.isPaid });
@@ -83,6 +97,7 @@ export default function AdminOrderDetail() {
     }
   };
 
+  // Approve a return request.
   const approveReturn = async () => {
     try {
       await api.put(`/admin/orders/${order._id}/return/approve`, { adminNote: returnNote });
@@ -93,6 +108,7 @@ export default function AdminOrderDetail() {
     }
   };
 
+  // Reject a return request.
   const rejectReturn = async () => {
     try {
       await api.put(`/admin/orders/${order._id}/return/reject`, { adminNote: returnNote });
@@ -103,6 +119,7 @@ export default function AdminOrderDetail() {
     }
   };
 
+  // Save the refund details.
   const saveRefund = async () => {
     try {
       await api.put(`/admin/orders/${order._id}/refund`, refundForm);
@@ -113,8 +130,11 @@ export default function AdminOrderDetail() {
     }
   };
 
+  // Add an internal admin note to the order.
   const addNote = async () => {
-    if (!adminNote.trim()) return;
+    if (!adminNote.trim()) {
+      return;
+    }
     try {
       await api.post(`/admin/orders/${order._id}/notes`, { note: adminNote });
       toast.success("Note added");
@@ -124,6 +144,12 @@ export default function AdminOrderDetail() {
       toast.error(err.message);
     }
   };
+
+  // Text for the "mark paid / unpaid" button.
+  let paymentToggleLabel = "Mark as Paid";
+  if (order.isPaid) {
+    paymentToggleLabel = "Mark as Unpaid";
+  }
 
   return (
     <div>
@@ -235,7 +261,7 @@ export default function AdminOrderDetail() {
               <span>{formatINR(order.totalPrice)}</span>
             </div>
             <button className="btn btn-outline btn-block mt-3" onClick={togglePayment}>
-              Mark as {order.isPaid ? "Unpaid" : "Paid"}
+              {paymentToggleLabel}
             </button>
           </div>
 
@@ -308,7 +334,7 @@ export default function AdminOrderDetail() {
                 value={refundForm.status}
                 onChange={(e) => setRefundForm({ ...refundForm, status: e.target.value })}
               >
-                {["none", "pending", "initiated", "processing", "completed", "failed"].map((s) => (
+                {REFUND_STATUSES.map((s) => (
                   <option key={s} value={s}>
                     {refundStatusLabel(s)}
                   </option>
@@ -375,4 +401,6 @@ export default function AdminOrderDetail() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminOrderDetail;

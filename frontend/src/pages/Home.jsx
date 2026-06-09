@@ -6,6 +6,7 @@ import { SkeletonHome } from "../components/Skeleton.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import { IconShield, IconTruck, IconRefresh, IconStar } from "../components/Icons.jsx";
 
+// An emoji icon for each category name.
 const CATEGORY_ICONS = {
   Smartphones: "📱",
   Laptops: "💻",
@@ -19,6 +20,7 @@ const CATEGORY_ICONS = {
 
 const BRANDS = ["Apple", "Samsung", "Dell", "HP", "Lenovo", "ASUS", "Sony", "Bose"];
 
+// Extra product sections shown lower on the home page.
 const COLLECTIONS = [
   { title: "Gaming Zone", query: "Gaming Devices", sort: "rating" },
   { title: "Smartphones", query: "Smartphones", sort: "newest" },
@@ -26,7 +28,8 @@ const COLLECTIONS = [
   { title: "Best Deals", query: "", featured: true },
 ];
 
-export default function Home() {
+// The store home page with hero, categories, and product collections.
+const Home = () => {
   const [featured, setFeatured] = useState([]);
   const [latest, setLatest] = useState([]);
   const [topRated, setTopRated] = useState([]);
@@ -36,6 +39,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
 
+  // Load the main product lists shown at the top of the page.
   const loadHome = () => {
     setLoading(true);
     setError("");
@@ -45,11 +49,16 @@ export default function Home() {
       api.get("/products", { params: { sort: "rating", limit: 4 } }),
       api.get("/products/filters"),
     ])
-      .then(([f, l, t, filt]) => {
-        setFeatured(f.data?.products || []);
-        setLatest(l.data?.products || []);
-        setTopRated(t.data?.products || []);
-        setCategories(filt.data?.categories || []);
+      .then((responses) => {
+        const featuredRes = responses[0];
+        const latestRes = responses[1];
+        const topRatedRes = responses[2];
+        const filtersRes = responses[3];
+
+        setFeatured(featuredRes.data?.products || []);
+        setLatest(latestRes.data?.products || []);
+        setTopRated(topRatedRes.data?.products || []);
+        setCategories(filtersRes.data?.categories || []);
       })
       .catch((err) => setError(err.message || "Failed to load products"))
       .finally(() => setLoading(false));
@@ -59,11 +68,16 @@ export default function Home() {
     loadHome();
   }, []);
 
+  // Load each extra collection section one by one.
   useEffect(() => {
     COLLECTIONS.forEach((col) => {
       const params = { limit: 4, sort: col.sort };
-      if (col.featured) params.featured = true;
-      else if (col.query) params.category = col.query;
+      if (col.featured) {
+        params.featured = true;
+      } else if (col.query) {
+        params.category = col.query;
+      }
+
       api
         .get("/products", { params })
         .then((res) => {
@@ -78,12 +92,23 @@ export default function Home() {
     });
   }, []);
 
+  // Newsletter form just clears the email box for now.
   const handleNewsletter = (e) => {
     e.preventDefault();
     setEmail("");
   };
 
-  if (loading) return <SkeletonHome />;
+  // Build the "View all" link for a collection section.
+  const collectionLink = (col) => {
+    if (col.featured) {
+      return "/products?featured=true";
+    }
+    return `/products?category=${encodeURIComponent(col.query)}`;
+  };
+
+  if (loading) {
+    return <SkeletonHome />;
+  }
 
   return (
     <div className="animate-fade-in">
@@ -232,19 +257,14 @@ export default function Home() {
 
       {COLLECTIONS.map((col) => {
         const products = collections[col.title] || [];
-        if (products.length === 0) return null;
+        if (products.length === 0) {
+          return null;
+        }
         return (
           <section key={col.title} className="collection-section">
             <div className="section-head">
               <h2 className="section-title-lg">{col.title}</h2>
-              <Link
-                to={
-                  col.featured
-                    ? "/products?featured=true"
-                    : `/products?category=${encodeURIComponent(col.query)}`
-                }
-                className="section-link"
-              >
+              <Link to={collectionLink(col)} className="section-link">
                 View all
               </Link>
             </div>
@@ -303,4 +323,6 @@ export default function Home() {
       </section>
     </div>
   );
-}
+};
+
+export default Home;

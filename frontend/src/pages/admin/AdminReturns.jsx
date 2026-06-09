@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/client.js";
 import Loader from "../../components/Loader.jsx";
-import { formatINR, formatDate, statusLabel, statusBadgeClass } from "../../utils/format.js";
+import { formatDate, statusLabel, statusBadgeClass } from "../../utils/format.js";
 
-export default function AdminReturns() {
+// Admin page that lists all return requests.
+const AdminReturns = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Load the orders that have return requests.
   useEffect(() => {
     api
       .get("/admin/returns")
@@ -15,7 +17,9 @@ export default function AdminReturns() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Loader />;
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <div>
@@ -27,26 +31,35 @@ export default function AdminReturns() {
         <p className="muted">No return requests.</p>
       ) : (
         <div className="order-list">
-          {orders.map((o) => (
-            <Link to={`/admin/orders/${o._id}`} key={o._id} className="card order-card">
-              <div className="row-between wrap gap-3">
-                <div>
-                  <div className="muted font-xs">
-                    #{o._id.slice(-8).toUpperCase()} · {o.user?.name} · {formatDate(o.returnInfo?.requestedAt || o.createdAt)}
+          {orders.map((o) => {
+            // Use the request date if we have it, otherwise the order date.
+            let requestDate = o.createdAt;
+            if (o.returnInfo?.requestedAt) {
+              requestDate = o.returnInfo.requestedAt;
+            }
+            return (
+              <Link to={`/admin/orders/${o._id}`} key={o._id} className="card order-card">
+                <div className="row-between wrap gap-3">
+                  <div>
+                    <div className="muted font-xs">
+                      #{o._id.slice(-8).toUpperCase()} · {o.user?.name} · {formatDate(requestDate)}
+                    </div>
+                    <strong>{o.returnInfo?.reason || "Return request"}</strong>
+                    {o.returnInfo?.description && (
+                      <p className="muted font-sm note-item">
+                        {o.returnInfo.description}
+                      </p>
+                    )}
                   </div>
-                  <strong>{o.returnInfo?.reason || "Return request"}</strong>
-                  {o.returnInfo?.description && (
-                    <p className="muted font-sm note-item">
-                      {o.returnInfo.description}
-                    </p>
-                  )}
+                  <span className={`badge ${statusBadgeClass(o.status)}`}>{statusLabel(o.status)}</span>
                 </div>
-                <span className={`badge ${statusBadgeClass(o.status)}`}>{statusLabel(o.status)}</span>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>
   );
-}
+};
+
+export default AdminReturns;

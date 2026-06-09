@@ -4,6 +4,7 @@ import api from "../../api/client.js";
 import Loader from "../../components/Loader.jsx";
 import { useToast } from "../../context/ToastContext.jsx";
 
+// The starting (empty) values for a new product form.
 const blank = {
   name: "",
   brand: "",
@@ -16,7 +17,8 @@ const blank = {
   status: "active",
 };
 
-export default function ProductForm() {
+// Admin form used to create a new product or edit an existing one.
+const ProductForm = () => {
   const { id } = useParams();
   const editing = Boolean(id);
   const navigate = useNavigate();
@@ -34,6 +36,7 @@ export default function ProductForm() {
   const [loading, setLoading] = useState(editing);
   const [saving, setSaving] = useState(false);
 
+  // When the category changes, load its suggested attributes.
   useEffect(() => {
     if (form.category) {
       api
@@ -42,8 +45,11 @@ export default function ProductForm() {
     }
   }, [form.category]);
 
+  // When editing, load the existing product into the form.
   useEffect(() => {
-    if (!editing) return;
+    if (!editing) {
+      return;
+    }
     api
       .get(`/products/${id}`)
       .then((res) => {
@@ -60,70 +66,117 @@ export default function ProductForm() {
           status: p.status || "active",
         });
         setSku(p.sku || "");
+
+        // Turn the specs object into rows of key/value for the form.
         const specEntries = Object.entries(p.specs || {}).map(([key, value]) => ({ key, value }));
-        setSpecs(specEntries.length ? specEntries : [{ key: "", value: "" }]);
+        if (specEntries.length > 0) {
+          setSpecs(specEntries);
+        } else {
+          setSpecs([{ key: "", value: "" }]);
+        }
+
+        // Turn the attributes object into rows of key/value for the form.
         const attrEntries = Object.entries(p.attributes || {}).map(([key, value]) => ({ key, value }));
-        setAttributes(attrEntries.length ? attrEntries : [{ key: "", value: "" }]);
+        if (attrEntries.length > 0) {
+          setAttributes(attrEntries);
+        } else {
+          setAttributes([{ key: "", value: "" }]);
+        }
+
         setVariants(p.variants || []);
-        setExistingImages(
-          (p.images || []).map((url) => {
-            const match = String(url).match(/\/image\/([a-f0-9]{24})(?:$|\?)/i);
-            return { url, id: match ? match[1] : url };
-          })
-        );
+
+        // Build the list of existing images with an id we can reference.
+        const images = (p.images || []).map((url) => {
+          const match = String(url).match(/\/image\/([a-f0-9]{24})(?:$|\?)/i);
+          let imageId = url;
+          if (match) {
+            imageId = match[1];
+          }
+          return { url, id: imageId };
+        });
+        setExistingImages(images);
       })
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
   }, [id, editing, toast]);
 
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  // Update one field of the main form.
+  const set = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
-  const setSpec = (i, field, v) =>
-    setSpecs((s) => s.map((row, idx) => (idx === i ? { ...row, [field]: v } : row)));
-  const addSpecRow = () => setSpecs((s) => [...s, { key: "", value: "" }]);
-  const removeSpecRow = (i) => setSpecs((s) => s.filter((_, idx) => idx !== i));
+  // Spec row helpers.
+  const setSpec = (i, field, value) => {
+    setSpecs((rows) => rows.map((row, idx) => (idx === i ? { ...row, [field]: value } : row)));
+  };
+  const addSpecRow = () => setSpecs((rows) => [...rows, { key: "", value: "" }]);
+  const removeSpecRow = (i) => setSpecs((rows) => rows.filter((_, idx) => idx !== i));
 
-  const setAttr = (i, field, v) =>
-    setAttributes((s) => s.map((row, idx) => (idx === i ? { ...row, [field]: v } : row)));
-  const addAttrRow = () => setAttributes((s) => [...s, { key: "", value: "" }]);
-  const removeAttrRow = (i) => setAttributes((s) => s.filter((_, idx) => idx !== i));
+  // Attribute row helpers.
+  const setAttr = (i, field, value) => {
+    setAttributes((rows) => rows.map((row, idx) => (idx === i ? { ...row, [field]: value } : row)));
+  };
+  const addAttrRow = () => setAttributes((rows) => [...rows, { key: "", value: "" }]);
+  const removeAttrRow = (i) => setAttributes((rows) => rows.filter((_, idx) => idx !== i));
 
-  const addVariant = () =>
-    setVariants((v) => [...v, { attributes: {}, price: form.price || 0, countInStock: 0 }]);
-
-  const setVariant = (i, field, value) =>
-    setVariants((v) => v.map((row, idx) => (idx === i ? { ...row, [field]: value } : row)));
-
-  const setVariantAttr = (i, key, value) =>
-    setVariants((v) =>
-      v.map((row, idx) =>
-        idx === i ? { ...row, attributes: { ...row.attributes, [key]: value } } : row
-      )
+  // Variant helpers.
+  const addVariant = () => {
+    setVariants((rows) => [...rows, { attributes: {}, price: form.price || 0, countInStock: 0 }]);
+  };
+  const setVariant = (i, field, value) => {
+    setVariants((rows) => rows.map((row, idx) => (idx === i ? { ...row, [field]: value } : row)));
+  };
+  const setVariantAttr = (i, key, value) => {
+    setVariants((rows) =>
+      rows.map((row, idx) => {
+        if (idx === i) {
+          return { ...row, attributes: { ...row.attributes, [key]: value } };
+        }
+        return row;
+      })
     );
+  };
+  const removeVariant = (i) => setVariants((rows) => rows.filter((_, idx) => idx !== i));
 
-  const removeVariant = (i) => setVariants((v) => v.filter((_, idx) => idx !== i));
+  // Mark an existing image to be removed, or undo that.
+  const toggleRemoveImage = (imageId) => {
+    setRemoveImages((list) => {
+      if (list.includes(imageId)) {
+        return list.filter((x) => x !== imageId);
+      }
+      return [...list, imageId];
+    });
+  };
 
-  const toggleRemoveImage = (imageId) =>
-    setRemoveImages((r) => (r.includes(imageId) ? r.filter((x) => x !== imageId) : [...r, imageId]));
-
+  // Build the form data and send it to create or update the product.
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
       const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+      Object.entries(form).forEach(([key, value]) => fd.append(key, value));
 
+      // Convert the spec rows into a single object.
       const specObj = {};
-      specs.forEach(({ key, value }) => { if (key.trim()) specObj[key.trim()] = value; });
+      specs.forEach((row) => {
+        if (row.key.trim()) {
+          specObj[row.key.trim()] = row.value;
+        }
+      });
       fd.append("specs", JSON.stringify(specObj));
 
+      // Convert the attribute rows into a single object.
       const attrObj = {};
-      attributes.forEach(({ key, value }) => { if (key.trim()) attrObj[key.trim()] = value; });
+      attributes.forEach((row) => {
+        if (row.key.trim()) {
+          attrObj[row.key.trim()] = row.value;
+        }
+      });
       fd.append("attributes", JSON.stringify(attrObj));
       fd.append("variants", JSON.stringify(variants));
 
       files.forEach((f) => fd.append("images", f));
-      if (removeImages.length) fd.append("removeImages", JSON.stringify(removeImages));
+      if (removeImages.length > 0) {
+        fd.append("removeImages", JSON.stringify(removeImages));
+      }
 
       if (editing) {
         await api.put(`/products/${id}`, fd);
@@ -140,12 +193,39 @@ export default function ProductForm() {
     }
   };
 
-  if (loading) return <Loader />;
+  // Keep the selected image files when the file input changes.
+  const handleFilesChange = (e) => {
+    setFiles(Array.from(e.target.files));
+  };
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  // Decide the page heading and button labels.
+  let eyebrowLabel = "Create";
+  let pageTitle = "New Product";
+  if (editing) {
+    eyebrowLabel = "Edit";
+    pageTitle = "Edit Product";
+  }
+
+  let submitLabel = "Create product";
+  if (saving) {
+    submitLabel = "Saving...";
+  } else if (editing) {
+    submitLabel = "Update product";
+  }
+
+  let imagesLabel = "Product images";
+  if (editing) {
+    imagesLabel = "Add more images";
+  }
 
   return (
     <div className="page-medium">
-      <span className="eyebrow">{editing ? "Edit" : "Create"}</span>
-      <h2 className="mb-5">{editing ? "Edit Product" : "New Product"}</h2>
+      <span className="eyebrow">{eyebrowLabel}</span>
+      <h2 className="mb-5">{pageTitle}</h2>
 
       <form className="card form" onSubmit={submit}>
         {editing && sku && (
@@ -261,28 +341,37 @@ export default function ProductForm() {
           <>
             <h3 className="form-section-title">Current images</h3>
             <div className="row image-grid">
-              {existingImages.map((img) => (
-                <div key={img.id} className={`image-preview ${removeImages.includes(img.id) ? "removed" : ""}`}>
-                  <img src={img.url} alt="" className="thumb-lg" />
-                  <button type="button" className="btn btn-danger btn-sm image-remove" onClick={() => toggleRemoveImage(img.id)}>
-                    {removeImages.includes(img.id) ? "↺" : "✕"}
-                  </button>
-                </div>
-              ))}
+              {existingImages.map((img) => {
+                const isRemoved = removeImages.includes(img.id);
+                let removeLabel = "✕";
+                if (isRemoved) {
+                  removeLabel = "↺";
+                }
+                return (
+                  <div key={img.id} className={`image-preview ${isRemoved ? "removed" : ""}`}>
+                    <img src={img.url} alt="" className="thumb-lg" />
+                    <button type="button" className="btn btn-danger btn-sm image-remove" onClick={() => toggleRemoveImage(img.id)}>
+                      {removeLabel}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </>
         )}
 
         <div className="field mt-4">
-          <label>{editing ? "Add more images" : "Product images"}</label>
-          <input type="file" accept="image/*" multiple onChange={(e) => setFiles(Array.from(e.target.files))} />
+          <label>{imagesLabel}</label>
+          <input type="file" accept="image/*" multiple onChange={handleFilesChange} />
         </div>
 
         <div className="row gap-2">
-          <button className="btn" disabled={saving}>{saving ? "Saving..." : editing ? "Update product" : "Create product"}</button>
+          <button className="btn" disabled={saving}>{submitLabel}</button>
           <button type="button" className="btn btn-ghost" onClick={() => navigate("/admin/products")}>Cancel</button>
         </div>
       </form>
     </div>
   );
-}
+};
+
+export default ProductForm;

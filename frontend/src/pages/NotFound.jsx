@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { Icon404 } from "../components/Icons.jsx";
 
-export default function NotFound() {
+// Page shown when the URL does not match any route (404).
+const NotFound = () => {
   return (
     <div className="error-page">
       <Icon404 />
@@ -16,4 +17,6 @@ export default function NotFound() {
       </div>
     </div>
   );
-}
+};
+
+export default NotFound;

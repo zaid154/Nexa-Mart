@@ -3,8 +3,10 @@ import api from "../../api/client.js";
 import { useToast } from "../../context/ToastContext.jsx";
 import Loader from "../../components/Loader.jsx";
 
+// The tab names shown across the top of the settings page.
 const TABS = ["SMTP", "Email Templates", "Site", "Company", "Security", "API", "Social"];
 
+// The social media link fields shown in the Social tab.
 const SOCIAL_FIELDS = [
   { key: "facebook", label: "Facebook URL", placeholder: "https://facebook.com/yourpage" },
   { key: "instagram", label: "Instagram URL", placeholder: "https://instagram.com/yourhandle" },
@@ -14,14 +16,17 @@ const SOCIAL_FIELDS = [
   { key: "whatsapp", label: "WhatsApp link", placeholder: "https://wa.me/91XXXXXXXXXX" },
 ];
 
-export default function Settings() {
+// Admin settings page with tabs for SMTP, templates, site info, and more.
+const Settings = () => {
   const toast = useToast();
+
   const [tab, setTab] = useState("SMTP");
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testEmail, setTestEmail] = useState("");
 
+  // Load the saved settings when the page opens.
   useEffect(() => {
     api
       .get("/admin/settings")
@@ -30,10 +35,12 @@ export default function Settings() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Update one field inside a section of the settings object.
   const update = (section, field, value) => {
     setSettings((s) => ({ ...s, [section]: { ...s[section], [field]: value } }));
   };
 
+  // Save all settings to the server.
   const save = async () => {
     setSaving(true);
     try {
@@ -47,8 +54,12 @@ export default function Settings() {
     }
   };
 
+  // Send a test email to the address typed in the box.
   const sendTest = async () => {
-    if (!testEmail) return toast.error("Enter a test email address");
+    if (!testEmail) {
+      toast.error("Enter a test email address");
+      return;
+    }
     try {
       await api.post("/admin/settings/test-email", { to: testEmail });
       toast.success("Test email sent");
@@ -57,8 +68,20 @@ export default function Settings() {
     }
   };
 
-  if (loading) return <Loader />;
-  if (!settings) return <p>Failed to load settings</p>;
+  // Update one email template by its key.
+  const updateTemplate = (key, value) => {
+    setSettings((s) => ({
+      ...s,
+      emailTemplates: { ...s.emailTemplates, [key]: value },
+    }));
+  };
+
+  if (loading) {
+    return <Loader />;
+  }
+  if (!settings) {
+    return <p>Failed to load settings</p>;
+  }
 
   return (
     <div>
@@ -129,12 +152,7 @@ export default function Settings() {
                   className="input"
                   rows={4}
                   value={settings.emailTemplates[key]}
-                  onChange={(e) =>
-                    setSettings((s) => ({
-                      ...s,
-                      emailTemplates: { ...s.emailTemplates, [key]: e.target.value },
-                    }))
-                  }
+                  onChange={(e) => updateTemplate(key, e.target.value)}
                 />
               </div>
             ))}
@@ -223,4 +241,6 @@ export default function Settings() {
       </div>
     </div>
   );
-}
+};
+
+export default Settings;

@@ -1,9 +1,16 @@
 import { Link } from "react-router-dom";
 
-export default function ErrorState({ title = "Something went wrong", message, onRetry, type = "error" }) {
+// Shown when something goes wrong, with an optional "Try again" button.
+const ErrorState = ({ title = "Something went wrong", message, onRetry, type = "error" }) => {
+  // The small label at the top changes for network errors.
+  let label = "Error";
+  if (type === "network") {
+    label = "Network Error";
+  }
+
   return (
     <div className="error-page card">
-      <span className="eyebrow">{type === "network" ? "Network Error" : "Error"}</span>
+      <span className="eyebrow">{label}</span>
       <h1 className="big">{title}</h1>
       {message && <p className="muted mb-4">{message}</p>}
       <div className="row gap-3">
@@ -16,4 +23,6 @@ export default function ErrorState({ title = "Something went wrong", message, on
       </div>
     </div>
   );
-}
+};
+
+export default ErrorState;

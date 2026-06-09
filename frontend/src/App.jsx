@@ -6,6 +6,7 @@ import PageShell from "./components/PageShell.jsx";
 import Loader from "./components/Loader.jsx";
 import { ProtectedRoute, AdminRoute } from "./components/ProtectedRoute.jsx";
 
+// Lazy load pages so they load only when user visits them (faster first load)
 const Home = lazy(() => import("./pages/Home.jsx"));
 const Catalog = lazy(() => import("./pages/Catalog.jsx"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail.jsx"));
@@ -34,21 +35,35 @@ const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.jsx"));
 const Settings = lazy(() => import("./pages/admin/Settings.jsx"));
 const Logs = lazy(() => import("./pages/admin/Logs.jsx"));
 
+// Show loader while a lazy page is loading
 function PageLoader() {
   return <Loader full />;
 }
 
 export default function App() {
-  const { pathname } = useLocation();
-  const isAdmin = pathname.startsWith("/admin");
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  // Hide footer on admin pages
+  let isAdminPage = false;
+  if (currentPath.startsWith("/admin")) {
+    isAdminPage = true;
+  }
+
+  let appClassName = "app";
+  if (isAdminPage) {
+    appClassName = "app app-admin";
+  }
 
   return (
-    <div className={`app ${isAdmin ? "app-admin" : ""}`}>
+    <div className={appClassName}>
       <Navbar />
+
       <main className="main">
         <PageShell>
           <Suspense fallback={<PageLoader />}>
             <Routes>
+              {/* Public pages */}
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<Catalog />} />
               <Route path="/products/:id" element={<ProductDetail />} />
@@ -59,6 +74,7 @@ export default function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
 
+              {/* Pages that need login */}
               <Route
                 path="/wishlist"
                 element={
@@ -99,7 +115,6 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path="/orders/:id/invoice"
                 element={
@@ -109,6 +124,7 @@ export default function App() {
                 }
               />
 
+              {/* Admin panel routes */}
               <Route
                 path="/admin"
                 element={
@@ -134,7 +150,8 @@ export default function App() {
           </Suspense>
         </PageShell>
       </main>
-      {!isAdmin && <Footer />}
+
+      {!isAdminPage && <Footer />}
     </div>
   );
 }

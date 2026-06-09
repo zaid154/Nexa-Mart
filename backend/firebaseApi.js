@@ -4,15 +4,20 @@ import { onRequest } from "firebase-functions/v2/https";
 import { connectDB } from "./src/config/db.js";
 import { createApp } from "./src/createApp.js";
 
-let initPromise;
+// Connect DB and create Express app only once
+let initPromise = null;
 
-const ensureReady = async () => {
+async function ensureReady() {
   if (!initPromise) {
-    initPromise = connectDB().then(() => createApp());
+    initPromise = connectDB().then(() => {
+      return createApp();
+    });
   }
-  return initPromise;
-};
 
+  return initPromise;
+}
+
+// Firebase Cloud Function that runs our Express API
 export const api = onRequest(
   {
     region: "asia-south1",

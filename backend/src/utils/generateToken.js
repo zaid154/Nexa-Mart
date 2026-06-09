@@ -1,3 +1,5 @@
+// A simple helper that makes a JWT token holding the user id.
+
 import jwt from "jsonwebtoken";
 
 export const generateToken = (id) => {

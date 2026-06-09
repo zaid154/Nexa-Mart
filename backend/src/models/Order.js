@@ -1,5 +1,8 @@
+// This file describes how an Order is stored in the database.
+
 import mongoose from "mongoose";
 
+// One product line inside an order.
 const orderItemSchema = new mongoose.Schema(
   {
     product: {
@@ -14,6 +17,7 @@ const orderItemSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// One step in the order's tracking history (for example "shipped").
 const trackingEventSchema = new mongoose.Schema(
   {
     status: { type: String, required: true },
@@ -23,6 +27,7 @@ const trackingEventSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// An image the customer uploads when requesting a return.
 const returnImageSchema = new mongoose.Schema(
   {
     data: { type: Buffer, required: true },
@@ -31,6 +36,7 @@ const returnImageSchema = new mongoose.Schema(
   { _id: true }
 );
 
+// A private note written by an admin about the order.
 const adminNoteSchema = new mongoose.Schema(
   {
     note: { type: String, required: true },
@@ -40,6 +46,7 @@ const adminNoteSchema = new mongoose.Schema(
   { _id: true }
 );
 
+// The main order schema.
 const orderSchema = new mongoose.Schema(
   {
     user: {
@@ -125,6 +132,7 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes to make order lists load faster.
 orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.index({ status: 1, createdAt: -1 });
 

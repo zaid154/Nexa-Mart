@@ -9,9 +9,13 @@ import { ConfirmProvider } from "./context/ConfirmContext.jsx";
 import "./styles/index.css";
 import { initAnalytics } from "./firebase.js";
 
+// Start Firebase analytics when the app loads
 initAnalytics();
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+// Find the root div in index.html and render our React app inside it
+const rootElement = document.getElementById("root");
+
+ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <BrowserRouter>
       <ToastProvider>

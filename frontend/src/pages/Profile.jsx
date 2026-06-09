@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 
+// A blank shipping address used to fill in missing fields.
 const emptyAddress = {
   fullName: "",
   phone: "",
@@ -15,20 +16,26 @@ const emptyAddress = {
   country: "India",
 };
 
-export default function Profile() {
+// Profile page where the user updates their name, password, and address.
+const Profile = () => {
   const { user, updateUser } = useAuth();
   const toast = useToast();
+
   const [name, setName] = useState(user.name);
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState({ ...emptyAddress, ...(user.address || {}) });
   const [saving, setSaving] = useState(false);
 
+  // Save the changes to the server.
   const save = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
       const payload = { name, address };
-      if (password) payload.password = password;
+      // Only send the password if the user typed a new one.
+      if (password) {
+        payload.password = password;
+      }
       const res = await api.put("/auth/profile", payload);
       updateUser(res.data.user);
       setPassword("");
@@ -40,7 +47,10 @@ export default function Profile() {
     }
   };
 
-  const setAddr = (k, v) => setAddress((a) => ({ ...a, [k]: v }));
+  // Update one field of the address.
+  const setAddr = (key, value) => {
+    setAddress((a) => ({ ...a, [key]: value }));
+  };
 
   return (
     <div className="page-narrow">
@@ -109,4 +119,6 @@ export default function Profile() {
       </form>
     </div>
   );
-}
+};
+
+export default Profile;

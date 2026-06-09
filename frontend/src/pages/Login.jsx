@@ -4,24 +4,38 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 import { BrandMark } from "../components/Icons.jsx";
 
-export default function Login() {
+// Login page where an existing user signs in with email and password.
+const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
+
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const from = location.state?.from?.pathname || "/";
+  // After login, send the user back to the page they came from (or home).
+  let from = "/";
+  if (location.state && location.state.from && location.state.from.pathname) {
+    from = location.state.from.pathname;
+  }
 
   const submit = async (e) => {
     e.preventDefault();
-    const next = {};
-    if (!form.email.trim()) next.email = "Email is required";
-    if (!form.password) next.password = "Password is required";
-    setErrors(next);
-    if (Object.keys(next).length) return;
+
+    // Simple validation: both fields are required.
+    const newErrors = {};
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required";
+    }
+    if (!form.password) {
+      newErrors.password = "Password is required";
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
 
     setLoading(true);
     try {
@@ -33,6 +47,18 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Update the email field and clear its error message.
+  const handleEmailChange = (e) => {
+    setForm({ ...form, email: e.target.value });
+    setErrors({ ...errors, email: "" });
+  };
+
+  // Update the password field and clear its error message.
+  const handlePasswordChange = (e) => {
+    setForm({ ...form, password: e.target.value });
+    setErrors({ ...errors, password: "" });
   };
 
   return (
@@ -52,7 +78,7 @@ export default function Login() {
               className="input"
               type="email"
               value={form.email}
-              onChange={(e) => { setForm({ ...form, email: e.target.value }); setErrors({ ...errors, email: "" }); }}
+              onChange={handleEmailChange}
               aria-invalid={!!errors.email}
               autoComplete="email"
             />
@@ -65,7 +91,7 @@ export default function Login() {
               className="input"
               type="password"
               value={form.password}
-              onChange={(e) => { setForm({ ...form, password: e.target.value }); setErrors({ ...errors, password: "" }); }}
+              onChange={handlePasswordChange}
               aria-invalid={!!errors.password}
               autoComplete="current-password"
             />
@@ -86,4 +112,6 @@ export default function Login() {
       </div>
     </div>
   );
-}
+};
+
+export default Login;

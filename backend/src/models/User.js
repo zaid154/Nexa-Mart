@@ -1,6 +1,10 @@
+// This file describes how a User is stored in the database.
+// It also handles hashing the password before saving.
+
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+// One product the user has put in their cart.
 const cartItemSchema = new mongoose.Schema(
   {
     product: {
@@ -13,6 +17,7 @@ const cartItemSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// A shipping/billing address that belongs to the user.
 const addressSchema = new mongoose.Schema(
   {
     label: { type: String, default: "Home" },
@@ -29,6 +34,7 @@ const addressSchema = new mongoose.Schema(
   { _id: true }
 );
 
+// A saved refresh token (stored hashed) used to keep the user logged in.
 const refreshTokenSchema = new mongoose.Schema(
   {
     tokenHash: { type: String, required: true },
@@ -37,6 +43,7 @@ const refreshTokenSchema = new mongoose.Schema(
   { _id: true }
 );
 
+// The main user schema.
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: [true, "Name is required"], trim: true },
@@ -68,15 +75,20 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Index to make admin user lists faster.
 userSchema.index({ status: 1, isDeleted: 1 });
 
+// Before saving, hash the password (but only if it changed).
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  if (!this.isModified("password")) {
+    return next();
+  }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
+// Helper method to compare a typed password with the stored hash.
 userSchema.methods.matchPassword = async function (entered) {
   return bcrypt.compare(entered, this.password);
 };

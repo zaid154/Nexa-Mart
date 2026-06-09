@@ -9,6 +9,7 @@ import { formatINR } from "../utils/format.js";
 import { SkeletonCart } from "../components/Skeleton.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 
+// A blank shipping address used as the starting form values.
 const emptyAddress = {
   fullName: "",
   phone: "",
@@ -20,9 +21,11 @@ const emptyAddress = {
   country: "India",
 };
 
+// Coupon codes and the discount fraction each one gives.
 const COUPONS = { NEXA15: 0.15, WELCOME10: 0.1 };
 
-export default function Checkout() {
+// Checkout page: collects the address, payment method, and places the order.
+const Checkout = () => {
   const { cart, loading, refresh } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -35,7 +38,9 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [errors, setErrors] = useState({});
 
-  if (loading) return <SkeletonCart />;
+  if (loading) {
+    return <SkeletonCart />;
+  }
   if (cart.items.length === 0) {
     return (
       <EmptyState
@@ -48,9 +53,12 @@ export default function Checkout() {
     );
   }
 
+  // Check the typed coupon code and apply its discount if valid.
   const applyCoupon = () => {
     const code = coupon.trim().toUpperCase();
-    if (!code) return;
+    if (!code) {
+      return;
+    }
     if (COUPONS[code]) {
       setDiscount(COUPONS[code]);
       toast.success(`Coupon ${code} applied (${COUPONS[code] * 100}% off)`);
@@ -60,28 +68,47 @@ export default function Checkout() {
     }
   };
 
+  // Work out all the price totals.
   const discountAmount = Math.round(cart.subtotal * discount);
   const discountedSubtotal = cart.subtotal - discountAmount;
-  const shipping = discountedSubtotal >= 5000 ? 0 : 99;
+
+  let shipping = 99;
+  if (discountedSubtotal >= 5000) {
+    shipping = 0;
+  }
+
   const tax = Math.round(discountedSubtotal * 0.18);
   const total = discountedSubtotal + shipping + tax;
 
-  const setAddr = (k, v) => {
-    setAddress((a) => ({ ...a, [k]: v }));
-    setErrors((e) => ({ ...e, [k]: "" }));
+  // Update one field of the address and clear its error.
+  const setAddr = (key, value) => {
+    setAddress((a) => ({ ...a, [key]: value }));
+    setErrors((e) => ({ ...e, [key]: "" }));
   };
 
+  // Make sure the required address fields are filled in.
   const validate = () => {
-    const next = {};
-    if (!address.fullName.trim()) next.fullName = "Full name is required";
-    if (!address.phone.trim()) next.phone = "Phone is required";
-    if (!address.line1.trim()) next.line1 = "Address is required";
-    if (!address.city.trim()) next.city = "City is required";
-    if (!address.postalCode.trim()) next.postalCode = "Postal code is required";
-    setErrors(next);
-    return Object.keys(next).length === 0;
+    const newErrors = {};
+    if (!address.fullName.trim()) {
+      newErrors.fullName = "Full name is required";
+    }
+    if (!address.phone.trim()) {
+      newErrors.phone = "Phone is required";
+    }
+    if (!address.line1.trim()) {
+      newErrors.line1 = "Address is required";
+    }
+    if (!address.city.trim()) {
+      newErrors.city = "City is required";
+    }
+    if (!address.postalCode.trim()) {
+      newErrors.postalCode = "Postal code is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
+  // Open the Razorpay popup and verify the payment when it finishes.
   const payWithRazorpay = async (order) => {
     const { data } = await api.post(`/payment/razorpay/${order._id}`);
 
@@ -125,14 +152,25 @@ export default function Checkout() {
     rzp.open();
   };
 
+  // Create the order, then either finish (COD) or start the payment.
   const placeOrder = async (e) => {
     e.preventDefault();
-    if (!validate()) return toast.error("Please complete the shipping address");
+
+    if (!validate()) {
+      toast.error("Please complete the shipping address");
+      return;
+    }
+
     setPlacing(true);
     try {
+      let couponCode = "";
+      if (discount > 0) {
+        couponCode = coupon.trim().toUpperCase();
+      }
+
       const { data } = await api.post("/orders", {
         shippingAddress: address,
-        couponCode: discount > 0 ? coupon.trim().toUpperCase() : "",
+        couponCode: couponCode,
         paymentMethod,
       });
 
@@ -149,6 +187,16 @@ export default function Checkout() {
       setPlacing(false);
     }
   };
+
+  // Decide the text shown on the place-order button.
+  let submitLabel;
+  if (placing) {
+    submitLabel = "Processing...";
+  } else if (paymentMethod === "cod") {
+    submitLabel = `Place Order · ${formatINR(total)}`;
+  } else {
+    submitLabel = `Pay ${formatINR(total)}`;
+  }
 
   return (
     <div className="animate-fade-in">
@@ -298,11 +346,7 @@ export default function Checkout() {
 
           <div className="row mt-4">
             <button type="submit" className="btn flex-1" disabled={placing}>
-              {placing
-                ? "Processing..."
-                : paymentMethod === "cod"
-                  ? `Place Order · ${formatINR(total)}`
-                  : `Pay ${formatINR(total)}`}
+              {submitLabel}
             </button>
             <button
               type="button"
@@ -318,14 +362,18 @@ export default function Checkout() {
         <div className="card cart-summary">
           <h3>Order Review</h3>
           <div className="checkout-items">
-            {cart.items.map(({ product, quantity }) => (
-              <div className="summary-row" key={product._id}>
-                <span className="muted">
-                  {product.name} × {quantity}
-                </span>
-                <span>{formatINR(product.price * quantity)}</span>
-              </div>
-            ))}
+            {cart.items.map((item) => {
+              const product = item.product;
+              const quantity = item.quantity;
+              return (
+                <div className="summary-row" key={product._id}>
+                  <span className="muted">
+                    {product.name} × {quantity}
+                  </span>
+                  <span>{formatINR(product.price * quantity)}</span>
+                </div>
+              );
+            })}
           </div>
           <div className="coupon-row">
             <input
@@ -366,4 +414,6 @@ export default function Checkout() {
       </div>
     </div>
   );
-}
+};
+
+export default Checkout;
