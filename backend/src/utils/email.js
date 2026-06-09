@@ -77,5 +77,6 @@ export const sendOrderConfirmationEmail = async ({ to, name, orderId, total }) =
 export const maskSettings = (settings) => {
   const obj = settings.toObject ? settings.toObject() : { ...settings };
   if (obj.smtp?.pass) obj.smtp.pass = obj.smtp.pass ? "********" : "";
+  if (obj.api?.razorpayKeySecret) obj.api.razorpayKeySecret = "********";
   return obj;
 };

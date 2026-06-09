@@ -2,11 +2,11 @@ import asyncHandler from "express-async-handler";
 import crypto from "crypto";
 import Order from "../models/Order.js";
 import User from "../models/User.js";
-import { getRazorpay } from "../config/razorpay.js";
+import { getRazorpay, getRazorpayKeys } from "../config/razorpay.js";
 import { adjustStock } from "../utils/orderStatus.js";
 
 export const createRazorpayOrder = asyncHandler(async (req, res) => {
-  const razorpay = getRazorpay();
+  const razorpay = await getRazorpay();
 
   const order = await Order.findById(req.params.orderId);
   if (!order) {
@@ -36,11 +36,12 @@ export const createRazorpayOrder = asyncHandler(async (req, res) => {
   order.paymentResult = { ...order.paymentResult, razorpayOrderId: rzpOrder.id };
   await order.save();
 
+  const { keyId } = await getRazorpayKeys();
   res.json({
     razorpayOrderId: rzpOrder.id,
     amount: rzpOrder.amount,
     currency: rzpOrder.currency,
-    keyId: process.env.RAZORPAY_KEY_ID,
+    keyId,
   });
 });
 
@@ -57,8 +58,9 @@ export const verifyPayment = asyncHandler(async (req, res) => {
     throw new Error("Not authorized");
   }
 
+  const { keySecret } = await getRazorpayKeys();
   const expected = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .createHmac("sha256", keySecret)
     .update(`${razorpayOrderId}|${razorpayPaymentId}`)
     .digest("hex");
 

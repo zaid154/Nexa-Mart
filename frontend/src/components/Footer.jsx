@@ -1,10 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useToast } from "../context/ToastContext.jsx";
+import api from "../api/client.js";
+
+const SOCIAL_LINKS = [
+  { key: "instagram", label: "Instagram", short: "IG" },
+  { key: "twitter", label: "Twitter / X", short: "X" },
+  { key: "facebook", label: "Facebook", short: "FB" },
+  { key: "youtube", label: "YouTube", short: "YT" },
+  { key: "linkedin", label: "LinkedIn", short: "IN" },
+  { key: "whatsapp", label: "WhatsApp", short: "WA" },
+];
 
 export default function Footer() {
   const toast = useToast();
   const [email, setEmail] = useState("");
+  const [social, setSocial] = useState({});
+
+  useEffect(() => {
+    api
+      .get("/admin/settings/public")
+      .then((res) => setSocial(res.data.social || {}))
+      .catch(() => {});
+  }, []);
 
   const handleNewsletter = (e) => {
     e.preventDefault();
@@ -74,10 +92,17 @@ export default function Footer() {
           <div className="footer-col">
             <h4>Follow us</h4>
             <div className="footer-social">
-              <a href="#" aria-label="Instagram">IG</a>
-              <a href="#" aria-label="Twitter">X</a>
-              <a href="#" aria-label="Facebook">FB</a>
-              <a href="#" aria-label="YouTube">YT</a>
+              {SOCIAL_LINKS.filter((s) => social[s.key]).map((s) => (
+                <a
+                  key={s.key}
+                  href={social[s.key]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                >
+                  {s.short}
+                </a>
+              ))}
             </div>
           </div>
         </div>

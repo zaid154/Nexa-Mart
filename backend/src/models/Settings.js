@@ -43,13 +43,22 @@ const settingsSchema = new mongoose.Schema(
     },
     api: {
       razorpayKeyId: { type: String, default: "" },
+      razorpayKeySecret: { type: String, default: "", select: false },
+    },
+    social: {
+      facebook: { type: String, default: "" },
+      instagram: { type: String, default: "" },
+      twitter: { type: String, default: "" },
+      youtube: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
+      whatsapp: { type: String, default: "" },
     },
   },
   { timestamps: true }
 );
 
 settingsSchema.statics.getSingleton = async function () {
-  let doc = await this.findOne().select("+smtp.pass");
+  let doc = await this.findOne().select("+smtp.pass +api.razorpayKeySecret");
   if (!doc) {
     doc = await this.create({});
   }

@@ -8,9 +8,17 @@ export const getSettings = asyncHandler(async (req, res) => {
   res.json({ settings: maskSettings(settings) });
 });
 
+export const getPublicSettings = asyncHandler(async (req, res) => {
+  const settings = await Settings.getSingleton();
+  res.json({
+    site: { name: settings.site.name, supportEmail: settings.site.supportEmail },
+    social: settings.social,
+  });
+});
+
 export const updateSettings = asyncHandler(async (req, res) => {
   const settings = await Settings.getSingleton();
-  const { smtp, emailTemplates, site, company, security, api } = req.body;
+  const { smtp, emailTemplates, site, company, security, api, social } = req.body;
 
   if (smtp) {
     if (smtp.host !== undefined) settings.smtp.host = smtp.host;
@@ -26,7 +34,13 @@ export const updateSettings = asyncHandler(async (req, res) => {
   if (site) Object.assign(settings.site, site);
   if (company) Object.assign(settings.company, company);
   if (security) Object.assign(settings.security, security);
-  if (api) Object.assign(settings.api, api);
+  if (api) {
+    if (api.razorpayKeyId !== undefined) settings.api.razorpayKeyId = api.razorpayKeyId;
+    if (api.razorpayKeySecret && api.razorpayKeySecret !== "********") {
+      settings.api.razorpayKeySecret = api.razorpayKeySecret;
+    }
+  }
+  if (social) Object.assign(settings.social, social);
 
   await settings.save();
 

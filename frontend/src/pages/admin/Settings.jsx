@@ -3,7 +3,16 @@ import api from "../../api/client.js";
 import { useToast } from "../../context/ToastContext.jsx";
 import Loader from "../../components/Loader.jsx";
 
-const TABS = ["SMTP", "Email Templates", "Site", "Company", "Security", "API"];
+const TABS = ["SMTP", "Email Templates", "Site", "Company", "Security", "API", "Social"];
+
+const SOCIAL_FIELDS = [
+  { key: "facebook", label: "Facebook URL", placeholder: "https://facebook.com/yourpage" },
+  { key: "instagram", label: "Instagram URL", placeholder: "https://instagram.com/yourhandle" },
+  { key: "twitter", label: "Twitter / X URL", placeholder: "https://x.com/yourhandle" },
+  { key: "youtube", label: "YouTube URL", placeholder: "https://youtube.com/@yourchannel" },
+  { key: "linkedin", label: "LinkedIn URL", placeholder: "https://linkedin.com/company/yourcompany" },
+  { key: "whatsapp", label: "WhatsApp link", placeholder: "https://wa.me/91XXXXXXXXXX" },
+];
 
 export default function Settings() {
   const toast = useToast();
@@ -176,10 +185,40 @@ export default function Settings() {
         )}
 
         {tab === "API" && (
-          <div className="field">
-            <label>Razorpay Key ID (display only — secret stays in .env)</label>
-            <input className="input" value={settings.api.razorpayKeyId} onChange={(e) => update("api", "razorpayKeyId", e.target.value)} />
-          </div>
+          <>
+            <h3>Razorpay Keys</h3>
+            <p className="muted">Set your live/test keys here. Leave blank to use the keys from the server .env file.</p>
+            <div className="form-grid">
+              <div className="field">
+                <label>Razorpay Key ID</label>
+                <input className="input" value={settings.api.razorpayKeyId} placeholder="rzp_test_xxxxxxxx" onChange={(e) => update("api", "razorpayKeyId", e.target.value)} />
+              </div>
+              <div className="field">
+                <label>Razorpay Key Secret</label>
+                <input className="input" type="password" value={settings.api.razorpayKeySecret || ""} placeholder="********" onChange={(e) => update("api", "razorpayKeySecret", e.target.value)} />
+              </div>
+            </div>
+          </>
+        )}
+
+        {tab === "Social" && (
+          <>
+            <h3>Social Media Links</h3>
+            <p className="muted">These links appear in the website footer. Leave blank to hide an icon.</p>
+            <div className="form-grid">
+              {SOCIAL_FIELDS.map((f) => (
+                <div className="field" key={f.key}>
+                  <label>{f.label}</label>
+                  <input
+                    className="input"
+                    value={settings.social?.[f.key] || ""}
+                    placeholder={f.placeholder}
+                    onChange={(e) => update("social", f.key, e.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

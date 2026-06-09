@@ -96,6 +96,7 @@ export default function Navbar() {
           </div>
 
           <SearchBar categories={categories} className="nav-search-desktop" />
+                {/* <h1 className="text-red-500">Hello World zaid</h1> */}
 
           <nav className="nav-links nav-links-desktop" aria-label="Main navigation">
             <Link to="/products" className="nav-link">Shop</Link>
@@ -162,9 +163,9 @@ export default function Navbar() {
           <Link to="/products" onClick={() => setMenuOpen(false)}>Shop All</Link>
           {categories.map((c) => (
             <Link
-              key={c}
-              to={`/products?category=${encodeURIComponent(c)}`}
-              onClick={() => setMenuOpen(false)}
+            key={c}
+            to={`/products?category=${encodeURIComponent(c)}`}
+            onClick={() => setMenuOpen(false)}
             >
               {c}
             </Link>
