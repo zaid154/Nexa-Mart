@@ -315,93 +315,193 @@ The main "things" stored in the database:
 
 ---
 
-## Deploy to Firebase
+## Deployment (A to Z) — 100% Free
 
-**Live site:** https://nexamart-28c93.web.app
-**Project ID:** `nexamart-28c93`
+This project is deployed **completely free** using two services:
 
-### How the deployment is structured
+- **Frontend** → **Firebase Hosting** (free)
+- **Backend API** → **Render** (free web service)
+- **Database** → **MongoDB Atlas** (free M0 cluster)
+
+> Why two services? Firebase Hosting only serves static files. The Node/Express backend needs a real server, so it runs on Render. Firebase's own backend (Cloud Functions) would require the paid Blaze plan, so we use Render to keep everything free.
+
+**Live URLs**
+| What | URL |
+|------|-----|
+| Website (open this) | https://nexamart-28c93.web.app |
+| Backend API | https://nexa-mart.onrender.com/api |
+| API health check | https://nexa-mart.onrender.com/api/health |
+| GitHub repo | https://github.com/zaid154/Nexa-Mart |
+
+> Note: opening `https://nexa-mart.onrender.com` directly shows `Not Found` — that is normal. It is an API server, not a website. The API lives under `/api/...`.
+
+### How it fits together
 
 ```mermaid
 flowchart LR
     browser["Browser"]
     hosting["Firebase Hosting (React build)"]
-    fn["Cloud Function 'api' (Express app)"]
+    render["Render Web Service (Express API)"]
     db[("MongoDB Atlas")]
 
-    browser -->|"loads site"| hosting
-    browser -->|"/api/** request"| hosting
-    hosting -->|"rewrite to function"| fn
-    fn -->|"read / write"| db
+    browser -->|"opens site"| hosting
+    browser -->|"/api/** calls"| render
+    render -->|"read / write"| db
 ```
 
-- **Frontend** (React build in `frontend/dist`) is served by **Firebase Hosting**.
-- Any request to **`/api/**`** is rewritten to the **`api` Cloud Function**, which runs the full Express backend.
-- **Firebase Analytics** is initialized in the React app (`frontend/src/firebase.js`).
+The React app is built with `VITE_API_URL=https://nexa-mart.onrender.com/api`, so the live site calls the Render backend directly.
 
 ### Files that power the deploy
 | File | Purpose |
 |------|---------|
-| `firebase.json` | Hosting config + `/api/**` rewrite to the function. |
-| `.firebaserc` | Sets the default project (`nexamart-28c93`). |
-| `backend/firebaseApi.js` | Wraps the Express app as a Cloud Function named `api`. |
-| `backend/src/createApp.js` | Builds the Express app (shared by local server + function). |
-| `scripts/prepare-firebase-env.js` | Copies root `.env` into `backend/.env` for the function (with production values). |
-| `frontend/.env.production` | `VITE_API_URL=/api` so the live site calls the function through the rewrite. |
+| `firebase.json` | Firebase Hosting config (serves `frontend/dist`, SPA rewrite to `index.html`). |
+| `.firebaserc` | Sets the default Firebase project (`nexamart-28c93`). |
+| `render.yaml` | Render service config (build/start commands + env var list). |
+| `backend/server.js` | Backend entry point used by Render (`node server.js`). |
+| `backend/src/createApp.js` | Builds the Express app (CORS allows the Firebase site). |
+| `frontend/.env.production` | `VITE_API_URL` pointing to the live Render API. |
+| `frontend/src/firebase.js` | Firebase app + Analytics init for the frontend. |
 
-### Prerequisites (one time)
-1. Install the Firebase CLI: `npm install -g firebase-tools`
-2. Log in: `firebase login`
-3. **Cloud Functions require the Blaze (pay-as-you-go) plan.** Upgrade here:
-   https://console.firebase.google.com/project/nexamart-28c93/usage/details
-   (Blaze still has a generous free tier — small projects usually cost nothing.)
+---
 
-### Firebase commands (cheat sheet)
-Run these from the **project root**:
+### Part 1 — MongoDB Atlas (database)
 
-| Command | What it does |
-|---------|--------------|
-| `firebase login` | Log in to your Firebase account. |
-| `firebase projects:list` | List your Firebase projects. |
-| `firebase use nexamart-28c93` | Select this project. |
-| `npm run deploy` | Deploy **both** hosting + functions (`firebase deploy`). |
-| `npm run deploy:hosting` | Deploy **only** the frontend (`firebase deploy --only hosting`). |
-| `npm run deploy:functions` | Deploy **only** the backend API (`firebase deploy --only functions`). |
-| `firebase deploy --only functions:api` | Deploy just the `api` function. |
-| `firebase functions:log` | View live logs from the deployed API. |
-| `firebase hosting:channel:deploy preview` | Deploy a temporary preview URL. |
-| `firebase open hosting:site` | Open the live site in a browser. |
+1. Create a free cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas).
+2. **Database Access** → create a user with a username + password.
+3. **Network Access** → **Add IP Address** → **Allow access from anywhere** (`0.0.0.0/0`).
+   - Required because Render's free IP changes. Without this, the API cannot connect.
+4. **Connect** → copy your connection string. It looks like:
+   ```
+   mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/ecommerce
+   ```
+5. Put this in your root `.env` as `MONGO_URI`, then seed once:
+   ```bash
+   npm run seed
+   ```
 
-### Full deploy (after Blaze upgrade)
+---
+
+### Part 2 — Push code to GitHub
+
+```bash
+# from the project root
+git init
+git add -A
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/zaid154/Nexa-Mart.git
+git push -u origin main
+```
+
+> Your secrets are safe: `.env` and `backend/.env` are in `.gitignore`, so they are never pushed.
+
+For later updates:
+```bash
+git add -A
+git commit -m "your message"
+git push
+```
+
+---
+
+### Part 3 — Backend on Render (free)
+
+1. Go to [dashboard.render.com](https://dashboard.render.com) → **Sign in with GitHub**.
+2. **New +** → **Web Service** → connect the `Nexa-Mart` repo.
+3. Use these settings (Render also reads `render.yaml`):
+
+   | Field | Value |
+   |-------|-------|
+   | **Name** | `nexa-mart` |
+   | **Root Directory** | `backend` |
+   | **Runtime** | Node |
+   | **Build Command** | `npm install` |
+   | **Start Command** | `node server.js` |
+   | **Instance Type** | **Free** |
+
+4. Add **Environment Variables** (easiest: click **Add from .env** and paste your `.env`). Minimum required:
+
+   | Key | Value |
+   |-----|-------|
+   | `MONGO_URI` | your Atlas connection string |
+   | `JWT_SECRET` | a long random string |
+   | `JWT_REFRESH_SECRET` | another long random string |
+   | `CLIENT_URL` | `https://nexamart-28c93.web.app` |
+   | `NODE_ENV` | `production` |
+
+   Optional (enable email OTP / payments): `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`.
+
+5. **Create Web Service** → wait 2–3 minutes. You will get a URL like `https://nexa-mart.onrender.com`.
+6. Test it:
+   ```
+   https://nexa-mart.onrender.com/api/health   →   {"status":"ok"}
+   ```
+
+> **Free tier sleep:** Render free services spin down after ~15 minutes of inactivity. The first request after sleeping takes ~30–50 seconds to "wake up", then it is fast again. The frontend automatically retries during wake-up.
+
+---
+
+### Part 4 — Frontend on Firebase Hosting (free)
+
+One-time setup:
+```bash
+npm install -g firebase-tools   # install the CLI
+firebase login                  # log in to your Google account
+```
+
+Point the frontend at your Render API — edit `frontend/.env.production`:
+```
+VITE_API_URL=https://nexa-mart.onrender.com/api
+```
+
+Deploy:
 ```bash
 # from the project root
 firebase use nexamart-28c93
-npm run deploy
+npm run deploy:hosting
 ```
-This will:
-1. Run `scripts/prepare-firebase-env.js` (prepares `backend/.env`).
-2. Install backend dependencies.
-3. Build the React frontend.
-4. Deploy the `api` Cloud Function and the Hosting site.
 
-After it finishes, the live site at https://nexamart-28c93.web.app will show real products, login, cart, etc.
+This builds the React app and uploads it to Firebase Hosting. When it finishes you will see:
+```
+Hosting URL: https://nexamart-28c93.web.app
+```
 
-> Note: the seeded demo data lives in your MongoDB Atlas database. Make sure your `.env` `MONGO_URI` points to it and you have run `npm run seed` at least once.
+---
 
-### Alternative — host the backend on Render (free, no Blaze)
-If you prefer not to upgrade to Blaze, host the API on a free service:
-1. Push this repo to GitHub.
-2. Create a new **Web Service** on [Render](https://render.com) — it auto-detects `render.yaml`.
-3. Add your secrets in the Render dashboard (`MONGO_URI`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, etc.).
-4. Set `CLIENT_URL=https://nexamart-28c93.web.app`.
-5. Update `frontend/.env.production` with your Render URL:
-   ```
-   VITE_API_URL=https://YOUR-RENDER-URL.onrender.com/api
-   ```
-6. Remove the `/api/**` function rewrite from `firebase.json` (keep only the `**` → `/index.html` rewrite), then redeploy hosting:
-   ```bash
-   npm run deploy:hosting
-   ```
+### Command cheat sheet
+
+Run all from the **project root**:
+
+| Command | What it does |
+|---------|--------------|
+| `npm run dev` | Run backend + frontend locally. |
+| `npm run seed` | Fill MongoDB with demo products + accounts. |
+| `npm run build` | Build the frontend for production. |
+| `git add -A && git commit -m "msg" && git push` | Push updates to GitHub (Render auto-redeploys). |
+| `firebase login` | Log in to Firebase. |
+| `firebase use nexamart-28c93` | Select the Firebase project. |
+| `npm run deploy:hosting` | Build + deploy the frontend to Firebase. |
+| `firebase deploy --only hosting` | Same as above (direct CLI form). |
+| `firebase open hosting:site` | Open the live site. |
+
+### Redeploy after making changes
+
+| You changed... | Do this |
+|----------------|---------|
+| **Backend** (`backend/`) | `git push` → Render auto-redeploys. Or click **Manual Deploy → Deploy latest commit** in Render. |
+| **Frontend** (`frontend/`) | `npm run deploy:hosting` from the project root. |
+| **Both** | `git push`, then `npm run deploy:hosting`. |
+
+### Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| Site shows "Could not load store data" | Render server is asleep — wait 30–50s, click **Try again**. |
+| `Could not connect to ... MongoDB Atlas` in Render logs | Add `0.0.0.0/0` in Atlas → Network Access. |
+| Products load locally but not live | Check `frontend/.env.production` has the correct Render URL, then redeploy hosting. |
+| CORS error in browser console | Ensure `CLIENT_URL=https://nexamart-28c93.web.app` is set in Render env vars. |
+| Render deploy "Exited with status 1" | Check that `MONGO_URI`, `JWT_SECRET`, `JWT_REFRESH_SECRET` are set in Render env vars. |
+| `nexa-mart.onrender.com` shows "Not Found" | Normal — that is the API root. Use `/api/health` or open the Firebase site. |
 
 ---
 
