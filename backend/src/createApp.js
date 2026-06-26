@@ -17,6 +17,7 @@ import wishlistRoutes from "./routes/wishlistRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import couponRoutes from "./routes/couponRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 
@@ -67,7 +68,16 @@ export const createApp = () => {
   app.use(cookieParser());
 
   // Read JSON and form data from the request body (max size 10mb).
-  app.use(express.json({ limit: "10mb" }));
+  // We also keep the raw body around so the Razorpay webhook can verify
+  // its signature against the exact bytes that were sent.
+  app.use(
+    express.json({
+      limit: "10mb",
+      verify: (req, res, buf) => {
+        req.rawBody = buf;
+      },
+    })
+  );
   app.use(express.urlencoded({ extended: true }));
 
   // Remove any dangerous MongoDB operators from user input.
@@ -111,6 +121,7 @@ export const createApp = () => {
   app.use("/api/reviews", reviewRoutes);
   app.use("/api/orders", orderRoutes);
   app.use("/api/payment", paymentRoutes);
+  app.use("/api/coupons", couponRoutes);
   app.use("/api/admin/settings", settingsRoutes);
   app.use("/api/admin", adminRoutes);
 

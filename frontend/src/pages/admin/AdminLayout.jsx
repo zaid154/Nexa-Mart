@@ -7,6 +7,7 @@ const NAV = [
   { to: "/admin/orders", label: "Orders" },
   { to: "/admin/returns", label: "Returns" },
   { to: "/admin/users", label: "Users" },
+  { to: "/admin/coupons", label: "Coupons" },
   { to: "/admin/settings", label: "Settings" },
   { to: "/admin/logs", label: "Logs" },
 ];

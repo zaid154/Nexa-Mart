@@ -128,6 +128,11 @@ const orderSchema = new mongoose.Schema(
     },
 
     adminNotes: [adminNoteSchema],
+
+    // A one-time key sent by the browser when placing an order. If the same
+    // request is sent twice (double-click, network retry), we return the
+    // first order instead of creating a duplicate.
+    idempotencyKey: { type: String },
   },
   { timestamps: true }
 );
@@ -135,6 +140,13 @@ const orderSchema = new mongoose.Schema(
 // Indexes to make order lists load faster.
 orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.index({ status: 1, createdAt: -1 });
+
+// Make (user + idempotencyKey) unique, but only for orders that actually have
+// a key — so older orders without one are unaffected.
+orderSchema.index(
+  { user: 1, idempotencyKey: 1 },
+  { unique: true, partialFilterExpression: { idempotencyKey: { $type: "string" } } }
+);
 
 const Order = mongoose.model("Order", orderSchema);
 export default Order;

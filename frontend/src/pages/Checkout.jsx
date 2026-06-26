@@ -21,9 +21,6 @@ const emptyAddress = {
   country: "India",
 };
 
-// Coupon codes and the discount fraction each one gives.
-const COUPONS = { NEXA15: 0.15, WELCOME10: 0.1 };
-
 // Checkout page: collects the address, payment method, and places the order.
 const Checkout = () => {
   const { cart, loading, refresh } = useCart();
@@ -34,9 +31,21 @@ const Checkout = () => {
   const [address, setAddress] = useState({ ...emptyAddress, ...(user?.address || {}) });
   const [placing, setPlacing] = useState(false);
   const [coupon, setCoupon] = useState("");
-  const [discount, setDiscount] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [appliedCode, setAppliedCode] = useState("");
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [errors, setErrors] = useState({});
+
+  // A one-time key for this checkout session. If the order request is sent
+  // twice (double-click, retry), the server returns the same order instead
+  // of creating a duplicate.
+  const [idempotencyKey] = useState(() => {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    return `key-${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+  });
 
   if (loading) {
     return <SkeletonCart />;
@@ -53,23 +62,30 @@ const Checkout = () => {
     );
   }
 
-  // Check the typed coupon code and apply its discount if valid.
-  const applyCoupon = () => {
-    const code = coupon.trim().toUpperCase();
+  // Ask the server to validate the coupon and tell us the discount in rupees.
+  // The server checks expiry, minimum order, and usage limits against the
+  // real cart, so the discount cannot be faked from the browser.
+  const applyCoupon = async () => {
+    const code = coupon.trim();
     if (!code) {
       return;
     }
-    if (COUPONS[code]) {
-      setDiscount(COUPONS[code]);
-      toast.success(`Coupon ${code} applied (${COUPONS[code] * 100}% off)`);
-    } else {
-      setDiscount(0);
-      toast.error("Invalid coupon code");
+    setApplyingCoupon(true);
+    try {
+      const { data } = await api.post("/coupons/validate", { code });
+      setDiscountAmount(data.discount);
+      setAppliedCode(data.code);
+      toast.success(data.message || `Coupon ${data.code} applied`);
+    } catch (err) {
+      setDiscountAmount(0);
+      setAppliedCode("");
+      toast.error(err.message);
+    } finally {
+      setApplyingCoupon(false);
     }
   };
 
   // Work out all the price totals.
-  const discountAmount = Math.round(cart.subtotal * discount);
   const discountedSubtotal = cart.subtotal - discountAmount;
 
   let shipping = 99;
@@ -164,14 +180,15 @@ const Checkout = () => {
     setPlacing(true);
     try {
       let couponCode = "";
-      if (discount > 0) {
-        couponCode = coupon.trim().toUpperCase();
+      if (discountAmount > 0 && appliedCode) {
+        couponCode = appliedCode;
       }
 
       const { data } = await api.post("/orders", {
         shippingAddress: address,
         couponCode: couponCode,
         paymentMethod,
+        idempotencyKey,
       });
 
       if (paymentMethod === "cod") {
@@ -383,8 +400,13 @@ const Checkout = () => {
               onChange={(e) => setCoupon(e.target.value)}
               aria-label="Coupon code"
             />
-            <button type="button" className="btn btn-outline" onClick={applyCoupon}>
-              Apply
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={applyCoupon}
+              disabled={applyingCoupon}
+            >
+              {applyingCoupon ? "..." : "Apply"}
             </button>
           </div>
 
@@ -392,9 +414,9 @@ const Checkout = () => {
             <span className="muted">Subtotal</span>
             <span>{formatINR(cart.subtotal)}</span>
           </div>
-          {discount > 0 && (
+          {discountAmount > 0 && (
             <div className="summary-row">
-              <span className="muted">Discount ({discount * 100}%)</span>
+              <span className="muted">Discount{appliedCode ? ` (${appliedCode})` : ""}</span>
               <span className="text-success">−{formatINR(discountAmount)}</span>
             </div>
           )}

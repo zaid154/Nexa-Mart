@@ -48,6 +48,7 @@ const settingsSchema = new mongoose.Schema(
     api: {
       razorpayKeyId: { type: String, default: "" },
       razorpayKeySecret: { type: String, default: "", select: false },
+      razorpayWebhookSecret: { type: String, default: "", select: false },
     },
     social: {
       facebook: { type: String, default: "" },
@@ -64,7 +65,9 @@ const settingsSchema = new mongoose.Schema(
 // Get the single settings document. If it does not exist yet, create it.
 // We also select the hidden fields (smtp.pass and razorpayKeySecret).
 settingsSchema.statics.getSingleton = async function () {
-  let doc = await this.findOne().select("+smtp.pass +api.razorpayKeySecret");
+  let doc = await this.findOne().select(
+    "+smtp.pass +api.razorpayKeySecret +api.razorpayWebhookSecret"
+  );
   if (!doc) {
     doc = await this.create({});
   }

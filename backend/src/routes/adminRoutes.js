@@ -13,6 +13,7 @@ import {
   approveReturn,
   rejectReturn,
   updateRefund,
+  processRazorpayRefund,
   addOrderNote,
   bulkUpdateOrders,
   getReturnRequests,
@@ -43,6 +44,7 @@ router.put("/orders/:id/payment", updatePaymentStatus);
 router.put("/orders/:id/return/approve", approveReturn);
 router.put("/orders/:id/return/reject", rejectReturn);
 router.put("/orders/:id/refund", updateRefund);
+router.post("/orders/:id/refund/razorpay", processRazorpayRefund);
 router.post("/orders/:id/notes", addOrderNote);
 
 // Returns list.

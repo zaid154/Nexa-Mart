@@ -135,5 +135,10 @@ export const maskSettings = (settings) => {
     obj.api.razorpayKeySecret = "********";
   }
 
+  // Replace the Razorpay webhook secret with stars.
+  if (obj.api?.razorpayWebhookSecret) {
+    obj.api.razorpayWebhookSecret = "********";
+  }
+
   return obj;
 };

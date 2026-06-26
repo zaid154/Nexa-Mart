@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import Order from "../models/Order.js";
 import User from "../models/User.js";
 import { logActivity } from "../utils/logger.js";
+import { validateCoupon, recordCouponUse, releaseCouponUse } from "../utils/coupons.js";
 import {
   adjustStock,
   buildReturnImageUrls,
@@ -18,7 +19,6 @@ import {
 const SHIPPING_THRESHOLD = 5000; // free shipping above this amount
 const SHIPPING_FEE = 99;
 const TAX_RATE = 0.18; // 18% tax
-const COUPONS = { NEXA15: 0.15, WELCOME10: 0.1 }; // coupon code -> discount %
 
 // Convert an order into the shape the frontend expects,
 // adding full URLs for any return images.
@@ -46,12 +46,21 @@ const orderToView = (req, order) => {
 
 // POST /api/orders  - place a new order from the user's cart.
 export const createOrder = asyncHandler(async (req, res) => {
-  const { shippingAddress, couponCode, paymentMethod = "razorpay" } = req.body;
+  const { shippingAddress, couponCode, paymentMethod = "razorpay", idempotencyKey } = req.body;
 
   // Only two payment methods are allowed.
   if (!["razorpay", "cod"].includes(paymentMethod)) {
     res.status(400);
     throw new Error("Invalid payment method");
+  }
+
+  // If this exact request was already turned into an order, return that order
+  // instead of creating a duplicate (handles double-clicks and retries).
+  if (idempotencyKey) {
+    const existing = await Order.findOne({ user: req.user._id, idempotencyKey });
+    if (existing) {
+      return res.status(200).json({ order: orderToView(req, existing) });
+    }
   }
 
   // Load the user with their full cart product details.
@@ -92,10 +101,25 @@ export const createOrder = asyncHandler(async (req, res) => {
     itemsPrice += i.price * i.quantity;
   }
 
-  // Work out the coupon discount (if the code is valid).
-  const code = (couponCode || "").trim().toUpperCase();
-  const discountRate = COUPONS[code] || 0;
-  const discountPrice = Math.round(itemsPrice * discountRate);
+  // Work out the coupon discount. If a code was given, validate it strictly
+  // against the database (expiry, minimum order, usage limits) and reject the
+  // order with a clear message if it is no longer valid.
+  let discountPrice = 0;
+  let appliedCoupon = null;
+  if (couponCode && couponCode.trim()) {
+    try {
+      const result = await validateCoupon({
+        code: couponCode,
+        itemsPrice,
+        userId: req.user._id,
+      });
+      discountPrice = result.discount;
+      appliedCoupon = result.coupon;
+    } catch (err) {
+      res.status(400);
+      throw err;
+    }
+  }
   const discountedItems = itemsPrice - discountPrice;
 
   // Shipping is free above the threshold, otherwise a flat fee.
@@ -121,8 +145,8 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   // The coupon code is only stored if it actually gave a discount.
   let storedCoupon = "";
-  if (discountRate) {
-    storedCoupon = code;
+  if (appliedCoupon && discountPrice > 0) {
+    storedCoupon = appliedCoupon.code;
   }
 
   // The first tracking note depends on the payment method.
@@ -136,6 +160,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   // Use a transaction so the order and stock change happen together (for COD).
   const session = await mongoose.startSession();
   let order;
+  let isNew = false;
 
   try {
     await session.withTransaction(async () => {
@@ -153,6 +178,7 @@ export const createOrder = asyncHandler(async (req, res) => {
             totalPrice,
             paymentMethod,
             status: initialStatus,
+            idempotencyKey: idempotencyKey || undefined,
             trackingHistory: [
               {
                 status: initialStatus,
@@ -164,6 +190,7 @@ export const createOrder = asyncHandler(async (req, res) => {
         { session }
       );
       order = created[0];
+      isNew = true;
 
       // For COD, reduce stock and empty the cart immediately.
       if (isCod) {
@@ -172,19 +199,37 @@ export const createOrder = asyncHandler(async (req, res) => {
         await User.findByIdAndUpdate(req.user._id, { cart: [] }, { session });
       }
     });
+  } catch (err) {
+    // Two identical requests raced each other: return the order that won.
+    if (err.code === 11000 && idempotencyKey) {
+      order = await Order.findOne({ user: req.user._id, idempotencyKey });
+      if (!order) {
+        throw err;
+      }
+    } else {
+      throw err;
+    }
   } finally {
     session.endSession();
   }
 
-  await logActivity({
-    type: "order",
-    actor: req.user._id,
-    action: "order_created",
-    meta: { orderId: order._id, total: order.totalPrice },
-    ip: req.ip,
-  });
+  // Only record the coupon use and log the activity for a freshly created order,
+  // never for a duplicate request that returned an existing order.
+  if (isNew) {
+    if (appliedCoupon && discountPrice > 0) {
+      await recordCouponUse(appliedCoupon, req.user._id);
+    }
 
-  res.status(201).json({ order: orderToView(req, order) });
+    await logActivity({
+      type: "order",
+      actor: req.user._id,
+      action: "order_created",
+      meta: { orderId: order._id, total: order.totalPrice },
+      ip: req.ip,
+    });
+  }
+
+  res.status(isNew ? 201 : 200).json({ order: orderToView(req, order) });
 });
 
 // GET /api/orders/my  - list the logged-in user's orders.
@@ -241,6 +286,11 @@ export const cancelOrder = asyncHandler(async (req, res) => {
 
   // Put the stock back.
   await adjustStock(order, "restore");
+
+  // Give back the coupon use so the customer can use it on a future order.
+  if (order.couponCode) {
+    await releaseCouponUse(order.couponCode, order.user);
+  }
 
   // If the order was already paid, mark a refund as pending.
   if (order.isPaid) {

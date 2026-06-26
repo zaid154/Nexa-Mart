@@ -32,6 +32,7 @@ const AdminOrders = lazy(() => import("./pages/admin/AdminOrders.jsx"));
 const AdminOrderDetail = lazy(() => import("./pages/admin/AdminOrderDetail.jsx"));
 const AdminReturns = lazy(() => import("./pages/admin/AdminReturns.jsx"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.jsx"));
+const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons.jsx"));
 const Settings = lazy(() => import("./pages/admin/Settings.jsx"));
 const Logs = lazy(() => import("./pages/admin/Logs.jsx"));
 
@@ -141,6 +142,7 @@ export default function App() {
                 <Route path="orders/:id" element={<AdminOrderDetail />} />
                 <Route path="returns" element={<AdminReturns />} />
                 <Route path="users" element={<AdminUsers />} />
+                <Route path="coupons" element={<AdminCoupons />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="logs" element={<Logs />} />
               </Route>

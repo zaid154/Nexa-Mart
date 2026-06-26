@@ -16,6 +16,7 @@ import {
 } from "../utils/orderStatus.js";
 import { logActivity } from "../utils/logger.js";
 import { getPagination, paginatedResponse } from "../utils/paginate.js";
+import { createRefund } from "../config/razorpay.js";
 
 // Convert an order into the shape the frontend expects,
 // adding full URLs for any return images.
@@ -487,6 +488,106 @@ export const updateRefund = asyncHandler(async (req, res) => {
 
   await order.save();
   res.json({ order: orderToView(req, order) });
+});
+
+// POST /api/admin/orders/:id/refund/razorpay  - issue a real refund through Razorpay.
+// This actually moves money back to the customer (for online-paid orders).
+export const processRazorpayRefund = asyncHandler(async (req, res) => {
+  const { amount, reason } = req.body;
+
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    res.status(404);
+    throw new Error("Order not found");
+  }
+
+  // Only paid online orders can be refunded through Razorpay.
+  // (For Cash on Delivery, record the refund manually with the refund form.)
+  if (order.paymentMethod !== "razorpay" || !order.isPaid) {
+    res.status(400);
+    throw new Error("Only paid online (Razorpay) orders can be refunded this way");
+  }
+
+  const paymentId = order.paymentResult?.razorpayPaymentId;
+  if (!paymentId) {
+    res.status(400);
+    throw new Error("No Razorpay payment id found on this order");
+  }
+
+  // Do not allow refunding twice.
+  if (order.refund?.status === "completed" || order.refund?.status === "processing") {
+    res.status(400);
+    throw new Error("A refund has already been issued for this order");
+  }
+
+  // Default to a full refund, but allow a smaller (partial) amount.
+  let refundAmount = order.totalPrice;
+  if (amount !== undefined && amount !== null && amount !== "") {
+    refundAmount = Number(amount);
+  }
+  if (refundAmount <= 0 || refundAmount > order.totalPrice) {
+    res.status(400);
+    throw new Error("Refund amount must be between 1 and the order total");
+  }
+
+  // Call Razorpay to actually create the refund.
+  let rzpRefund;
+  try {
+    rzpRefund = await createRefund(paymentId, Math.round(refundAmount * 100), {
+      appOrderId: order._id.toString(),
+      reason: reason || "Refund issued by admin",
+    });
+  } catch (err) {
+    res.status(402);
+    throw new Error(err?.error?.description || err.message || "Razorpay refund failed");
+  }
+
+  // Map Razorpay's refund status to our own status values.
+  let internalStatus = "processing";
+  if (rzpRefund.status === "processed") {
+    internalStatus = "completed";
+  } else if (rzpRefund.status === "failed") {
+    internalStatus = "failed";
+  }
+
+  // Merge into the existing refund object.
+  let current;
+  if (order.refund?.toObject) {
+    current = order.refund.toObject();
+  } else if (order.refund) {
+    current = { ...order.refund };
+  } else {
+    current = {};
+  }
+
+  order.refund = {
+    ...current,
+    status: internalStatus,
+    amount: refundAmount,
+    reason: reason || current.reason || "Refund issued by admin",
+    transactionId: rzpRefund.id,
+    initiatedAt: current.initiatedAt || new Date(),
+  };
+  if (internalStatus === "completed") {
+    order.refund.completedAt = new Date();
+  }
+
+  order.trackingHistory.push({
+    status: order.status,
+    note: `Razorpay refund ${internalStatus} (${rzpRefund.id})`,
+  });
+
+  await order.save();
+
+  await logActivity({
+    type: "admin_action",
+    actor: req.user._id,
+    action: "refund_processed",
+    meta: { orderId: order._id, amount: refundAmount, refundId: rzpRefund.id },
+    ip: req.ip,
+  });
+
+  res.json({ order: orderToView(req, order), refundId: rzpRefund.id });
 });
 
 // POST /api/admin/orders/:id/notes  - add a private admin note to an order.

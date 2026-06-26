@@ -62,13 +62,16 @@ export const updateSettings = asyncHandler(async (req, res) => {
     Object.assign(settings.security, security);
   }
 
-  // Update API keys (again, ignore the masked secret).
+  // Update API keys (again, ignore the masked secrets).
   if (api) {
     if (api.razorpayKeyId !== undefined) {
       settings.api.razorpayKeyId = api.razorpayKeyId;
     }
     if (api.razorpayKeySecret && api.razorpayKeySecret !== "********") {
       settings.api.razorpayKeySecret = api.razorpayKeySecret;
+    }
+    if (api.razorpayWebhookSecret && api.razorpayWebhookSecret !== "********") {
+      settings.api.razorpayWebhookSecret = api.razorpayWebhookSecret;
     }
   }
 

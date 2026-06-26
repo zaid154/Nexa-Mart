@@ -215,7 +215,17 @@ const Settings = () => {
                 <label>Razorpay Key Secret</label>
                 <input className="input" type="password" value={settings.api.razorpayKeySecret || ""} placeholder="********" onChange={(e) => update("api", "razorpayKeySecret", e.target.value)} />
               </div>
+              <div className="field">
+                <label>Razorpay Webhook Secret</label>
+                <input className="input" type="password" value={settings.api.razorpayWebhookSecret || ""} placeholder="********" onChange={(e) => update("api", "razorpayWebhookSecret", e.target.value)} />
+              </div>
             </div>
+            <p className="muted mt-2 font-sm">
+              In the Razorpay dashboard, add a webhook pointing to{" "}
+              <code>/api/payment/webhook</code> with the same secret, and subscribe to
+              <code> payment.captured</code>, <code>order.paid</code>,
+              <code> refund.processed</code> and <code>refund.failed</code>.
+            </p>
           </>
         )}
 

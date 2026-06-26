@@ -5,6 +5,32 @@ import User from "../models/User.js";
 import Product from "../models/Product.js";
 import Review from "../models/Review.js";
 import Order from "../models/Order.js";
+import Coupon from "../models/Coupon.js";
+
+// The discount coupons created during seeding. Admins can edit these
+// or add more from Admin -> Coupons.
+const coupons = [
+  {
+    code: "NEXA15",
+    description: "15% off your order",
+    type: "percent",
+    value: 15,
+    minOrderAmount: 0,
+    maxDiscount: 0,
+    perUserLimit: null,
+    isActive: true,
+  },
+  {
+    code: "WELCOME10",
+    description: "10% off for new customers",
+    type: "percent",
+    value: 10,
+    minOrderAmount: 0,
+    maxDiscount: 0,
+    perUserLimit: 1,
+    isActive: true,
+  },
+];
 
 // Make text safe to put inside an SVG/XML string.
 const escapeXml = (s) => {
@@ -858,6 +884,7 @@ export const seedDatabase = async ({ clear = true } = {}) => {
     await Product.deleteMany({});
     await Review.deleteMany({});
     await Order.deleteMany({});
+    await Coupon.deleteMany({});
   }
 
   // Step 2: create one admin and one normal demo user.
@@ -900,6 +927,12 @@ export const seedDatabase = async ({ clear = true } = {}) => {
       isActive: true,
       images: [{ url: imageUrl }],
     });
+  }
+
+  // Step 4: create the demo discount coupons.
+  console.log("Creating coupons...");
+  for (const c of coupons) {
+    await Coupon.create(c);
   }
 
   // Count how many products were marked as featured (for the summary log).

@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import api from "../../api/client.js";
 import Loader from "../../components/Loader.jsx";
 import { useToast } from "../../context/ToastContext.jsx";
+import { useConfirm } from "../../context/ConfirmContext.jsx";
 import {
   formatINR,
   formatDateTime,
@@ -21,9 +22,11 @@ const REFUND_STATUSES = ["none", "pending", "initiated", "processing", "complete
 const AdminOrderDetail = () => {
   const { id } = useParams();
   const toast = useToast();
+  const confirm = useConfirm();
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refunding, setRefunding] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [statusNote, setStatusNote] = useState("");
   const [adminNote, setAdminNote] = useState("");
@@ -119,7 +122,7 @@ const AdminOrderDetail = () => {
     }
   };
 
-  // Save the refund details.
+  // Save the refund details (manual record — used for COD / bank transfers).
   const saveRefund = async () => {
     try {
       await api.put(`/admin/orders/${order._id}/refund`, refundForm);
@@ -129,6 +132,38 @@ const AdminOrderDetail = () => {
       toast.error(err.message);
     }
   };
+
+  // Issue a REAL refund through Razorpay (moves money back to the customer).
+  const refundViaRazorpay = async () => {
+    const amount = refundForm.amount || order.totalPrice;
+    const ok = await confirm({
+      title: "Refund via Razorpay?",
+      message: `This will send ${formatINR(amount)} back to the customer's original payment method. This cannot be undone.`,
+      confirmLabel: "Refund now",
+    });
+    if (!ok) {
+      return;
+    }
+    setRefunding(true);
+    try {
+      await api.post(`/admin/orders/${order._id}/refund/razorpay`, {
+        amount,
+        reason: refundForm.reason,
+      });
+      toast.success("Refund issued via Razorpay");
+      load();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setRefunding(false);
+    }
+  };
+
+  // The auto-refund button only applies to paid online orders not already refunded.
+  const canAutoRefund =
+    order.paymentMethod === "razorpay" &&
+    order.isPaid &&
+    !["completed", "processing"].includes(order.refund?.status);
 
   // Add an internal admin note to the order.
   const addNote = async () => {
@@ -327,6 +362,19 @@ const AdminOrderDetail = () => {
                 {refundStatusLabel(order.refund.status)}
               </span>
             )}
+
+            {canAutoRefund && (
+              <div className="mb-4">
+                <button className="btn btn-block" onClick={refundViaRazorpay} disabled={refunding}>
+                  {refunding ? "Processing refund..." : "Refund via Razorpay (auto)"}
+                </button>
+                <p className="muted font-xs mt-2">
+                  Sends the money back through Razorpay automatically. Use the manual form below
+                  only for Cash on Delivery or bank-transfer refunds.
+                </p>
+              </div>
+            )}
+
             <div className="field">
               <label>Status</label>
               <select
