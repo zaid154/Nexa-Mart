@@ -472,9 +472,9 @@ const ProductDetail = () => {
                 {Object.entries(attributes)
                   .filter(([key]) => !variantKeys.includes(key))
                   .map(([key, value]) => (
-                    <div key={key} className="flex gap-4 text-sm">
-                      <span className="w-24 shrink-0 text-ink-400">{key}</span>
-                      <span className="font-medium text-ink-900">{value}</span>
+                    <div key={key} className="flex gap-3 text-sm">
+                      <span className="w-20 sm:w-24 shrink-0 text-ink-400">{key}</span>
+                      <span className="font-medium text-ink-900 break-words min-w-0 flex-1">{value}</span>
                     </div>
                   ))}
               </div>
@@ -484,8 +484,8 @@ const ProductDetail = () => {
                 row steps aside for the cart-bound stepper under the buttons,
                 so there are never two numbers on screen disagreeing. */}
             {!inCart && (
-              <div className="flex items-center gap-4 text-sm">
-                <span className="w-24 shrink-0 text-ink-400">Quantity</span>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="w-20 sm:w-24 shrink-0 text-ink-400">Quantity</span>
                 <QuantityStepper
                   value={qty}
                   min={1}
@@ -497,18 +497,18 @@ const ProductDetail = () => {
             )}
 
             {/* Delivery pincode */}
-            <div className="flex items-start gap-4 text-sm">
-              <span className="w-24 shrink-0 pt-1.5 text-ink-400">Delivery</span>
-              <div className="min-w-0">
-                <form onSubmit={handleCheckPincode} className="flex items-center gap-1 border-b-2 border-accent-500 pb-1">
+            <div className="flex items-start gap-3 text-sm">
+              <span className="w-20 sm:w-24 shrink-0 pt-1.5 text-ink-400">Delivery</span>
+              <div className="min-w-0 flex-1">
+                <form onSubmit={handleCheckPincode} className="flex max-w-full items-center gap-1 border-b-2 border-accent-500 pb-1">
                   <IconMapPin size={15} className="shrink-0 text-accent-500" />
                   <input
                     type="text"
-                    placeholder="Enter delivery pincode"
+                    placeholder="Enter pincode"
                     value={pincode}
                     maxLength={6}
                     onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
-                    className="w-40 border-0 bg-transparent px-1 text-sm font-medium text-ink-900 placeholder:font-normal placeholder:text-ink-400 focus:outline-none"
+                    className="w-28 sm:w-40 min-w-0 border-0 bg-transparent px-1 text-sm font-medium text-ink-900 placeholder:font-normal placeholder:text-ink-400 focus:outline-none"
                   />
                   <button type="submit" className="shrink-0 text-sm font-semibold text-accent-500 hover:underline">
                     Check
@@ -530,8 +530,8 @@ const ProductDetail = () => {
 
             {/* Seller */}
             {commerce.sellerName && (
-              <div className="flex items-start gap-4 text-sm">
-                <span className="w-24 shrink-0 text-ink-400">Seller</span>
+              <div className="flex items-start gap-3 text-sm">
+                <span className="w-20 sm:w-24 shrink-0 text-ink-400">Seller</span>
                 <div>
                   <p className="font-semibold text-accent-500">
                     {commerce.sellerName}{" "}
@@ -616,7 +616,7 @@ const ProductDetail = () => {
                 ([key, value]) => (
                   <div key={key} className="flex px-4 py-2.5 text-xs sm:text-sm">
                     <span className="w-1/3 text-ink-500">{key}</span>
-                    <span className="w-2/3 text-ink-900">{value}</span>
+                    <span className="w-2/3 text-ink-900 break-words">{value}</span>
                   </div>
                 )
               )}
@@ -730,6 +730,40 @@ const ProductDetail = () => {
           </div>
         </div>
       )}
+
+      {/* Sticky Mobile Action Bar */}
+      <div className="sticky bottom-0 z-30 -mx-4 mt-4 flex items-center gap-3 border-t border-ink-200 bg-white px-4 py-3 shadow-deep md:hidden">
+        <div className="min-w-0 flex-1">
+          <p className="text-2xs uppercase tracking-wide text-ink-400">Price</p>
+          <p className="text-base font-bold text-ink-900">{formatINR(price)}</p>
+        </div>
+        {inCart ? (
+          <button
+            type="button"
+            onClick={() => navigate("/cart")}
+            className="btn btn-cart flex-1 py-2.5 text-xs"
+          >
+            <IconCart size={15} /> Go to Cart
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={outOfStock}
+            className="btn btn-cart flex-1 py-2.5 text-xs"
+          >
+            <IconCart size={15} /> Add to Cart
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={handleBuyNow}
+          disabled={outOfStock}
+          className="btn btn-buy flex-1 py-2.5 text-xs"
+        >
+          <IconZap size={15} /> Buy Now
+        </button>
+      </div>
     </div>
   );
 };

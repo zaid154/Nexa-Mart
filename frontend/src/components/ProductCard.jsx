@@ -89,7 +89,7 @@ const ProductCard = ({ product }) => {
   }
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-sm bg-white transition-shadow duration-200 hover:shadow-pop">
+    <div className="group relative flex flex-col overflow-hidden rounded-md sm:rounded-lg bg-white border border-ink-100/80 transition-all duration-200 hover:shadow-pop active:scale-[0.99]">
       <Link to={`/products/${product._id}`} className="absolute inset-0 z-10">
         <span className="sr-only">{product.name}</span>
       </Link>
@@ -107,53 +107,53 @@ const ProductCard = ({ product }) => {
           loading="lazy"
           decoding="async"
           onError={onProductImageError}
-          className={`h-full w-full object-contain p-4 transition-transform duration-300 group-hover:scale-[1.04] ${
+          className={`h-full w-full object-contain p-2.5 sm:p-4 transition-transform duration-300 group-hover:scale-[1.04] ${
             outOfStock ? "opacity-50" : ""
           }`}
         />
         {outOfStock && (
           <span className="absolute inset-0 z-[5] grid place-items-center">
-            <span className="rounded-sm bg-ink-900/85 px-3 py-1 text-2xs font-bold uppercase tracking-wider text-white">
+            <span className="rounded-sm bg-ink-900/85 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
               Out of stock
             </span>
           </span>
         )}
         <button
           type="button"
-          className={`pointer-events-auto absolute right-2.5 top-2.5 z-20 grid h-8 w-8 place-items-center rounded-full bg-white/95 shadow-sm transition-colors hover:text-danger ${
+          className={`pointer-events-auto absolute right-2 top-2 z-20 grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-full bg-white/95 shadow-xs transition-colors hover:text-danger ${
             isWished ? "text-danger" : "text-ink-300"
           }`}
           onClick={handleWishlist}
           title={wishlistTitle}
           aria-label={wishlistTitle}
         >
-          <IconHeart size={16} filled={isWished} />
+          <IconHeart size={15} filled={isWished} />
         </button>
       </div>
 
-      <div className="pointer-events-none flex flex-1 flex-col gap-1.5 px-4 pb-4 pt-1">
-        <span className="line-clamp-2 min-h-[38px] text-sm font-medium leading-snug text-ink-900">
+      <div className="pointer-events-none flex flex-1 flex-col gap-1 px-2.5 sm:px-4 pb-3 sm:pb-4 pt-1">
+        <span className="line-clamp-2 min-h-[32px] sm:min-h-[38px] text-xs sm:text-sm font-medium leading-snug text-ink-900">
           {product.name}
         </span>
-        <span className="text-xs text-ink-400">{product.brand}</span>
-        <div className="flex items-center gap-2">
+        <span className="text-[11px] sm:text-xs text-ink-400">{product.brand}</span>
+        <div className="flex items-center gap-1.5">
           <Rating value={product.rating} count={product.numReviews} />
           {product.rating >= 4 && (
-            <span className="text-2xs font-bold uppercase tracking-wide text-accent-500">
+            <span className="text-[9px] sm:text-2xs font-bold uppercase tracking-wide text-accent-500">
               Assured
             </span>
           )}
         </div>
-        <div className="price-row mt-0.5">
-          <span className="text-lg font-bold text-ink-900">{formatINR(product.price)}</span>
+        <div className="price-row mt-0.5 gap-1.5">
+          <span className="text-sm sm:text-lg font-bold text-ink-900">{formatINR(product.price)}</span>
           {discount > 0 && (
             <>
-              <span className="price-mrp">{formatINR(product.mrp)}</span>
-              <span className="price-off">{discount}% off</span>
+              <span className="price-mrp text-[10px] sm:text-xs">{formatINR(product.mrp)}</span>
+              <span className="price-off text-[10px] sm:text-xs">{discount}% off</span>
             </>
           )}
         </div>
-        <span className="text-xs font-medium text-success">Free delivery</span>
+        <span className="text-[11px] sm:text-xs font-medium text-success">Free delivery</span>
 
         {/* The tile body is pointer-events-none under a full-bleed link, so the
             cart control has to opt back in and sit above it. */}

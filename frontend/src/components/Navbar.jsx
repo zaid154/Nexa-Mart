@@ -72,9 +72,9 @@ const Navbar = () => {
     <>
       <header className="sticky top-0 z-50 bg-accent-500 shadow-md">
         {/* Top Header Bar */}
-        <div className="mx-auto flex h-[64px] max-w-[1280px] items-center gap-4 px-3 sm:px-6">
+        <div className="mx-auto flex h-[64px] max-w-[1280px] items-center gap-2 sm:gap-4 px-2 sm:px-6">
           {/* Logo & Travel Tab Pill */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Logo variant="light" />
 
             {/* Top Offers Pill */}

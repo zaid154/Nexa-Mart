@@ -10,49 +10,49 @@ const DEFAULT_PAGES = [
     slug: "about",
     title: "About Us",
     content:
-      "<h2>About NexaMart</h2><p>NexaMart is your destination for premium electronics — genuine products, secure payments and fast delivery across India. We curate the latest smartphones, laptops, audio gear and accessories from the brands you trust.</p><p>Edit this content from Admin → Pages.</p>",
+      "<h2>About NexaMart</h2><p>NexaMart is a full-stack e-commerce portfolio project built using the <strong>MERN stack</strong> (MongoDB, Express.js, React and Node.js). It demonstrates a production-grade online electronics store with features like user authentication, product catalogue with variants, cart & checkout, Razorpay payment integration, order tracking, admin dashboard and much more.</p><p>This project was designed and developed by <strong>Mohd Zaid</strong> to showcase full-stack development skills.</p>",
   },
   {
     slug: "contact",
     title: "Contact Us",
     content:
-      "<h2>Get in touch</h2><p>Have a question about an order or a product? We’re happy to help.</p><ul><li>Email: support@nexamart.com</li><li>Hours: Mon–Sat, 9am–7pm IST</li></ul><p>Edit this content from Admin → Pages.</p>",
+      "<h2>Get in Touch</h2><p>Have a question or feedback about this project? Feel free to reach out.</p><ul><li><strong>Email:</strong> trendykart.app@gmail.com</li><li><strong>GitHub:</strong> <a href='https://github.com/zaid154' target='_blank'>github.com/zaid154</a></li><li><strong>LinkedIn:</strong> <a href='https://www.linkedin.com/in/mohd-zaid-794090231/' target='_blank'>Mohd Zaid</a></li></ul>",
   },
   {
     slug: "privacy",
     title: "Privacy Policy",
     content:
-      "<h2>Privacy Policy</h2><p>We respect your privacy and only use your information to process orders and improve your experience. We never sell your personal data.</p><p>Edit this content from Admin → Pages.</p>",
+      "<h2>Privacy Policy</h2><p>NexaMart is a portfolio/demo project. No real transactions take place on this website.</p><p>Any data you enter (name, email, address) is stored solely for demonstration purposes and is never shared with or sold to any third party. You can request deletion of your data at any time by contacting us.</p>",
   },
   {
     slug: "terms",
     title: "Terms of Service",
     content:
-      "<h2>Terms of Service</h2><p>By using NexaMart you agree to our terms. Prices and availability are subject to change. Please review before placing an order.</p><p>Edit this content from Admin → Pages.</p>",
+      "<h2>Terms of Service</h2><p>By using NexaMart you acknowledge that this is a <strong>portfolio/demo project</strong> built for educational and interview demonstration purposes. No real products are sold and no real payments are processed.</p><p>All product names, images and brands shown are used for demonstration purposes only and belong to their respective owners.</p>",
   },
   {
     slug: "shipping",
     title: "Shipping Policy",
     content:
-      "<h2>Shipping Policy</h2><p>Orders are dispatched within 24–48 hours and delivered in 3–5 business days. Free shipping on orders over ₹5,000.</p><p>Edit this content from Admin → Pages.</p>",
+      "<h2>Shipping Policy</h2><p>Since NexaMart is a demo project, no actual shipping takes place.</p><p>In a real-world scenario, orders would be dispatched within 24–48 hours and delivered in 3–5 business days. Free shipping would apply on orders above ₹5,000.</p>",
   },
   {
     slug: "returns",
-    title: "Returns &amp; Refunds",
+    title: "Returns & Refunds",
     content:
-      "<h2>Returns &amp; Refunds</h2><p>Not happy with your purchase? Return eligible items within 7 days for a full refund. Items must be unused and in original packaging.</p><p>Edit this content from Admin → Pages.</p>",
+      "<h2>Returns &amp; Refunds</h2><p>As this is a portfolio project, no real purchases or returns occur.</p><p>In a production environment, eligible items could be returned within 7 days of delivery for a full refund, provided they are unused and in original packaging.</p>",
   },
   {
     slug: "faq",
     title: "FAQ",
     content:
-      "<h2>Frequently Asked Questions</h2><p><strong>How do I track my order?</strong><br/>Go to My Orders and open any order to see its status.</p><p><strong>What payment methods do you accept?</strong><br/>UPI, cards, net banking (via Razorpay) and Cash on Delivery.</p><p>Edit this content from Admin → Pages.</p>",
+      "<h2>Frequently Asked Questions</h2><p><strong>Is this a real store?</strong><br/>No. NexaMart is a portfolio project built by Mohd Zaid to demonstrate full-stack MERN development skills.</p><p><strong>Can I place real orders?</strong><br/>You can go through the full checkout flow, but no real payments are charged and no products are shipped.</p><p><strong>What technologies are used?</strong><br/>React, Node.js, Express, MongoDB, Razorpay (test mode), Cloudinary, and Tailwind CSS.</p><p><strong>How do I contact the developer?</strong><br/>Email: trendykart.app@gmail.com or visit the <a href='/page/contact'>Contact Us</a> page.</p>",
   },
   {
     slug: "sell",
     title: "Sell on NexaMart",
     content:
-      "<h2>Sell on NexaMart</h2><p>NexaMart currently runs as a single-seller marketplace: every product is stocked, priced and dispatched by NexaMart Retail. A public seller onboarding flow is on the roadmap.</p><h3>What exists today</h3><p>Catalogue, pricing, stock and order fulfilment are managed through the <strong>Seller Hub</strong> — the admin console at <code>/admin</code>. From there a seller can add products with photos and variants, set prices and stock per configuration, move orders through the delivery pipeline, approve returns and issue refunds.</p><h3>Want to list your products?</h3><p>Write to <strong>support@nexamart.com</strong> with your brand, category and GST details and our category team will get back to you within two working days.</p><p>Edit this content from Admin → Pages.</p>",
+      "<h2>Sell on NexaMart</h2><p>NexaMart is a single-vendor e-commerce demo project. All products are managed through the admin dashboard.</p><p>This project showcases a complete seller workflow including product listing with variants, inventory management, order fulfilment pipeline, returns processing and analytics dashboard.</p><p>For any queries, contact: <strong>trendykart.app@gmail.com</strong></p>",
   },
 ];
 

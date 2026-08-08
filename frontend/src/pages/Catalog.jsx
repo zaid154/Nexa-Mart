@@ -227,6 +227,7 @@ const Catalog = () => {
   // Sidebar UI state: which sections are folded shut, and the brand search text.
   const [closedSections, setClosedSections] = useState([]);
   const [brandQuery, setBrandQuery] = useState("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Read the current filter values from the URL query string.
   const keyword = params.get("keyword") || "";
@@ -443,19 +444,50 @@ const Catalog = () => {
       </nav>
 
       <div className="grid items-start gap-4 lg:grid-cols-[260px_1fr]">
+        {/* Mobile Filter Drawer Overlay */}
+        {mobileFiltersOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-ink-900/50 backdrop-blur-xs lg:hidden"
+            onClick={() => setMobileFiltersOpen(false)}
+          />
+        )}
+
         {/* ── Filters sidebar ─────────────────────────── */}
-        <aside className="card overflow-hidden p-0 lg:sticky lg:top-24">
-          <div className="flex items-center justify-between gap-3 border-b border-ink-100 px-4 py-3.5">
-            <strong className="text-[15px] font-bold text-ink-900">Filters</strong>
-            {activeFilters.length > 0 && (
+        <aside
+          className={`card overflow-hidden p-0 transition-all ${
+            mobileFiltersOpen
+              ? "fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] rounded-none bg-white overflow-y-auto shadow-deep"
+              : "hidden lg:block lg:sticky lg:top-24"
+          }`}
+        >
+          <div className="flex items-center justify-between gap-3 border-b border-ink-100 px-4 py-3.5 bg-ink-50/50">
+            <div className="flex items-center gap-2">
+              <strong className="text-[15px] font-bold text-ink-900">Filters</strong>
+              {activeFilters.length > 0 && (
+                <span className="rounded-full bg-accent-500 px-2 py-0.5 text-2xs font-bold text-white">
+                  {activeFilters.length}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {activeFilters.length > 0 && (
+                <button
+                  type="button"
+                  className="text-xs font-bold uppercase tracking-wide text-accent-600 transition-colors hover:text-accent-700"
+                  onClick={clearAll}
+                >
+                  Clear All
+                </button>
+              )}
               <button
                 type="button"
-                className="text-xs font-bold uppercase tracking-wide text-accent-600 transition-colors hover:text-accent-700"
-                onClick={clearAll}
+                className="grid h-8 w-8 place-items-center rounded-md text-ink-500 hover:bg-ink-100 lg:hidden"
+                onClick={() => setMobileFiltersOpen(false)}
+                aria-label="Close filters"
               >
-                Clear All
+                <IconClose size={16} />
               </button>
-            )}
+            </div>
           </div>
 
           {activeFilters.length > 0 && (
@@ -554,40 +586,66 @@ const Catalog = () => {
               />
             </div>
           </FilterSection>
+
+          <div className="p-4 border-t border-ink-100 lg:hidden">
+            <button
+              type="button"
+              className="btn btn-cart w-full"
+              onClick={() => setMobileFiltersOpen(false)}
+            >
+              Apply Filters ({data.total})
+            </button>
+          </div>
         </aside>
 
         {/* ── Results ─────────────────────────────────── */}
         <div className="min-w-0">
           {/* Result heading */}
-          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h1 className="text-lg font-bold text-ink-900">
               {title}{" "}
               {data.total > 0 && (
                 <span className="text-sm font-normal text-ink-400">
-                  (Showing {rangeStart}–{rangeEnd} of {data.total} products)
+                  ({data.total})
                 </span>
               )}
             </h1>
+
+            {/* Mobile filter toggle button */}
+            <button
+              type="button"
+              onClick={() => setMobileFiltersOpen(true)}
+              className="flex items-center gap-2 rounded-sm border border-accent-500 bg-accent-50 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-accent-700 shadow-sm transition-colors hover:bg-accent-100 lg:hidden"
+            >
+              <span>Filters</span>
+              {activeFilters.length > 0 && (
+                <span className="grid h-4 w-4 place-items-center rounded-full bg-accent-500 text-[10px] font-bold text-white">
+                  {activeFilters.length}
+                </span>
+              )}
+            </button>
           </div>
 
           {/* Sort tabs bar */}
-          <div className="card mb-3 flex items-center gap-1 overflow-x-auto px-3 py-1.5">
-            <span className="mr-1 shrink-0 px-2 text-sm font-bold text-ink-700">Sort By</span>
-            {SORTS.map((s) => (
-              <button
-                key={s.key}
-                type="button"
-                onClick={() => update("sort", s.key)}
-                className={`shrink-0 border-b-2 px-3 py-2 text-sm transition-colors ${
-                  sort === s.key
-                    ? "border-accent-500 font-semibold text-accent-600"
-                    : "border-transparent font-medium text-ink-500 hover:text-ink-900"
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
-            <div className="ml-auto flex shrink-0 items-center rounded-lg border border-ink-200 p-0.5" role="group" aria-label="View mode">
+          <div className="card mb-3 flex items-center justify-between gap-2 px-3 py-1.5">
+            <div className="rail-scroll flex flex-1 items-center gap-1 overflow-x-auto min-w-0">
+              <span className="mr-1 shrink-0 text-xs sm:text-sm font-bold text-ink-700">Sort:</span>
+              {SORTS.map((s) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => update("sort", s.key)}
+                  className={`shrink-0 border-b-2 px-2.5 py-1.5 text-xs sm:text-sm transition-colors ${
+                    sort === s.key
+                      ? "border-accent-500 font-semibold text-accent-600"
+                      : "border-transparent font-medium text-ink-500 hover:text-ink-900"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex shrink-0 items-center rounded-lg border border-ink-200 p-0.5" role="group" aria-label="View mode">
               <button
                 type="button"
                 className={`grid h-7 w-7 place-items-center rounded-md transition-colors ${view === "grid" ? "bg-accent-500 text-white" : "text-ink-400 hover:text-ink-900"}`}

@@ -189,52 +189,56 @@ const Orders = () => {
                     <span className="sr-only">Order {order._id.slice(-8).toUpperCase()}</span>
                   </Link>
 
-                  <div className="pointer-events-none flex flex-wrap items-center gap-4">
-                    <img
-                      src={firstItem?.image || PRODUCT_IMAGE_PLACEHOLDER}
-                      alt={firstItem?.name || "Order item"}
-                      className="h-[72px] w-[72px] shrink-0 bg-white object-contain"
-                      loading="lazy"
-                      onError={onProductImageError}
-                    />
+                  <div className="pointer-events-none flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <img
+                        src={firstItem?.image || PRODUCT_IMAGE_PLACEHOLDER}
+                        alt={firstItem?.name || "Order item"}
+                        className="h-14 w-14 sm:h-[72px] sm:w-[72px] shrink-0 bg-white object-contain"
+                        loading="lazy"
+                        onError={onProductImageError}
+                      />
 
-                    <div className="min-w-[180px] flex-1">
-                      <p className="line-clamp-1 text-sm font-medium text-ink-900">
-                        {firstItem?.name}
-                      </p>
-                      {extra > 0 && (
-                        <p className="mt-0.5 text-xs text-ink-400">
-                          + {extra} more item{extra > 1 ? "s" : ""}
+                      <div className="min-w-0 flex-1">
+                        <p className="line-clamp-1 text-sm font-medium text-ink-900">
+                          {firstItem?.name}
                         </p>
-                      )}
-                      <p className="mt-1 text-xs text-ink-400">
-                        Order #{order._id.slice(-8).toUpperCase()} · Placed{" "}
-                        {formatDate(order.createdAt)}
-                      </p>
-                    </div>
-
-                    <div className="min-w-[190px] shrink-0">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`h-2 w-2 shrink-0 rounded-full ${statusDotClass(order.status)}`}
-                          aria-hidden="true"
-                        />
-                        <span className={`badge ${statusBadgeClass(order.status)}`}>
-                          {statusLabel(order.status)}
-                        </span>
+                        {extra > 0 && (
+                          <p className="mt-0.5 text-xs text-ink-400">
+                            + {extra} more item{extra > 1 ? "s" : ""}
+                          </p>
+                        )}
+                        <p className="mt-1 text-xs text-ink-400">
+                          Order #{order._id.slice(-8).toUpperCase()} · Placed{" "}
+                          {formatDate(order.createdAt)}
+                        </p>
                       </div>
-                      <p className="mt-1.5 pl-4 text-xs text-ink-400">
-                        {delivered
-                          ? `Delivered on ${formatDate(order.deliveredAt || order.updatedAt)}`
-                          : order.isPaid
-                            ? "Payment received"
-                            : "Payment pending"}
-                      </p>
                     </div>
 
-                    <span className="w-24 shrink-0 text-right text-sm font-bold text-ink-900">
-                      {formatINR(order.totalPrice)}
-                    </span>
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ink-100 pt-2.5 sm:border-t-0 sm:pt-0 sm:min-w-[170px] shrink-0">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`h-2 w-2 shrink-0 rounded-full ${statusDotClass(order.status)}`}
+                            aria-hidden="true"
+                          />
+                          <span className={`badge ${statusBadgeClass(order.status)}`}>
+                            {statusLabel(order.status)}
+                          </span>
+                        </div>
+                        <p className="mt-1 pl-4 text-xs text-ink-400">
+                          {delivered
+                            ? `Delivered on ${formatDate(order.deliveredAt || order.updatedAt)}`
+                            : order.isPaid
+                              ? "Payment received"
+                              : "Payment pending"}
+                        </p>
+                      </div>
+
+                      <span className="shrink-0 text-sm font-bold text-ink-900">
+                        {formatINR(order.totalPrice)}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Above the overlay link, so it is a real destination. This

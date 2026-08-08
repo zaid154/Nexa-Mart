@@ -8,6 +8,8 @@ import CartDrawer from "./components/CartDrawer.jsx";
 import { ProtectedRoute, AdminRoute } from "./components/ProtectedRoute.jsx";
 import BackendWakingBanner from "./components/BackendWakingBanner.jsx";
 
+import MobileBottomNav from "./components/MobileBottomNav.jsx";
+
 // Lazy load pages so they load only when user visits them (faster first load)
 const Home = lazy(() => import("./pages/Home.jsx"));
 const Catalog = lazy(() => import("./pages/Catalog.jsx"));
@@ -63,6 +65,7 @@ export default function App() {
       <BackendWakingBanner />
       {!isAdminPage && <Navbar />}
       {!isAdminPage && <CartDrawer />}
+      {!isAdminPage && <MobileBottomNav />}
 
       <main className="flex flex-1 flex-col">
         <PageShell>

@@ -109,7 +109,7 @@ const SearchBar = ({ categories = [], className = "", onNavigate }) => {
           <IconSearch size={17} />
         </span>
         <input
-          className="h-11 w-full rounded-sm border-0 bg-white pl-10 pr-24 text-sm text-ink-900 placeholder:text-ink-400 shadow-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-copper-400"
+          className="h-10 sm:h-11 w-full rounded-sm border-0 bg-white pl-9 sm:pl-10 pr-11 sm:pr-24 text-xs sm:text-sm text-ink-900 placeholder:text-ink-400 shadow-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-copper-400"
           type="search"
           placeholder={settings.search.placeholder}
           value={term}
@@ -125,10 +125,11 @@ const SearchBar = ({ categories = [], className = "", onNavigate }) => {
         />
         <button
           type="submit"
-          className="absolute right-1.5 rounded-sm bg-accent-500 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition-colors hover:bg-accent-600"
+          className="absolute right-1 sm:right-1.5 rounded-sm bg-accent-500 px-2.5 sm:px-4 py-1 sm:py-1.5 text-xs font-semibold uppercase tracking-wide text-white transition-colors hover:bg-accent-600 flex items-center justify-center gap-1"
           aria-label="Submit search"
         >
-          Search
+          <span className="hidden sm:inline">Search</span>
+          <IconSearch size={14} className="sm:hidden" />
         </button>
       </form>
 

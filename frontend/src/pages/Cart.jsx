@@ -212,16 +212,16 @@ const Cart = () => {
               : 0;
 
             return (
-              <div key={`${product._id}-${variantId || "base"}`} className="flex gap-4 px-5 py-5">
+              <div key={`${product._id}-${variantId || "base"}`} className="flex gap-3 sm:gap-4 px-3 sm:px-5 py-4 sm:py-5">
                 {/* Image + quantity stepper */}
-                <div className="flex w-[112px] shrink-0 flex-col items-center gap-3">
+                <div className="flex w-20 sm:w-[112px] shrink-0 flex-col items-center gap-2 sm:gap-3">
                   <Link to={`/products/${product._id}`}>
                     <img
                       src={variantImage}
                       alt={product.name}
                       width="112"
                       height="112"
-                      className="h-[112px] w-[112px] bg-white object-contain"
+                      className="h-20 w-20 sm:h-[112px] sm:w-[112px] bg-white object-contain"
                       loading="lazy"
                       decoding="async"
                       onError={onProductImageError}
@@ -243,7 +243,7 @@ const Cart = () => {
                 {/* Details */}
                 <div className="min-w-0 flex-1">
                   <Link to={`/products/${product._id}`}>
-                    <h3 className="line-clamp-2 text-[15px] text-ink-900 hover:text-accent-500">
+                    <h3 className="line-clamp-2 text-xs sm:text-[15px] font-medium text-ink-900 hover:text-accent-500">
                       {product.name}
                     </h3>
                   </Link>
@@ -253,44 +253,44 @@ const Cart = () => {
                   {commerce.sellerName && (
                     <p className="mt-1 text-xs text-ink-400">
                       Seller: {commerce.sellerName}
-                      <span className="ml-2 font-semibold text-accent-500">Assured</span>
+                      <span className="ml-2 font-semibold text-accent-500 hidden sm:inline">Assured</span>
                     </p>
                   )}
 
-                  <div className="price-row mt-2">
-                    <span className="text-lg font-medium text-ink-900">
+                  <div className="price-row mt-1.5 sm:mt-2">
+                    <span className="text-base sm:text-lg font-medium text-ink-900">
                       {formatINR(item.lineTotal)}
                     </span>
                     {discount > 0 && (
                       <>
-                        <span className="price-mrp">{formatINR(lineMrp)}</span>
-                        <span className="price-off">{discount}% off</span>
+                        <span className="price-mrp text-xs sm:text-sm">{formatINR(lineMrp)}</span>
+                        <span className="price-off text-xs sm:text-sm">{discount}% off</span>
                       </>
                     )}
                   </div>
 
-                  <p className="mt-1.5 text-xs text-ink-500">
+                  <p className="mt-1 text-xs text-ink-500">
                     Delivery by <span className="font-semibold text-ink-800">{eta}</span> ·{" "}
                     <span className="text-success">Free</span>
                   </p>
 
                   {atStockLimit && (
-                    <p className="mt-1.5 text-xs font-medium text-warning">
+                    <p className="mt-1 text-xs font-medium text-warning">
                       Only {available} left in stock
                     </p>
                   )}
 
-                  <div className="mt-3 flex flex-wrap gap-6">
+                  <div className="mt-2.5 sm:mt-3 flex flex-wrap gap-4 sm:gap-6">
                     <button
                       type="button"
-                      className="text-sm font-bold uppercase tracking-wide text-ink-700 transition-colors hover:text-accent-500"
+                      className="text-xs sm:text-sm font-bold uppercase tracking-wide text-ink-700 transition-colors hover:text-accent-500"
                       onClick={() => saveForLater(product._id, variantId)}
                     >
                       Save for later
                     </button>
                     <button
                       type="button"
-                      className="text-sm font-bold uppercase tracking-wide text-ink-700 transition-colors hover:text-danger"
+                      className="text-xs sm:text-sm font-bold uppercase tracking-wide text-ink-700 transition-colors hover:text-danger"
                       onClick={() => remove(product._id, variantId)}
                     >
                       Remove
@@ -303,10 +303,10 @@ const Cart = () => {
         </div>
 
         {/* Sticky place-order bar */}
-        <div className="sticky bottom-0 flex justify-end border-t border-ink-100 bg-white px-5 py-3.5 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
+        <div className="sticky bottom-0 flex justify-end border-t border-ink-100 bg-white px-4 sm:px-5 py-3 sm:py-3.5 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
           <button
             type="button"
-            className="btn btn-buy min-w-[220px]"
+            className="btn btn-buy w-full sm:w-auto min-w-[200px]"
             onClick={() => navigate("/checkout", { state: { coupon: appliedCode } })}
           >
             Place Order

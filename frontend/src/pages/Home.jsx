@@ -24,24 +24,26 @@ const CategoryStrip = ({ tiles }) => {
     return null;
   }
   return (
-    <div className="rounded-sm bg-white p-2 shadow-card">
-      <div className="rail-scroll flex items-center justify-between gap-2 overflow-x-auto px-1 py-1">
-        {tiles.map((cat) => (
+    <div className="rounded-md sm:rounded-lg bg-white p-2.5 sm:p-3 shadow-card">
+      <div className="rail-scroll flex items-center justify-start sm:justify-between gap-3 sm:gap-4 overflow-x-auto px-1 py-1">
+        {tiles.map((cat, idx) => (
           <Link
             key={cat.name}
             to={cat.link || "/products"}
-            className="group flex min-w-[82px] shrink-0 flex-col items-center gap-1.5 rounded-sm px-2 py-1.5 transition-transform hover:-translate-y-0.5"
+            className="group flex min-w-[76px] sm:min-w-[88px] shrink-0 flex-col items-center gap-2 rounded-lg p-1.5 transition-all duration-200 active:scale-95"
           >
-            <span className="h-14 w-14 overflow-hidden rounded-full border border-ink-100 bg-ink-50">
+            <span className="grid h-14 w-14 sm:h-16 sm:w-16 place-items-center overflow-hidden rounded-full sm:rounded-2xl border border-ink-100/90 bg-ink-50/50 p-1.5 shadow-2xs transition-all duration-300 group-hover:border-accent-500 group-hover:bg-white group-hover:shadow-md group-hover:scale-105">
               <img
                 src={cat.image}
                 alt={cat.name}
-                loading="lazy"
+                loading={idx < 4 ? "eager" : "lazy"}
+                decoding="async"
+                fetchpriority={idx < 4 ? "high" : "low"}
                 onError={onProductImageError}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
               />
             </span>
-            <span className="whitespace-nowrap text-xs font-semibold text-ink-800 group-hover:text-accent-500">
+            <span className="whitespace-nowrap text-[11px] sm:text-xs font-semibold text-ink-800 transition-colors group-hover:text-accent-500">
               {cat.name}
             </span>
           </Link>
@@ -98,6 +100,8 @@ const HeroCarousel = ({ slides }) => {
                     src={slide.image}
                     alt=""
                     loading={idx === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    fetchpriority={idx === 0 ? "high" : "low"}
                     className="h-full w-full object-cover opacity-70 mix-blend-luminosity"
                   />
                   <span
@@ -110,22 +114,22 @@ const HeroCarousel = ({ slides }) => {
                 </span>
               )}
 
-              <div className="relative z-10 max-w-[62%] px-6 text-white sm:px-10">
+              <div className="relative z-10 max-w-[75%] sm:max-w-[62%] px-4 text-white sm:px-10">
                 {slide.badge && (
                   <span className="inline-block rounded-sm bg-yellow-400 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-ink-900 sm:text-[11px]">
                     {slide.badge}
                   </span>
                 )}
-                <h2 className="mt-2.5 text-xl font-bold leading-tight sm:text-3xl lg:text-4xl">
+                <h2 className="mt-1.5 sm:mt-2.5 text-base font-bold leading-tight line-clamp-2 sm:text-3xl sm:line-clamp-none lg:text-4xl">
                   {slide.title}
                 </h2>
                 {slide.price && (
-                  <p className="mt-1 text-lg font-bold text-yellow-300 sm:text-2xl">{slide.price}</p>
+                  <p className="mt-0.5 sm:mt-1 text-sm font-bold text-yellow-300 sm:text-2xl">{slide.price}</p>
                 )}
                 {slide.note && (
                   <p className="mt-1 hidden text-xs text-white/85 sm:block">{slide.note}</p>
                 )}
-                <span className="mt-3.5 inline-flex items-center gap-1 rounded-sm bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-ink-900 shadow-sm sm:text-sm">
+                <span className="mt-2 sm:mt-3.5 inline-flex items-center gap-1 rounded-sm bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-ink-900 shadow-sm sm:px-4 sm:py-2 sm:text-sm">
                   Shop Now
                 </span>
               </div>

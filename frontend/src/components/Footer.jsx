@@ -147,13 +147,11 @@ const Footer = () => {
           </div>
 
           <div className="md:col-span-3 lg:col-span-1 lg:border-l lg:border-white/15 lg:pl-8">
-            <h4 className={colTitle}>Mail Us</h4>
+            <h4 className={colTitle}>Contact</h4>
             <p className="max-w-xs text-[13px] leading-relaxed text-white/70">
-              {brand} Retail Pvt Ltd,
+              {brand} — A Portfolio Project
               <br />
-              Tower B, Tech Park, Andheri East,
-              <br />
-              Mumbai, Maharashtra 400093, India
+              by Mohd Zaid
             </p>
             <a
               href={`mailto:${supportEmail}`}
@@ -168,11 +166,8 @@ const Footer = () => {
 
       {/* Bottom bar */}
       <div className="border-t border-white/15">
-        <div className="mx-auto flex w-full max-w-[1280px] flex-wrap items-center justify-between gap-4 px-4 py-4 text-[13px] sm:px-6">
-          <div className="flex flex-wrap items-center gap-5 text-white/90">
-            <Link to="/page/sell" className="hover:underline">
-              Become a Seller
-            </Link>
+        <div className="mx-auto flex w-full max-w-[1280px] flex-col sm:flex-row items-center justify-between gap-4 px-4 py-4 text-[13px] text-center sm:text-left sm:px-6">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6 text-white/90">
             <Link to="/products?featured=true" className="hover:underline">
               Advertise
             </Link>
@@ -180,6 +175,7 @@ const Footer = () => {
               Help Center
             </Link>
           </div>
+
           <div className="flex items-center gap-2">
             <PaymentGlyph label="UPI" />
             <PaymentGlyph label="Visa" />
@@ -187,39 +183,46 @@ const Footer = () => {
             <PaymentGlyph label="Rupay" />
             <PaymentGlyph label="COD" />
           </div>
-          <span className="text-white/70">
-            &copy; {currentYear} {brand}
-            <span className="ml-2">
-              · Portfolio Project by{" "}
+
+          <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-white/80">
+            <span>&copy; {currentYear} {brand}. Portfolio Project.</span>
+            <span className="hidden sm:inline text-white/40">|</span>
+            <span className="inline-flex flex-wrap items-center justify-center gap-1 text-white">
+              <span>Designed &amp; Developed with ❤️ by</span>
               <a
                 href="https://github.com/zaid154"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-white hover:underline"
+                className="font-bold text-yellow-300 hover:underline"
               >
                 Mohd Zaid
-              </a>{" "}
-              (
-              <a
-                href="https://github.com/zaid154"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/80 hover:underline"
-              >
-                GitHub
-              </a>{" "}
-              |{" "}
-              <a
-                href="https://www.linkedin.com/in/mohd-zaid-794090231/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/80 hover:underline"
-              >
-                LinkedIn
               </a>
-              )
+              <span className="text-white/60">
+                (
+                <a
+                  href="https://github.com/zaid154"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/90 hover:text-white hover:underline"
+                >
+                  GitHub
+                </a>
+                {" · "}
+                <a
+                  href="https://www.linkedin.com/in/mohd-zaid-794090231/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/90 hover:text-white hover:underline"
+                >
+                  LinkedIn
+                </a>
+                )
+              </span>
             </span>
-          </span>
+          </div>
+        </div>
+        <div className="bg-white/5 py-2 text-center text-2xs text-white/60">
+          This is a portfolio project built for interview & demonstration purposes only. Not a real store.
         </div>
       </div>
     </footer>

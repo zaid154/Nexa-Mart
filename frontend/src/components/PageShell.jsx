@@ -33,7 +33,7 @@ const PageShell = ({ children }) => {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1280px] flex-1 px-4 pb-20 pt-8 sm:px-6">
+    <div className="mx-auto w-full max-w-[1280px] flex-1 px-3 sm:px-6 pb-24 sm:pb-20 pt-4 sm:pt-8">
       {children}
     </div>
   );
