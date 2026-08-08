@@ -578,6 +578,19 @@ already means "we are handling it".
 
 ---
 
+## Security (OWASP Hardened)
+
+This application has been hardened against common web vulnerabilities (OWASP Top 10):
+- **Cross-Site Scripting (XSS)**: JWT access tokens are stored entirely in React memory (never in `localStorage`). All admin-authored CMS HTML is sanitized via `DOMPurify` before rendering.
+- **Cross-Site Request Forgery (CSRF) & Token Theft**: Refresh tokens are stored in HttpOnly, Secure, SameSite cookies.
+- **Injection Attacks**: Mongoose queries are protected against NoSQL injection via `express-mongo-sanitize`. All API inputs are strictly validated using `Zod` schemas before reaching the database.
+- **Security Misconfiguration**: Express uses `Helmet` with a strict Content Security Policy (`script-src 'none'`, `object-src 'none'`) and hides the `X-Powered-By` header.
+- **Brute Force & DDoS**: APIs are protected by `express-rate-limit` (strict limits on auth endpoints, standard limits globally).
+- **Broken Authentication**: Passwords are hashed with `bcryptjs` (salt 10 rounds). Protected routes are implemented for both authenticated users and admin-only access.
+- **Secrets Management**: No hardcoded credentials. All secrets are loaded via environment variables and validated at server boot.
+
+---
+
 ## Known scope
 
 Deliberate boundaries, so nothing here reads as an accidental gap:
