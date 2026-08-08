@@ -53,8 +53,34 @@ export const createApp = () => {
   // cheapest win available.
   app.use(compression());
 
-  // Helmet adds some safe HTTP headers to protect the app.
-  app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+  // Helmet adds safe HTTP headers to protect the app. Since this server
+  // only serves JSON (/api/*), the CSP is locked down to prevent any
+  // accidental HTML rendering from executing scripts.
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'none'"],
+          scriptSrc: ["'none'"],
+          styleSrc: ["'none'"],
+          imgSrc: ["'none'"],
+          connectSrc: ["'self'"],
+          frameSrc: ["'none'"],
+          objectSrc: ["'none'"],
+          baseUri: ["'none'"],
+          formAction: ["'self'"],
+        },
+      },
+      // Prevent MIME-type sniffing
+      // Already included by default, but being explicit
+      xContentTypeOptions: true,
+      // Disable X-Powered-By header (hides Express)
+      hidePoweredBy: true,
+      // Strict referrer policy
+      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    })
+  );
 
   // CORS decides which websites are allowed to talk to our API.
   app.use(

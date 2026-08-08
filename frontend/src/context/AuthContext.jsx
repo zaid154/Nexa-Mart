@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import api from "../api/client.js";
+import api, { setAccessToken, clearAccessToken } from "../api/client.js";
 
 // This context keeps track of the logged in user for the whole app.
 const AuthContext = createContext(null);
@@ -11,22 +11,22 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // When the app first loads, check if we already have a saved token.
+  // When the app first loads, try a silent refresh to restore the session
+  // from the HttpOnly refresh-token cookie. The access token is never
+  // persisted in localStorage — it lives only in memory.
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    // We have a token, so ask the server who this user is.
     api
-      .get("/auth/profile")
+      .post("/auth/refresh")
+      .then((res) => {
+        setAccessToken(res.data.token);
+        return api.get("/auth/profile");
+      })
       .then((res) => {
         setUser(res.data.user);
       })
       .catch(() => {
-        // Token is not valid anymore, so remove it.
-        localStorage.removeItem("token");
+        // No valid refresh cookie — user is not logged in.
+        clearAccessToken();
       })
       .finally(() => {
         setLoading(false);
@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
   // Log the user in with email and password.
   const login = async (email, password) => {
     const res = await api.post("/auth/login", { email: email, password: password });
-    localStorage.setItem("token", res.data.token);
+    setAccessToken(res.data.token);
     setUser(res.data.user);
     return res.data.user;
   };
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   // Verify the OTP code sent to the user's email.
   const verifyOtp = async (email, code) => {
     const res = await api.post("/auth/verify-otp", { email: email, code: code });
-    localStorage.setItem("token", res.data.token);
+    setAccessToken(res.data.token);
     setUser(res.data.user);
     return res.data.user;
   };
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
     } catch {
       // If the server call fails we still log out on our side.
     }
-    localStorage.removeItem("token");
+    clearAccessToken();
     setUser(null);
   };
 

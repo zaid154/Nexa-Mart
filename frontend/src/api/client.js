@@ -8,12 +8,20 @@ const api = axios.create({
   timeout: 20000,
 });
 
+// ── In-memory token storage (never touches localStorage) ─────────────
+// Storing the JWT in a module-level variable instead of localStorage
+// means JavaScript injected via an XSS hole cannot read it — the token
+// lives only in this closure and is never accessible from the DOM.
+let _accessToken = null;
+
+export const setAccessToken = (token) => { _accessToken = token; };
+export const getAccessToken = () => _accessToken;
+export const clearAccessToken = () => { _accessToken = null; };
+
 // Add token to every request if user is logged in
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    config.headers.Authorization = "Bearer " + token;
+  if (_accessToken) {
+    config.headers.Authorization = "Bearer " + _accessToken;
   }
 
   return config;
@@ -194,20 +202,20 @@ api.interceptors.response.use(
         const refreshResult = await refreshing;
         const newToken = refreshResult.data.token;
 
-        localStorage.setItem("token", newToken);
+        _accessToken = newToken;
         config.headers.Authorization = "Bearer " + newToken;
 
         return api(config);
       } catch (refreshError) {
-        localStorage.removeItem("token");
+        _accessToken = null;
       }
     }
 
-    // Remove token on any other 401 error
+    // Clear token on any other 401 error
     const isAuthUrl = config.url && config.url.includes("/auth/");
 
     if (is401 && !isAuthUrl) {
-      localStorage.removeItem("token");
+      _accessToken = null;
     }
 
     // Build error message for user
