@@ -1,0 +1,431 @@
+[
+  {
+    "product": "Apple iPhone 13 Pro",
+    "brand": "Apple",
+    "slug": "iphone-13-pro",
+    "folder": "color-graphite",
+    "signature": "Color=Graphite",
+    "attributes": {
+      "Color": "Graphite"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Apple iPhone X",
+    "brand": "Apple",
+    "slug": "iphone-x",
+    "folder": "color-silver",
+    "signature": "Color=Silver",
+    "attributes": {
+      "Color": "Silver"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Samsung Galaxy S10",
+    "brand": "Samsung",
+    "slug": "samsung-galaxy-s10",
+    "folder": "color-prism-black",
+    "signature": "Color=Prism Black",
+    "attributes": {
+      "Color": "Prism Black"
+    },
+    "candidates": []
+  },
+  {
+    "product": "Samsung Galaxy S10",
+    "brand": "Samsung",
+    "slug": "samsung-galaxy-s10",
+    "folder": "color-prism-blue",
+    "signature": "Color=Prism Blue",
+    "attributes": {
+      "Color": "Prism Blue"
+    },
+    "candidates": []
+  },
+  {
+    "product": "Samsung Galaxy S8",
+    "brand": "Samsung",
+    "slug": "samsung-galaxy-s8",
+    "folder": "color-orchid-grey",
+    "signature": "Color=Orchid Grey",
+    "attributes": {
+      "Color": "Orchid Grey"
+    },
+    "candidates": [
+      "c1.jpg"
+    ]
+  },
+  {
+    "product": "OPPO F19 Pro+ 5G",
+    "brand": "OPPO",
+    "slug": "oppo-f19-pro-plus",
+    "folder": "color-space-silver",
+    "signature": "Color=Space Silver",
+    "attributes": {
+      "Color": "Space Silver"
+    },
+    "candidates": []
+  },
+  {
+    "product": "OPPO K1",
+    "brand": "OPPO",
+    "slug": "oppo-k1",
+    "folder": "color-piano-black",
+    "signature": "Color=Piano Black",
+    "attributes": {
+      "Color": "Piano Black"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Realme XT",
+    "brand": "Realme",
+    "slug": "realme-xt",
+    "folder": "color-pearl-white",
+    "signature": "Color=Pearl White",
+    "attributes": {
+      "Color": "Pearl White"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Vivo X21",
+    "brand": "Vivo",
+    "slug": "vivo-x21",
+    "folder": "color-black",
+    "signature": "Color=Black",
+    "attributes": {
+      "Color": "Black"
+    },
+    "candidates": [
+      "c1.jpg"
+    ]
+  },
+  {
+    "product": "Huawei MateBook X Pro",
+    "brand": "Huawei",
+    "slug": "huawei-matebook-x-pro",
+    "folder": "color-ink-blue",
+    "signature": "Color=Ink Blue",
+    "attributes": {
+      "Color": "Ink Blue"
+    },
+    "candidates": []
+  },
+  {
+    "product": "Apple AirPods Max Silver",
+    "brand": "Apple",
+    "slug": "apple-airpods-max-silver",
+    "folder": "color-space-grey",
+    "signature": "Color=Space Grey",
+    "attributes": {
+      "Color": "Space Grey"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Apple AirPods Max Silver",
+    "brand": "Apple",
+    "slug": "apple-airpods-max-silver",
+    "folder": "color-sky-blue",
+    "signature": "Color=Sky Blue",
+    "attributes": {
+      "Color": "Sky Blue"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Apple AirPods Max Silver",
+    "brand": "Apple",
+    "slug": "apple-airpods-max-silver",
+    "folder": "color-green",
+    "signature": "Color=Green",
+    "attributes": {
+      "Color": "Green"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Beats Flex Wireless Earphones",
+    "brand": "Beats",
+    "slug": "beats-flex-wireless-earphones",
+    "folder": "color-yuzu-yellow",
+    "signature": "Color=Yuzu Yellow",
+    "attributes": {
+      "Color": "Yuzu Yellow"
+    },
+    "candidates": []
+  },
+  {
+    "product": "Beats Flex Wireless Earphones",
+    "brand": "Beats",
+    "slug": "beats-flex-wireless-earphones",
+    "folder": "color-flame-blue",
+    "signature": "Color=Flame Blue",
+    "attributes": {
+      "Color": "Flame Blue"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Apple HomePod Mini Cosmic Grey",
+    "brand": "Apple",
+    "slug": "apple-homepod-mini-cosmic-grey",
+    "folder": "color-white",
+    "signature": "Color=White",
+    "attributes": {
+      "Color": "White"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Apple HomePod Mini Cosmic Grey",
+    "brand": "Apple",
+    "slug": "apple-homepod-mini-cosmic-grey",
+    "folder": "color-blue",
+    "signature": "Color=Blue",
+    "attributes": {
+      "Color": "Blue"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Amazon Echo Plus (2nd Gen)",
+    "brand": "Amazon",
+    "slug": "amazon-echo-plus",
+    "folder": "color-sandstone",
+    "signature": "Color=Sandstone",
+    "attributes": {
+      "Color": "Sandstone"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Amazon Echo Plus (2nd Gen)",
+    "brand": "Amazon",
+    "slug": "amazon-echo-plus",
+    "folder": "color-heather-grey",
+    "signature": "Color=Heather Grey",
+    "attributes": {
+      "Color": "Heather Grey"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Rolex Submariner",
+    "brand": "Rolex",
+    "slug": "rolex-submariner-watch",
+    "folder": "dial-green",
+    "signature": "Dial=Green",
+    "attributes": {
+      "Dial": "Green"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Longines Master Collection",
+    "brand": "Longines",
+    "slug": "longines-master-collection",
+    "folder": "strap-stainless-steel",
+    "signature": "Strap=Stainless Steel",
+    "attributes": {
+      "Strap": "Stainless Steel"
+    },
+    "candidates": []
+  },
+  {
+    "product": "Brown Leather Belt Watch",
+    "brand": "Fossil",
+    "slug": "brown-leather-belt-watch",
+    "folder": "color-black",
+    "signature": "Color=Black",
+    "attributes": {
+      "Color": "Black"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Brown Leather Belt Watch",
+    "brand": "Fossil",
+    "slug": "brown-leather-belt-watch",
+    "folder": "color-tan",
+    "signature": "Color=Tan",
+    "attributes": {
+      "Color": "Tan"
+    },
+    "candidates": []
+  },
+  {
+    "product": "Apple MagSafe Battery Pack",
+    "brand": "Apple",
+    "slug": "apple-magsafe-battery-pack",
+    "folder": "bundle-with-20w-adapter_color-white",
+    "signature": "Bundle=With 20W Adapter&Color=White",
+    "attributes": {
+      "Bundle": "With 20W Adapter",
+      "Color": "White"
+    },
+    "candidates": []
+  },
+  {
+    "product": "Apple AirPower Wireless Charger",
+    "brand": "Apple",
+    "slug": "apple-airpower-wireless-charger",
+    "folder": "color-black",
+    "signature": "Color=Black",
+    "attributes": {
+      "Color": "Black"
+    },
+    "candidates": [
+      "c1.jpg",
+      "c2.jpg",
+      "c3.jpg",
+      "c4.jpg",
+      "c5.jpg",
+      "c6.jpg"
+    ]
+  },
+  {
+    "product": "Apple 20W USB-C Power Adapter",
+    "brand": "Apple",
+    "slug": "apple-iphone-charger",
+    "folder": "bundle-with-usb-c-to-lightning-cable",
+    "signature": "Bundle=With USB-C to Lightning cable",
+    "attributes": {
+      "Bundle": "With USB-C to Lightning cable"
+    },
+    "candidates": []
+  },
+  {
+    "product": "iPhone 12 Silicone Case with MagSafe — Plum",
+    "brand": "Apple",
+    "slug": "iphone-12-silicone-case-with-magsafe-plum",
+    "folder": "color-deep-navy",
+    "signature": "Color=Deep Navy",
+    "attributes": {
+      "Color": "Deep Navy"
+    },
+    "candidates": []
+  },
+  {
+    "product": "iPhone 12 Silicone Case with MagSafe — Plum",
+    "brand": "Apple",
+    "slug": "iphone-12-silicone-case-with-magsafe-plum",
+    "folder": "color-pink-citrus",
+    "signature": "Color=Pink Citrus",
+    "attributes": {
+      "Color": "Pink Citrus"
+    },
+    "candidates": []
+  },
+  {
+    "product": "Selfie Stick Monopod with Tripod",
+    "brand": "Digitek",
+    "slug": "selfie-stick-monopod",
+    "folder": "color-rose-gold",
+    "signature": "Color=Rose Gold",
+    "attributes": {
+      "Color": "Rose Gold"
+    },
+    "candidates": []
+  }
+]

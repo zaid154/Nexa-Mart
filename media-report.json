@@ -1,0 +1,878 @@
+{
+  "products": [
+    {
+      "name": "Apple iPhone 13 Pro",
+      "slug": "iphone-13-pro",
+      "category": "Smartphones",
+      "variantCount": 4,
+      "needed": [
+        "Color=Sierra Blue",
+        "Color=Graphite"
+      ],
+      "present": [
+        {
+          "signature": "Color=Sierra Blue",
+          "folder": "color-sierra-blue",
+          "files": 18
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Graphite",
+          "folder": "color-graphite",
+          "attributes": {
+            "Color": "Graphite"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Apple iPhone X",
+      "slug": "iphone-x",
+      "category": "Smartphones",
+      "variantCount": 3,
+      "needed": [
+        "Color=Space Grey",
+        "Color=Silver"
+      ],
+      "present": [
+        {
+          "signature": "Color=Space Grey",
+          "folder": "color-space-grey",
+          "files": 16
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Silver",
+          "folder": "color-silver",
+          "attributes": {
+            "Color": "Silver"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Samsung Galaxy S10",
+      "slug": "samsung-galaxy-s10",
+      "category": "Smartphones",
+      "variantCount": 4,
+      "needed": [
+        "Color=Prism White",
+        "Color=Prism Black",
+        "Color=Prism Blue"
+      ],
+      "present": [
+        {
+          "signature": "Color=Prism White",
+          "folder": "color-prism-white",
+          "files": 14
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Prism Black",
+          "folder": "color-prism-black",
+          "attributes": {
+            "Color": "Prism Black"
+          }
+        },
+        {
+          "signature": "Color=Prism Blue",
+          "folder": "color-prism-blue",
+          "attributes": {
+            "Color": "Prism Blue"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Samsung Galaxy S8",
+      "slug": "samsung-galaxy-s8",
+      "category": "Smartphones",
+      "variantCount": 3,
+      "needed": [
+        "Color=Midnight Black",
+        "Color=Orchid Grey"
+      ],
+      "present": [
+        {
+          "signature": "Color=Midnight Black",
+          "folder": "color-midnight-black",
+          "files": 14
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Orchid Grey",
+          "folder": "color-orchid-grey",
+          "attributes": {
+            "Color": "Orchid Grey"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "OPPO F19 Pro+ 5G",
+      "slug": "oppo-f19-pro-plus",
+      "category": "Smartphones",
+      "variantCount": 3,
+      "needed": [
+        "Color=Fluid Black",
+        "Color=Space Silver"
+      ],
+      "present": [
+        {
+          "signature": "Color=Fluid Black",
+          "folder": "color-fluid-black",
+          "files": 14
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Space Silver",
+          "folder": "color-space-silver",
+          "attributes": {
+            "Color": "Space Silver"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "OPPO K1",
+      "slug": "oppo-k1",
+      "category": "Smartphones",
+      "variantCount": 3,
+      "needed": [
+        "Color=Astral Blue",
+        "Color=Piano Black"
+      ],
+      "present": [
+        {
+          "signature": "Color=Astral Blue",
+          "folder": "color-astral-blue",
+          "files": 24
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Piano Black",
+          "folder": "color-piano-black",
+          "attributes": {
+            "Color": "Piano Black"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Realme XT",
+      "slug": "realme-xt",
+      "category": "Smartphones",
+      "variantCount": 3,
+      "needed": [
+        "Color=Pearl Blue",
+        "Color=Pearl White"
+      ],
+      "present": [
+        {
+          "signature": "Color=Pearl Blue",
+          "folder": "color-pearl-blue",
+          "files": 18
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Pearl White",
+          "folder": "color-pearl-white",
+          "attributes": {
+            "Color": "Pearl White"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Vivo X21",
+      "slug": "vivo-x21",
+      "category": "Smartphones",
+      "variantCount": 3,
+      "needed": [
+        "Color=Ruby Red",
+        "Color=Black"
+      ],
+      "present": [
+        {
+          "signature": "Color=Ruby Red",
+          "folder": "color-ruby-red",
+          "files": 18
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Black",
+          "folder": "color-black",
+          "attributes": {
+            "Color": "Black"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Apple MacBook Pro 14\" Space Grey",
+      "slug": "apple-macbook-pro-14-inch-space-grey",
+      "category": "Laptops",
+      "variantCount": 4,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 12
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "ASUS Zenbook Pro Duo",
+      "slug": "asus-zenbook-pro-dual-screen-laptop",
+      "category": "Laptops",
+      "variantCount": 3,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 12
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "Huawei MateBook X Pro",
+      "slug": "huawei-matebook-x-pro",
+      "category": "Laptops",
+      "variantCount": 3,
+      "needed": [
+        "_base",
+        "Color=Ink Blue"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 12
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Ink Blue",
+          "folder": "color-ink-blue",
+          "attributes": {
+            "Color": "Ink Blue"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Lenovo Yoga 920 2-in-1",
+      "slug": "lenovo-yoga-920",
+      "category": "Laptops",
+      "variantCount": 3,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 12
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "Dell XPS 13 9300",
+      "slug": "new-dell-xps-13-9300-laptop",
+      "category": "Laptops",
+      "variantCount": 3,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 12
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "Apple iPad Mini (2021) Starlight",
+      "slug": "ipad-mini-2021-starlight",
+      "category": "Tablets",
+      "variantCount": 4,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 16
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "Samsung Galaxy Tab S8+ Grey",
+      "slug": "samsung-galaxy-tab-s8-plus-grey",
+      "category": "Tablets",
+      "variantCount": 3,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 16
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "Samsung Galaxy Tab A White",
+      "slug": "samsung-galaxy-tab-white",
+      "category": "Tablets",
+      "variantCount": 3,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 16
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "Apple AirPods (3rd Generation)",
+      "slug": "apple-airpods",
+      "category": "Audio",
+      "variantCount": 2,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 12
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "Apple AirPods Max Silver",
+      "slug": "apple-airpods-max-silver",
+      "category": "Audio",
+      "variantCount": 4,
+      "needed": [
+        "Color=Silver",
+        "Color=Space Grey",
+        "Color=Sky Blue",
+        "Color=Green"
+      ],
+      "present": [
+        {
+          "signature": "Color=Silver",
+          "folder": "color-silver",
+          "files": 4
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Space Grey",
+          "folder": "color-space-grey",
+          "attributes": {
+            "Color": "Space Grey"
+          }
+        },
+        {
+          "signature": "Color=Sky Blue",
+          "folder": "color-sky-blue",
+          "attributes": {
+            "Color": "Sky Blue"
+          }
+        },
+        {
+          "signature": "Color=Green",
+          "folder": "color-green",
+          "attributes": {
+            "Color": "Green"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Beats Flex Wireless Earphones",
+      "slug": "beats-flex-wireless-earphones",
+      "category": "Audio",
+      "variantCount": 3,
+      "needed": [
+        "Color=Beats Black",
+        "Color=Yuzu Yellow",
+        "Color=Flame Blue"
+      ],
+      "present": [
+        {
+          "signature": "Color=Beats Black",
+          "folder": "color-beats-black",
+          "files": 4
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Yuzu Yellow",
+          "folder": "color-yuzu-yellow",
+          "attributes": {
+            "Color": "Yuzu Yellow"
+          }
+        },
+        {
+          "signature": "Color=Flame Blue",
+          "folder": "color-flame-blue",
+          "attributes": {
+            "Color": "Flame Blue"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Apple HomePod Mini Cosmic Grey",
+      "slug": "apple-homepod-mini-cosmic-grey",
+      "category": "Audio",
+      "variantCount": 3,
+      "needed": [
+        "Color=Cosmic Grey",
+        "Color=White",
+        "Color=Blue"
+      ],
+      "present": [
+        {
+          "signature": "Color=Cosmic Grey",
+          "folder": "color-cosmic-grey",
+          "files": 4
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=White",
+          "folder": "color-white",
+          "attributes": {
+            "Color": "White"
+          }
+        },
+        {
+          "signature": "Color=Blue",
+          "folder": "color-blue",
+          "attributes": {
+            "Color": "Blue"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Amazon Echo Plus (2nd Gen)",
+      "slug": "amazon-echo-plus",
+      "category": "Audio",
+      "variantCount": 3,
+      "needed": [
+        "Color=Charcoal",
+        "Color=Sandstone",
+        "Color=Heather Grey"
+      ],
+      "present": [
+        {
+          "signature": "Color=Charcoal",
+          "folder": "color-charcoal",
+          "files": 8
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Sandstone",
+          "folder": "color-sandstone",
+          "attributes": {
+            "Color": "Sandstone"
+          }
+        },
+        {
+          "signature": "Color=Heather Grey",
+          "folder": "color-heather-grey",
+          "attributes": {
+            "Color": "Heather Grey"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Apple Watch Series 4 Gold",
+      "slug": "apple-watch-series-4-gold",
+      "category": "Watches",
+      "variantCount": 4,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 12
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "Rolex Datejust",
+      "slug": "rolex-datejust",
+      "category": "Watches",
+      "variantCount": 2,
+      "needed": [
+        "Bracelet=Jubilee"
+      ],
+      "present": [
+        {
+          "signature": "Bracelet=Jubilee",
+          "folder": "bracelet-jubilee",
+          "files": 12
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "Rolex Submariner",
+      "slug": "rolex-submariner-watch",
+      "category": "Watches",
+      "variantCount": 2,
+      "needed": [
+        "Dial=Black",
+        "Dial=Green"
+      ],
+      "present": [
+        {
+          "signature": "Dial=Black",
+          "folder": "dial-black",
+          "files": 12
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Dial=Green",
+          "folder": "dial-green",
+          "attributes": {
+            "Dial": "Green"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Longines Master Collection",
+      "slug": "longines-master-collection",
+      "category": "Watches",
+      "variantCount": 3,
+      "needed": [
+        "Strap=Alligator Leather",
+        "Strap=Stainless Steel"
+      ],
+      "present": [
+        {
+          "signature": "Strap=Alligator Leather",
+          "folder": "strap-alligator-leather",
+          "files": 12
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Strap=Stainless Steel",
+          "folder": "strap-stainless-steel",
+          "attributes": {
+            "Strap": "Stainless Steel"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Brown Leather Belt Watch",
+      "slug": "brown-leather-belt-watch",
+      "category": "Watches",
+      "variantCount": 3,
+      "needed": [
+        "Color=Brown",
+        "Color=Black",
+        "Color=Tan"
+      ],
+      "present": [
+        {
+          "signature": "Color=Brown",
+          "folder": "color-brown",
+          "files": 12
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Black",
+          "folder": "color-black",
+          "attributes": {
+            "Color": "Black"
+          }
+        },
+        {
+          "signature": "Color=Tan",
+          "folder": "color-tan",
+          "attributes": {
+            "Color": "Tan"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Apple MagSafe Battery Pack",
+      "slug": "apple-magsafe-battery-pack",
+      "category": "Accessories",
+      "variantCount": 2,
+      "needed": [
+        "Color=White",
+        "Bundle=With 20W Adapter&Color=White"
+      ],
+      "present": [
+        {
+          "signature": "Color=White",
+          "folder": "color-white",
+          "files": 8
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Bundle=With 20W Adapter&Color=White",
+          "folder": "bundle-with-20w-adapter_color-white",
+          "attributes": {
+            "Bundle": "With 20W Adapter",
+            "Color": "White"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Apple AirPower Wireless Charger",
+      "slug": "apple-airpower-wireless-charger",
+      "category": "Accessories",
+      "variantCount": 2,
+      "needed": [
+        "Color=White",
+        "Color=Black"
+      ],
+      "present": [
+        {
+          "signature": "Color=White",
+          "folder": "color-white",
+          "files": 4
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Black",
+          "folder": "color-black",
+          "attributes": {
+            "Color": "Black"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Apple 20W USB-C Power Adapter",
+      "slug": "apple-iphone-charger",
+      "category": "Accessories",
+      "variantCount": 2,
+      "needed": [
+        "Bundle=Adapter only",
+        "Bundle=With USB-C to Lightning cable"
+      ],
+      "present": [
+        {
+          "signature": "Bundle=Adapter only",
+          "folder": "bundle-adapter-only",
+          "files": 8
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Bundle=With USB-C to Lightning cable",
+          "folder": "bundle-with-usb-c-to-lightning-cable",
+          "attributes": {
+            "Bundle": "With USB-C to Lightning cable"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "iPhone 12 Silicone Case with MagSafe — Plum",
+      "slug": "iphone-12-silicone-case-with-magsafe-plum",
+      "category": "Accessories",
+      "variantCount": 3,
+      "needed": [
+        "Color=Plum",
+        "Color=Deep Navy",
+        "Color=Pink Citrus"
+      ],
+      "present": [
+        {
+          "signature": "Color=Plum",
+          "folder": "color-plum",
+          "files": 20
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Deep Navy",
+          "folder": "color-deep-navy",
+          "attributes": {
+            "Color": "Deep Navy"
+          }
+        },
+        {
+          "signature": "Color=Pink Citrus",
+          "folder": "color-pink-citrus",
+          "attributes": {
+            "Color": "Pink Citrus"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Selfie Stick Monopod with Tripod",
+      "slug": "selfie-stick-monopod",
+      "category": "Accessories",
+      "variantCount": 2,
+      "needed": [
+        "Color=Black",
+        "Color=Rose Gold"
+      ],
+      "present": [
+        {
+          "signature": "Color=Black",
+          "folder": "color-black",
+          "files": 4
+        }
+      ],
+      "missing": [
+        {
+          "signature": "Color=Rose Gold",
+          "folder": "color-rose-gold",
+          "attributes": {
+            "Color": "Rose Gold"
+          }
+        }
+      ],
+      "orphans": []
+    },
+    {
+      "name": "Professional Camera Monopod",
+      "slug": "monopod",
+      "category": "Accessories",
+      "variantCount": 2,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 8
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "Ring Light with Phone Holder",
+      "slug": "selfie-lamp-with-iphone",
+      "category": "Accessories",
+      "variantCount": 3,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 4
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    },
+    {
+      "name": "Studio Camera Pedestal Stand",
+      "slug": "tv-studio-camera-pedestal",
+      "category": "Accessories",
+      "variantCount": 2,
+      "needed": [
+        "_base"
+      ],
+      "present": [
+        {
+          "signature": "_base",
+          "folder": "_base",
+          "files": 4
+        }
+      ],
+      "missing": [],
+      "orphans": []
+    }
+  ],
+  "totals": {
+    "products": 34,
+    "productsWithVariants": 34,
+    "signaturesNeeded": 63,
+    "signaturesPresent": 34,
+    "signaturesMissing": 29,
+    "orphanGroups": 0
+  }
+}

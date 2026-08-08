@@ -1,0 +1,157 @@
+// This file describes how an Order is stored in the database.
+
+import mongoose from "mongoose";
+
+// One product line inside an order.
+const orderItemSchema = new mongoose.Schema(
+  {
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    quantity: { type: Number, required: true, min: 1 },
+    // Which configuration was bought, kept as a snapshot so the order still
+    // reads correctly even if the product's variants change later.
+    variant: { type: mongoose.Schema.Types.ObjectId, default: null },
+    variantLabel: { type: String, default: "" },
+    variantSku: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
+// One step in the order's tracking history (for example "shipped").
+const trackingEventSchema = new mongoose.Schema(
+  {
+    status: { type: String, required: true },
+    note: String,
+    timestamp: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
+// An image the customer uploads when requesting a return.
+const returnImageSchema = new mongoose.Schema(
+  {
+    data: { type: Buffer, required: true },
+    contentType: { type: String, required: true },
+  },
+  { _id: true }
+);
+
+// A private note written by an admin about the order.
+const adminNoteSchema = new mongoose.Schema(
+  {
+    note: { type: String, required: true },
+    author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: true }
+);
+
+// The main order schema.
+const orderSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    items: [orderItemSchema],
+    shippingAddress: {
+      fullName: String,
+      phone: String,
+      line1: String,
+      line2: String,
+      city: String,
+      state: String,
+      postalCode: String,
+      country: { type: String, default: "India" },
+    },
+    itemsPrice: { type: Number, required: true, default: 0 },
+    shippingPrice: { type: Number, required: true, default: 0 },
+    taxPrice: { type: Number, required: true, default: 0 },
+    discountPrice: { type: Number, required: true, default: 0 },
+    couponCode: { type: String, default: "" },
+    totalPrice: { type: Number, required: true, default: 0 },
+
+    paymentMethod: { type: String, enum: ["razorpay", "cod"], default: "razorpay" },
+    isPaid: { type: Boolean, default: false },
+    paidAt: Date,
+    paymentResult: {
+      razorpayOrderId: String,
+      razorpayPaymentId: String,
+      razorpaySignature: String,
+      status: String,
+    },
+
+    status: {
+      type: String,
+      enum: [
+        "pending",
+        "confirmed",
+        "processing",
+        "packed",
+        "shipped",
+        "out_for_delivery",
+        "delivered",
+        "cancelled",
+        "return_requested",
+        "return_approved",
+        "return_rejected",
+        "returned",
+      ],
+      default: "pending",
+    },
+    stockReduced: { type: Boolean, default: false },
+    trackingHistory: [trackingEventSchema],
+    deliveredAt: Date,
+
+    returnInfo: {
+      reason: String,
+      description: String,
+      images: [returnImageSchema],
+      requestedAt: Date,
+      processedAt: Date,
+      adminNote: String,
+    },
+
+    refund: {
+      status: {
+        type: String,
+        enum: ["none", "pending", "initiated", "processing", "completed", "failed"],
+        default: "none",
+      },
+      amount: { type: Number, default: 0 },
+      reason: String,
+      transactionId: String,
+      notes: String,
+      initiatedAt: Date,
+      completedAt: Date,
+    },
+
+    adminNotes: [adminNoteSchema],
+
+    // A one-time key sent by the browser when placing an order. If the same
+    // request is sent twice (double-click, network retry), we return the
+    // first order instead of creating a duplicate.
+    idempotencyKey: { type: String },
+  },
+  { timestamps: true }
+);
+
+// Indexes to make order lists load faster.
+orderSchema.index({ user: 1, createdAt: -1 });
+orderSchema.index({ status: 1, createdAt: -1 });
+
+// Make (user + idempotencyKey) unique, but only for orders that actually have
+// a key — so older orders without one are unaffected.
+orderSchema.index(
+  { user: 1, idempotencyKey: 1 },
+  { unique: true, partialFilterExpression: { idempotencyKey: { $type: "string" } } }
+);
+
+const Order = mongoose.model("Order", orderSchema);
+export default Order;

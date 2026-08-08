@@ -1,0 +1,442 @@
+// This controller handles customer orders:
+// placing an order, viewing orders, cancelling, and requesting returns.
+
+import asyncHandler from "express-async-handler";
+import mongoose from "mongoose";
+import Order from "../models/Order.js";
+import User from "../models/User.js";
+import Settings from "../models/Settings.js";
+import { logActivity } from "../utils/logger.js";
+import { validateCoupon, recordCouponUse, releaseCouponUse } from "../utils/coupons.js";
+import {
+  adjustStock,
+  buildReturnImageUrls,
+  canCancel,
+  canReturn,
+  RETURN_REASONS,
+} from "../utils/orderStatus.js";
+import { buildImageUrls } from "../utils/productView.js";
+
+// Pricing rules are read from the admin Settings on every order, so changing
+// the tax rate or the delivery fee in the admin panel takes effect at once —
+// there are no pricing constants in the codebase.
+const getPricingRules = async () => {
+  const settings = await Settings.getSingleton();
+  const commerce = settings.commerce || {};
+  return {
+    taxRate: (commerce.taxRatePercent ?? 18) / 100,
+    shippingFee: commerce.shippingFee ?? 99,
+    freeShippingThreshold: commerce.freeShippingThreshold ?? 5000,
+    codEnabled: commerce.codEnabled !== false,
+    onlinePaymentEnabled: commerce.onlinePaymentEnabled !== false,
+  };
+};
+
+// Convert an order into the shape the frontend expects,
+// adding full URLs for any return images.
+const orderToView = (req, order) => {
+  let obj;
+  if (order.toObject) {
+    obj = order.toObject();
+  } else {
+    obj = order;
+  }
+
+  const returnImages = buildReturnImageUrls(req, order);
+
+  // Attach the image URLs to returnInfo if it exists.
+  let returnInfo = obj.returnInfo;
+  if (returnInfo) {
+    returnInfo = { ...returnInfo, imageUrls: returnImages };
+  }
+
+  // When the route populated items.product we add a thumbnail URL to each line
+  // and put the plain product id back, so the frontend always sees an id there.
+  const items = (obj.items || []).map((item) => {
+    const populated = item.product && typeof item.product === "object" && item.product._id;
+    if (!populated) {
+      return item;
+    }
+    return {
+      ...item,
+      product: item.product._id,
+      image: buildImageUrls(req, item.product)[0] || null,
+    };
+  });
+
+  return {
+    ...obj,
+    items,
+    returnInfo,
+  };
+};
+
+// POST /api/orders  - place a new order from the user's cart.
+export const createOrder = asyncHandler(async (req, res) => {
+  const { shippingAddress, couponCode, paymentMethod = "razorpay", idempotencyKey } = req.body;
+
+  const pricing = await getPricingRules();
+
+  // The payment method has to be one the admin currently offers.
+  const allowedMethods = [];
+  if (pricing.onlinePaymentEnabled) {
+    allowedMethods.push("razorpay");
+  }
+  if (pricing.codEnabled) {
+    allowedMethods.push("cod");
+  }
+  if (!allowedMethods.includes(paymentMethod)) {
+    res.status(400);
+    throw new Error("That payment method is not available");
+  }
+
+  // If this exact request was already turned into an order, return that order
+  // instead of creating a duplicate (handles double-clicks and retries).
+  if (idempotencyKey) {
+    const existing = await Order.findOne({ user: req.user._id, idempotencyKey });
+    if (existing) {
+      return res.status(200).json({ order: orderToView(req, existing) });
+    }
+  }
+
+  // Load the user with their full cart product details.
+  const user = await User.findById(req.user._id).populate("cart.product");
+  const cartItems = user.cart.filter((i) => i.product);
+
+  if (cartItems.length === 0) {
+    res.status(400);
+    throw new Error("Cart is empty");
+  }
+
+  // Build the order items, checking availability and stock as we go. Price and
+  // stock come from the chosen variant when the cart line has one, so what the
+  // shopper saw on the product page is what the order charges.
+  const items = [];
+  for (const ci of cartItems) {
+    const product = ci.product;
+
+    if (!product.isActive || product.status !== "active") {
+      res.status(400);
+      throw new Error(`${product.name} is no longer available`);
+    }
+
+    const variant = ci.variant ? product.variants.id(ci.variant) : null;
+    if (ci.variant && !variant) {
+      res.status(400);
+      throw new Error(`The selected option for ${product.name} is no longer available`);
+    }
+
+    const available = variant ? variant.countInStock : product.countInStock;
+    if (ci.quantity > available) {
+      res.status(400);
+      throw new Error(`Only ${available} of ${product.name} in stock`);
+    }
+
+    // "128 GB, Sierra Blue" — shown on the order and the invoice.
+    const variantLabel = variant
+      ? Object.values(Object.fromEntries(variant.attributes || [])).join(", ")
+      : "";
+
+    items.push({
+      product: product._id,
+      name: product.name,
+      price: variant?.price ?? product.price,
+      quantity: ci.quantity,
+      variant: variant?._id || null,
+      variantLabel,
+      variantSku: variant?.sku || "",
+    });
+  }
+
+  // Add up the price of all items.
+  let itemsPrice = 0;
+  for (const i of items) {
+    itemsPrice += i.price * i.quantity;
+  }
+
+  // Work out the coupon discount. If a code was given, validate it strictly
+  // against the database (expiry, minimum order, usage limits) and reject the
+  // order with a clear message if it is no longer valid.
+  let discountPrice = 0;
+  let appliedCoupon = null;
+  if (couponCode && couponCode.trim()) {
+    try {
+      const result = await validateCoupon({
+        code: couponCode,
+        itemsPrice,
+        userId: req.user._id,
+      });
+      discountPrice = result.discount;
+      appliedCoupon = result.coupon;
+    } catch (err) {
+      res.status(400);
+      throw err;
+    }
+  }
+  const discountedItems = itemsPrice - discountPrice;
+
+  // Shipping is free above the configured threshold, otherwise a flat fee.
+  let shippingPrice;
+  if (discountedItems >= pricing.freeShippingThreshold) {
+    shippingPrice = 0;
+  } else {
+    shippingPrice = pricing.shippingFee;
+  }
+
+  const taxPrice = Math.round(discountedItems * pricing.taxRate);
+  const totalPrice = discountedItems + shippingPrice + taxPrice;
+
+  // COD orders are confirmed right away; online orders wait for payment.
+  const isCod = paymentMethod === "cod";
+  let initialStatus;
+  if (isCod) {
+    initialStatus = "confirmed";
+  } else {
+    initialStatus = "pending";
+  }
+
+  // The coupon code is only stored if it actually gave a discount.
+  let storedCoupon = "";
+  if (appliedCoupon && discountPrice > 0) {
+    storedCoupon = appliedCoupon.code;
+  }
+
+  // The first tracking note depends on the payment method.
+  let firstNote;
+  if (isCod) {
+    firstNote = "Order confirmed (Cash on Delivery)";
+  } else {
+    firstNote = "Order placed, awaiting payment";
+  }
+
+  // Use a transaction so the order and stock change happen together (for COD).
+  const session = await mongoose.startSession();
+  let order;
+  let isNew = false;
+
+  try {
+    await session.withTransaction(async () => {
+      const created = await Order.create(
+        [
+          {
+            user: req.user._id,
+            items,
+            shippingAddress: shippingAddress || user.address,
+            itemsPrice,
+            shippingPrice,
+            taxPrice,
+            discountPrice,
+            couponCode: storedCoupon,
+            totalPrice,
+            paymentMethod,
+            status: initialStatus,
+            idempotencyKey: idempotencyKey || undefined,
+            trackingHistory: [
+              {
+                status: initialStatus,
+                note: firstNote,
+              },
+            ],
+          },
+        ],
+        { session }
+      );
+      order = created[0];
+      isNew = true;
+
+      // For COD, reduce stock and empty the cart immediately.
+      if (isCod) {
+        await adjustStock(order, "reduce", session);
+        await order.save({ session });
+        await User.findByIdAndUpdate(req.user._id, { cart: [] }, { session });
+      }
+    });
+  } catch (err) {
+    // Two identical requests raced each other: return the order that won.
+    if (err.code === 11000 && idempotencyKey) {
+      order = await Order.findOne({ user: req.user._id, idempotencyKey });
+      if (!order) {
+        throw err;
+      }
+    } else {
+      throw err;
+    }
+  } finally {
+    session.endSession();
+  }
+
+  // Only record the coupon use and log the activity for a freshly created order,
+  // never for a duplicate request that returned an existing order.
+  if (isNew) {
+    if (appliedCoupon && discountPrice > 0) {
+      await recordCouponUse(appliedCoupon, req.user._id);
+    }
+
+    await logActivity({
+      type: "order",
+      actor: req.user._id,
+      action: "order_created",
+      meta: { orderId: order._id, total: order.totalPrice },
+      ip: req.ip,
+    });
+  }
+
+  res.status(isNew ? 201 : 200).json({ order: orderToView(req, order) });
+});
+
+// GET /api/orders/my  - list the logged-in user's orders.
+export const getMyOrders = asyncHandler(async (req, res) => {
+  const { status } = req.query;
+
+  const filter = { user: req.user._id };
+  if (status) {
+    filter.status = status;
+  }
+
+  const orders = await Order.find(filter)
+    .sort({ createdAt: -1 })
+    .populate("items.product", "images");
+  res.json({ orders: orders.map((o) => orderToView(req, o)) });
+});
+
+// GET /api/orders/:id  - view a single order (owner or admin only).
+export const getOrderById = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id)
+    .populate("user", "name email")
+    .populate("items.product", "images");
+  if (!order) {
+    res.status(404);
+    throw new Error("Order not found");
+  }
+
+  const isOwner = order.user._id.toString() === req.user._id.toString();
+  if (!isOwner && req.user.role !== "admin") {
+    res.status(403);
+    throw new Error("Not authorized to view this order");
+  }
+
+  res.json({ order: orderToView(req, order) });
+});
+
+// PUT /api/orders/:id/cancel  - cancel an order (owner only).
+export const cancelOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    res.status(404);
+    throw new Error("Order not found");
+  }
+
+  if (order.user.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error("Not authorized");
+  }
+
+  // Only certain statuses can still be cancelled.
+  if (!canCancel(order.status)) {
+    res.status(400);
+    throw new Error("Order can no longer be cancelled");
+  }
+
+  order.status = "cancelled";
+  order.trackingHistory.push({ status: "cancelled", note: "Cancelled by customer" });
+
+  // Put the stock back.
+  await adjustStock(order, "restore");
+
+  // Give back the coupon use so the customer can use it on a future order.
+  if (order.couponCode) {
+    await releaseCouponUse(order.couponCode, order.user);
+  }
+
+  // If the order was already paid, mark a refund as pending.
+  if (order.isPaid) {
+    order.refund = {
+      ...order.refund,
+      status: "pending",
+      amount: order.totalPrice,
+      reason: "Order cancelled by customer",
+    };
+  }
+
+  await order.save();
+  res.json({ order: orderToView(req, order) });
+});
+
+// POST /api/orders/:id/return  - request a return for a delivered order.
+export const requestReturn = asyncHandler(async (req, res) => {
+  const { reason, description } = req.body;
+
+  // The reason must be one of the allowed return reasons.
+  if (!reason || !RETURN_REASONS.includes(reason)) {
+    res.status(400);
+    throw new Error("Valid return reason is required");
+  }
+
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    res.status(404);
+    throw new Error("Order not found");
+  }
+
+  if (order.user.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error("Not authorized");
+  }
+
+  // Returns are only allowed for delivered orders.
+  if (!canReturn(order.status)) {
+    res.status(400);
+    throw new Error("Return can only be requested for delivered orders");
+  }
+
+  // Save any uploaded proof images.
+  const images = (req.files || []).map((file) => ({
+    data: file.buffer,
+    contentType: file.mimetype,
+  }));
+
+  order.status = "return_requested";
+  order.returnInfo = {
+    reason,
+    description: description || "",
+    images,
+    requestedAt: new Date(),
+  };
+  order.trackingHistory.push({
+    status: "return_requested",
+    note: `Return requested: ${reason}`,
+  });
+
+  await order.save();
+  res.json({ order: orderToView(req, order) });
+});
+
+// GET /api/orders/:id/return-image/:imageId  - serve a return image.
+export const getReturnImage = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    res.status(404);
+    throw new Error("Order not found");
+  }
+
+  const isOwner = order.user.toString() === req.user._id.toString();
+  if (!isOwner && req.user.role !== "admin") {
+    res.status(403);
+    throw new Error("Not authorized");
+  }
+
+  const image = order.returnInfo?.images?.id(req.params.imageId);
+  if (!image) {
+    res.status(404);
+    throw new Error("Image not found");
+  }
+
+  res.set("Content-Type", image.contentType);
+  res.set("Cache-Control", "public, max-age=86400");
+  res.send(image.data);
+});
+
+// GET /api/orders/return-reasons  - the list of allowed return reasons.
+export const getReturnReasons = asyncHandler(async (req, res) => {
+  res.json({ reasons: RETURN_REASONS });
+});

@@ -1,0 +1,241 @@
+/* NexaMart — Tailwind entry.
+   Theme tokens live in tailwind.config.js ("Bazaar" identity:
+   marketplace blue primary / amber-orange CTAs / green ratings on a
+   cool-grey paper background). This file only holds the base layer
+   and a small set of shared component recipes; all page layout is
+   composed with utilities in JSX. */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper font-sans text-[15px] leading-relaxed text-ink-900;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+
+  ::selection {
+    @apply bg-accent-100 text-ink-950;
+  }
+
+  /* Thin, quiet scrollbars for horizontal product rails */
+  .rail-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: theme("colors.ink.200") transparent;
+  }
+  .rail-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+  .rail-scroll::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-ink-200;
+  }
+}
+
+@layer components {
+  /* ── Buttons ──────────────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm border border-accent-500 bg-accent-500 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition-all duration-200 hover:border-accent-600 hover:bg-accent-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 active:translate-y-px disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-dark {
+    @apply border-ink-900 bg-ink-900 hover:border-ink-700 hover:bg-ink-700;
+  }
+  .btn-outline {
+    @apply border-ink-200 bg-white text-ink-900 shadow-none hover:border-ink-400 hover:bg-paper;
+  }
+  .btn-ghost {
+    @apply border-transparent bg-transparent text-ink-500 shadow-none hover:bg-ink-100 hover:text-ink-900;
+  }
+  .btn-danger {
+    @apply border-danger bg-danger hover:border-danger-dark hover:bg-danger-dark;
+  }
+  /* Marketplace-style product CTAs: amber "add to cart", orange "buy now". */
+  .btn-cart {
+    @apply border-copper-400 bg-copper-400 text-white hover:border-copper-400 hover:bg-[#f09400];
+  }
+  .btn-buy {
+    @apply border-copper-500 bg-copper-500 text-white hover:border-copper-600 hover:bg-copper-600;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  /* ── Quantity stepper ─────────────────────────────────── */
+  /* Lifted out of Cart.jsx and ProductDetail.jsx, which carried two
+     near-identical copies of these strings. Note disabled:opacity-40 rather
+     than .btn's 50 — that was the stepper's own convention and is kept. */
+  .qty-btn {
+    @apply grid shrink-0 place-items-center rounded-full border border-ink-200 leading-none text-ink-600 transition-colors hover:bg-ink-50 disabled:opacity-40;
+  }
+  .qty-value {
+    @apply rounded-sm border border-ink-200 py-0.5 text-center font-medium text-ink-900;
+  }
+
+  /* ── Form controls ────────────────────────────────────── */
+  .input {
+    @apply w-full rounded-sm border border-ink-200 bg-white px-3.5 py-2.5 text-[15px] text-ink-900 placeholder:text-ink-400 transition-colors duration-150 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 disabled:cursor-not-allowed disabled:bg-ink-50;
+  }
+  .select {
+    @apply input appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235b6670%22%20stroke-width%3D%222.5%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_0.85rem_center] bg-no-repeat pr-9;
+  }
+  .textarea {
+    @apply input min-h-[110px] resize-y;
+  }
+  /* Underlined field used on the auth screens. */
+  .input-line {
+    @apply w-full border-0 border-b border-ink-200 bg-transparent px-0 py-2.5 text-[15px] text-ink-900 placeholder:text-ink-400 transition-colors focus:border-accent-500 focus:outline-none focus:ring-0;
+  }
+  /* An invalid box now looks invalid. aria-invalid was already being set on
+     the checkout fields, but nothing keyed off it, so the only sign of an
+     error was the small red line underneath. */
+  .input[aria-invalid="true"] {
+    @apply border-danger bg-danger-soft/40 focus:border-danger focus:ring-danger/20;
+  }
+  .label {
+    @apply mb-1.5 block text-[13px] font-semibold text-ink-600;
+  }
+  /* Red asterisk after a required field's label. */
+  .label-req::after {
+    content: "*";
+    @apply ml-0.5 font-bold text-danger;
+  }
+  .form-error {
+    @apply mt-1 text-xs font-medium text-danger;
+  }
+  .form-hint {
+    @apply mt-1 text-xs text-ink-400;
+  }
+
+  /* ── Surfaces ─────────────────────────────────────────── */
+  .card {
+    @apply rounded-sm border border-ink-100 bg-white shadow-card;
+  }
+
+  /* ── Marketplace-style primitives ─────────────────────── */
+  /* Green rating pill: "4.3 ★" */
+  .rating-pill {
+    @apply inline-flex items-center gap-0.5 rounded-sm bg-success px-1.5 py-0.5 text-xs font-semibold leading-none text-white;
+  }
+  /* Price row: bold ₹price + struck MRP + green % off */
+  .price-row {
+    @apply flex flex-wrap items-baseline gap-2;
+  }
+  .price-mrp {
+    @apply text-sm text-ink-400 line-through;
+  }
+  .price-off {
+    @apply text-sm font-semibold text-success;
+  }
+  /* Checkout accordion step header: numbered chip + uppercase title */
+  .step-head {
+    @apply flex items-center gap-4 bg-white px-6 py-3.5;
+  }
+  .step-head-active {
+    @apply bg-accent-500 text-white;
+  }
+  .step-num {
+    @apply grid h-5 w-5 shrink-0 place-items-center rounded-sm bg-accent-50 text-xs font-bold text-accent-500;
+  }
+  .step-head-active .step-num {
+    @apply bg-white/20 text-white;
+  }
+  .step-title {
+    @apply text-sm font-medium uppercase tracking-wide text-ink-500;
+  }
+  .step-head-active .step-title {
+    @apply text-white;
+  }
+
+  /* ── Badges & chips ───────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wider text-ink-500;
+  }
+  .badge-success {
+    @apply border-success-edge bg-success-soft text-success;
+  }
+  .badge-danger {
+    @apply border-danger-edge bg-danger-soft text-danger;
+  }
+  .badge-warning {
+    @apply border-warning-edge bg-warning-soft text-warning;
+  }
+  .badge-info {
+    @apply border-accent-100 bg-accent-50 text-accent-700;
+  }
+  /* "On its way" — the one status tone that is neither waiting nor finished.
+     Blue already means "we are handling it", so shipped and out-for-delivery
+     borrow the CTA amber instead of being a fifth shade of the same blue.
+     The fill has to stay pale, and copper-50 is very close to warning-soft, so
+     the separation is carried by the border and the text: copper-400 is a
+     saturated amber no other badge uses, against warning's muted edge. */
+  .badge-transit {
+    @apply border-copper-400 bg-copper-50 text-copper-600;
+  }
+
+  .chip {
+    @apply inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-[13px] font-medium text-ink-500 transition-colors hover:border-ink-400 hover:text-ink-900;
+  }
+  .chip-active {
+    @apply border-ink-900 bg-ink-900 text-white hover:border-ink-900 hover:text-white;
+  }
+
+  /* ── Typography helpers ───────────────────────────────── */
+  .eyebrow {
+    @apply mb-2 inline-block text-2xs font-bold uppercase tracking-[0.14em] text-accent-600;
+  }
+  .price {
+    @apply font-semibold tracking-tight text-ink-900;
+  }
+  .text-link {
+    @apply font-medium text-accent-600 underline-offset-4 transition-colors hover:text-accent-700 hover:underline;
+  }
+
+  /* Admin-authored CMS page content (StaticPage). */
+  .page-content h1 { @apply mb-3 mt-6 text-2xl font-bold text-ink-900; }
+  .page-content h2 { @apply mb-2 mt-6 text-xl font-bold text-ink-900; }
+  .page-content h3 { @apply mb-1.5 mt-4 text-lg font-semibold text-ink-900; }
+  .page-content p { @apply mb-3; }
+  .page-content ul { @apply mb-3 list-disc space-y-1 pl-5; }
+  .page-content ol { @apply mb-3 list-decimal space-y-1 pl-5; }
+  .page-content a { @apply font-medium text-accent-600 hover:underline; }
+  .page-content strong { @apply font-semibold text-ink-800; }
+
+  /* ── Tables (admin lists, spec sheets) ────────────────── */
+  .table-wrap {
+    @apply card overflow-x-auto;
+  }
+  .table {
+    @apply w-full border-collapse text-left text-sm;
+  }
+  .table thead th {
+    @apply whitespace-nowrap border-b border-ink-100 bg-ink-50/60 px-4 py-3 text-2xs font-bold uppercase tracking-wider text-ink-500;
+  }
+  .table tbody td {
+    @apply border-b border-ink-100 px-4 py-3 align-middle text-ink-600;
+  }
+  .table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  .table tbody tr {
+    @apply transition-colors hover:bg-ink-50/50;
+  }
+
+  /* ── Loading ──────────────────────────────────────────── */
+  .skeleton {
+    @apply animate-shimmer rounded-lg bg-gradient-to-r from-ink-100 via-ink-50 to-ink-100 bg-[length:200%_100%];
+  }
+  .spinner {
+    @apply h-9 w-9 animate-spin-slow rounded-full border-[3px] border-ink-100 border-t-accent-500;
+  }
+}

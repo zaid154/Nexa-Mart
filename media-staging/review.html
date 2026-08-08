@@ -1,0 +1,1244 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>NexaMart — variant photo review</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 15px/1.5 system-ui, sans-serif; margin: 0; padding: 24px 24px 120px; }
+  h1 { margin: 0 0 4px; }
+  .lede { color: #666; max-width: 60ch; }
+  .row { border-top: 1px solid #ccc4; padding: 20px 0; }
+  .row header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+  h2 { margin: 0; font-size: 17px; }
+  .sig { margin: 4px 0 0; color: #666; display: flex; align-items: center; gap: 8px; }
+  .swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid #8888; display: inline-block; }
+  .path { font-family: ui-monospace, monospace; font-size: 12px; opacity: .7; }
+  .drop { font-size: 13px; color: #a33; display: flex; gap: 6px; align-items: center; }
+  .tiles { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+  .tile { width: 220px; display: flex; flex-direction: column; gap: 4px; cursor: pointer;
+          border: 2px solid transparent; border-radius: 8px; padding: 8px; }
+  .tile:has(input:checked) { border-color: #2a7; background: #2a71; }
+  .tile img { width: 100%; height: 200px; object-fit: contain; background: #fff; border-radius: 4px; }
+  .cap { font-size: 12px; font-weight: 600; }
+  .meta { font-size: 11px; color: #777; }
+  .empty { color: #a33; font-size: 13px; }
+  footer { position: fixed; bottom: 0; left: 0; right: 0; padding: 12px 24px;
+           background: Canvas; border-top: 1px solid #ccc4; display: flex; gap: 12px; align-items: center; }
+  button { font: inherit; padding: 8px 16px; border-radius: 6px; border: 1px solid #8888; cursor: pointer; }
+  #status { color: #666; font-size: 13px; }
+</style>
+
+<h1>Variant photo review</h1>
+<p class="lede">
+  29 photo set(s), 92 candidate(s). Tick only the photos that genuinely show the
+  colourway named in <strong>wanted</strong>. If none of them do, tick <em>drop this variant</em> — the
+  storefront will lose that option rather than show a photo of a different colour.
+  The first ticked photo in a set becomes its main image.
+</p>
+
+
+    <section class="row" id="iphone-13-pro-color-graphite">
+      <header>
+        <div>
+          <h2>Apple iPhone 13 Pro</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#54524F"></span>
+            wanted: <strong>Color=Graphite</strong>
+            <span class="path">→ iphone-13-pro/color-graphite/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="iphone-13-pro|color-graphite">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-13-pro|color-graphite" value="c1.jpg">
+          <img src="iphone-13-pro/color-graphite/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Engineering_and_Mining_Journal_1899-10-28-_Vol_68_Iss_18_(IA_sim_engineering-and-mining-journal_1899-10-28_68_18).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-13-pro|color-graphite" value="c2.jpg">
+          <img src="iphone-13-pro/color-graphite/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Glendale_Evening_News_1921-03-08_(IA_cgl_004324).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-13-pro|color-graphite" value="c3.jpg">
+          <img src="iphone-13-pro/color-graphite/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Sierra_Madre_News_1920-06-18_(IA_csie_000719).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-13-pro|color-graphite" value="c4.jpg">
+          <img src="iphone-13-pro/color-graphite/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · CC0</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Operation_Dixon_Evidence_Bundle_for_FCA_v_Axis_Mundi_Global_Custody_Ltd_(Served_23_February_2021).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-13-pro|color-graphite" value="c5.jpg">
+          <img src="iphone-13-pro/color-graphite/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Scientific_proceedings_of_the_Royal_Dublin_Society_(IA_scientificproce00roya).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-13-pro|color-graphite" value="c6.jpg">
+          <img src="iphone-13-pro/color-graphite/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Engineering_and_Mining_Journal_1881-08-06-_Vol_32_Iss_6_(IA_sim_engineering-and-mining-journal_1881-08-06_32_6).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="iphone-x-color-silver">
+      <header>
+        <div>
+          <h2>Apple iPhone X</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#E3E4E5"></span>
+            wanted: <strong>Color=Silver</strong>
+            <span class="path">→ iphone-x/color-silver/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="iphone-x|color-silver">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-x|color-silver" value="c1.jpg">
+          <img src="iphone-x/color-silver/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · CC BY-SA 3.0</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:I_am_(romance).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-x|color-silver" value="c2.jpg">
+          <img src="iphone-x/color-silver/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Nursery_catalogue_-_apple,_peach,_plum,_cherry_and_pear_trees,_small_fruits,_ornamental_trees_and_shrubs_(IA_CAT31292894).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-x|color-silver" value="c3.jpg">
+          <img src="iphone-x/color-silver/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_garden,_you_and_I_(IA_gardenyoui00wrig).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-x|color-silver" value="c4.jpg">
+          <img src="iphone-x/color-silver/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:I_should_say_so_(IA_ishouldsayso00flag).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-x|color-silver" value="c5.jpg">
+          <img src="iphone-x/color-silver/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Better_plants_and_plans._Vol._X,_Number_4,_Dutch_bulb_edition,_April,_1932_-_Farr_Nursery_Company._(IA_CAT31338058).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="iphone-x|color-silver" value="c6.jpg">
+          <img src="iphone-x/color-silver/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Teachers%27_manual_to_accompany_A_gateway_into_English_for_Chinese_students_(Book_2)_(IA_teachersmanualto02gowd).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="samsung-galaxy-s10-color-prism-black">
+      <header>
+        <div>
+          <h2>Samsung Galaxy S10</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#1B1B1D"></span>
+            wanted: <strong>Color=Prism Black</strong>
+            <span class="path">→ samsung-galaxy-s10/color-prism-black/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="samsung-galaxy-s10|color-prism-black">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+    <section class="row" id="samsung-galaxy-s10-color-prism-blue">
+      <header>
+        <div>
+          <h2>Samsung Galaxy S10</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#3C5A9A"></span>
+            wanted: <strong>Color=Prism Blue</strong>
+            <span class="path">→ samsung-galaxy-s10/color-prism-blue/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="samsung-galaxy-s10|color-prism-blue">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+    <section class="row" id="samsung-galaxy-s8-color-orchid-grey">
+      <header>
+        <div>
+          <h2>Samsung Galaxy S8</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#8E8A93"></span>
+            wanted: <strong>Color=Orchid Grey</strong>
+            <span class="path">→ samsung-galaxy-s8/color-orchid-grey/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="samsung-galaxy-s8|color-orchid-grey">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="samsung-galaxy-s8|color-orchid-grey" value="c1.jpg">
+          <img src="samsung-galaxy-s8/color-orchid-grey/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · CC BY 2.0</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Galaxy_S8%2B_in_Gold,_Galaxy_S7_edge_in_Gold,_Galaxy_S8_in_Orchid_Grey-2.jpg" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="oppo-f19-pro-plus-color-space-silver">
+      <header>
+        <div>
+          <h2>OPPO F19 Pro+ 5G</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#C9CDD2"></span>
+            wanted: <strong>Color=Space Silver</strong>
+            <span class="path">→ oppo-f19-pro-plus/color-space-silver/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="oppo-f19-pro-plus|color-space-silver">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+    <section class="row" id="oppo-k1-color-piano-black">
+      <header>
+        <div>
+          <h2>OPPO K1</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#0E0E10"></span>
+            wanted: <strong>Color=Piano Black</strong>
+            <span class="path">→ oppo-k1/color-piano-black/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="oppo-k1|color-piano-black">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="oppo-k1|color-piano-black" value="c1.jpg">
+          <img src="oppo-k1/color-piano-black/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Billboard_1906-08-25-_Vol_18_Iss_34_(IA_sim_billboard_1906-08-25_18_34).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="oppo-k1|color-piano-black" value="c2.jpg">
+          <img src="oppo-k1/color-piano-black/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Sierra_Madre_News_1915-01-15_(IA_csie_000498).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="oppo-k1|color-piano-black" value="c3.jpg">
+          <img src="oppo-k1/color-piano-black/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Enterprise_1925-11-06_(IA_cssf_001533).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="oppo-k1|color-piano-black" value="c4.jpg">
+          <img src="oppo-k1/color-piano-black/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Victoria_Daily_Times_(1910-12-12)_(IA_victoriadailytimes19101212).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="oppo-k1|color-piano-black" value="c5.jpg">
+          <img src="oppo-k1/color-piano-black/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Victoria_Daily_Times_(1912-03-22)_(IA_victoriadailytimes19120322).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="oppo-k1|color-piano-black" value="c6.jpg">
+          <img src="oppo-k1/color-piano-black/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Victoria_Daily_Times_(1913-03-20)_(IA_victoriadailytimes19130320).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="realme-xt-color-pearl-white">
+      <header>
+        <div>
+          <h2>Realme XT</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#F0EEEA"></span>
+            wanted: <strong>Color=Pearl White</strong>
+            <span class="path">→ realme-xt/color-pearl-white/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="realme-xt|color-pearl-white">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="realme-xt|color-pearl-white" value="c1.jpg">
+          <img src="realme-xt/color-pearl-white/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:By-ways_of_Virginia_history;_(IA_bywaysofvirginia00ea).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="realme-xt|color-pearl-white" value="c2.jpg">
+          <img src="realme-xt/color-pearl-white/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Chats_on_costume_(IA_chatsoncostume00rhea_0).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="realme-xt|color-pearl-white" value="c3.jpg">
+          <img src="realme-xt/color-pearl-white/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Corn_from_olde_fieldes-_an_anthology_of_English_poems_from_the_XIVth_to_the_XVIIth_century_(IA_cornfromoldefiel00brou).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="realme-xt|color-pearl-white" value="c4.jpg">
+          <img src="realme-xt/color-pearl-white/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Print_collector%27s_quarterly_(IA_printcollectorsq5419unse).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="realme-xt|color-pearl-white" value="c5.jpg">
+          <img src="realme-xt/color-pearl-white/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Cornell_University_Library_digitization_(IA_cu31924013278779).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="realme-xt|color-pearl-white" value="c6.jpg">
+          <img src="realme-xt/color-pearl-white/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Voyages_of_the_English_nation_to_America_(IA_cu31924024759395).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="vivo-x21-color-black">
+      <header>
+        <div>
+          <h2>Vivo X21</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#1A1A1A"></span>
+            wanted: <strong>Color=Black</strong>
+            <span class="path">→ vivo-x21/color-black/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="vivo-x21|color-black">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="vivo-x21|color-black" value="c1.jpg">
+          <img src="vivo-x21/color-black/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:%CE%95%CF%86%CE%B7%CE%BC%CE%B5%CF%81%CE%B9%CF%82-_..._1662_(IA_bim_early-english-books-1641-1700_-_almanacs-gadbury-john_1662).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="huawei-matebook-x-pro-color-ink-blue">
+      <header>
+        <div>
+          <h2>Huawei MateBook X Pro</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#243B55"></span>
+            wanted: <strong>Color=Ink Blue</strong>
+            <span class="path">→ huawei-matebook-x-pro/color-ink-blue/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="huawei-matebook-x-pro|color-ink-blue">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+    <section class="row" id="apple-airpods-max-silver-color-space-grey">
+      <header>
+        <div>
+          <h2>Apple AirPods Max Silver</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#535150"></span>
+            wanted: <strong>Color=Space Grey</strong>
+            <span class="path">→ apple-airpods-max-silver/color-space-grey/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="apple-airpods-max-silver|color-space-grey">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-space-grey" value="c1.jpg">
+          <img src="apple-airpods-max-silver/color-space-grey/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:HGWells--men_like_gods.djvu" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-space-grey" value="c2.jpg">
+          <img src="apple-airpods-max-silver/color-space-grey/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Catalogue_of_the_exhibits_of_the_state_of_Pennsylvania_and_of_Pennsylvanians_at_the_World%27s_Columbian_exposition_(IA_catalogueofexhib00penn).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-space-grey" value="c3.jpg">
+          <img src="apple-airpods-max-silver/color-space-grey/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Victorian_naturalist_(IA_victorian828319651966luca).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-space-grey" value="c4.jpg">
+          <img src="apple-airpods-max-silver/color-space-grey/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Trees,_plants,_flower_and_garden_seed,_golf_and_lawn_grasses,_landscaping_-_fall_1930-spring_1931_-_H.A._Hyde_Co._(IA_CAT31336168).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-space-grey" value="c5.jpg">
+          <img src="apple-airpods-max-silver/color-space-grey/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Cornell_University_Library_digitization_(IA_cu31924026632871).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-space-grey" value="c6.jpg">
+          <img src="apple-airpods-max-silver/color-space-grey/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Little_Review,_Volume_1,_Issue_9.pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="apple-airpods-max-silver-color-sky-blue">
+      <header>
+        <div>
+          <h2>Apple AirPods Max Silver</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#9CC4DC"></span>
+            wanted: <strong>Color=Sky Blue</strong>
+            <span class="path">→ apple-airpods-max-silver/color-sky-blue/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="apple-airpods-max-silver|color-sky-blue">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-sky-blue" value="c1.jpg">
+          <img src="apple-airpods-max-silver/color-sky-blue/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Harlem_Shadows_(1922).djvu" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-sky-blue" value="c2.jpg">
+          <img src="apple-airpods-max-silver/color-sky-blue/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Hallawell%27s_fall_catalog_of_bulbs_-_1921_-_(Hallawell_Seed_Company)._(IA_CAT31305751).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-sky-blue" value="c3.jpg">
+          <img src="apple-airpods-max-silver/color-sky-blue/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Curtis%27s_botanical_magazine._(IA_mobot31753002721881).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-sky-blue" value="c4.jpg">
+          <img src="apple-airpods-max-silver/color-sky-blue/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Catalogue_of_the_exhibits_of_the_state_of_Pennsylvania_and_of_Pennsylvanians_at_the_World%27s_Columbian_exposition_(IA_catalogueofexhib00penn).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-sky-blue" value="c5.jpg">
+          <img src="apple-airpods-max-silver/color-sky-blue/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_seven_wheels_(IA_sevenwheels00ques).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-sky-blue" value="c6.jpg">
+          <img src="apple-airpods-max-silver/color-sky-blue/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Wakefield_High_School_debater_(IA_wakefieldhighsch1916unse).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="apple-airpods-max-silver-color-green">
+      <header>
+        <div>
+          <h2>Apple AirPods Max Silver</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#4C7A52"></span>
+            wanted: <strong>Color=Green</strong>
+            <span class="path">→ apple-airpods-max-silver/color-green/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="apple-airpods-max-silver|color-green">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-green" value="c1.jpg">
+          <img src="apple-airpods-max-silver/color-green/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Price_catalog_of_the_Santa_Clara_Valley_Nurseries_(IA_CAT31295880).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-green" value="c2.jpg">
+          <img src="apple-airpods-max-silver/color-green/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:List_of_intercepted_plant_pests_-_United_States_Department_of_Agriculture,_Plant_Quarantine_and_Control_Administration._(IA_CAT73387830025).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-green" value="c3.jpg">
+          <img src="apple-airpods-max-silver/color-green/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:A_voyage_to_the_islands_Madera_Barbados_Nieves_S._Christophers_and_Jamaica_with_the_natural_history_of_the_herbs_and_trees_four-footed_beasts_fishes_birds_insects_reptiles_(IA_b30454414_0002).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-green" value="c4.jpg">
+          <img src="apple-airpods-max-silver/color-green/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:House_of_Gurney,_1866-1931_-_spring_%26_fall_-_65th_anniversary_catalog_-_Gurney_Seed_and_Nursery_Co._(IA_CAT31335902).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-green" value="c5.jpg">
+          <img src="apple-airpods-max-silver/color-green/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Handbook_of_the_diseases_of_vegetables_occurring_under_market,_storage,_and_transit_conditions_(IA_handbookofdiseas00linkrich).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpods-max-silver|color-green" value="c6.jpg">
+          <img src="apple-airpods-max-silver/color-green/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Handbook_of_the_diseases_of_vegetables_occurring_under_market,_storage,_and_transit_conditions_(IA_cu31924002914129).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="beats-flex-wireless-earphones-color-yuzu-yellow">
+      <header>
+        <div>
+          <h2>Beats Flex Wireless Earphones</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#E8C33B"></span>
+            wanted: <strong>Color=Yuzu Yellow</strong>
+            <span class="path">→ beats-flex-wireless-earphones/color-yuzu-yellow/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="beats-flex-wireless-earphones|color-yuzu-yellow">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+    <section class="row" id="beats-flex-wireless-earphones-color-flame-blue">
+      <header>
+        <div>
+          <h2>Beats Flex Wireless Earphones</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#2C6FBB"></span>
+            wanted: <strong>Color=Flame Blue</strong>
+            <span class="path">→ beats-flex-wireless-earphones/color-flame-blue/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="beats-flex-wireless-earphones|color-flame-blue">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="beats-flex-wireless-earphones|color-flame-blue" value="c1.jpg">
+          <img src="beats-flex-wireless-earphones/color-flame-blue/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Pacific_railroad-open._How_to_go-_what_to_see._Guide_for_travel_to_and_through_western_America_(IA_pacificrailroado01bowl).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="beats-flex-wireless-earphones|color-flame-blue" value="c2.jpg">
+          <img src="beats-flex-wireless-earphones/color-flame-blue/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:A_case_of_multiple_personality_-_Albert_Wilson_-_1904.djvu" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="beats-flex-wireless-earphones|color-flame-blue" value="c3.jpg">
+          <img src="beats-flex-wireless-earphones/color-flame-blue/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Rose_Brake;_poems_(IA_rosebrakepoems00dand).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="beats-flex-wireless-earphones|color-flame-blue" value="c4.jpg">
+          <img src="beats-flex-wireless-earphones/color-flame-blue/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:White%27s_winning_wonders_-_dahlia_creations_%22true-to-name%22_-_1928_-_White_Floral_Company._(IA_CAT31329085).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="beats-flex-wireless-earphones|color-flame-blue" value="c5.jpg">
+          <img src="beats-flex-wireless-earphones/color-flame-blue/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Plays,_acting_and_music;_a_book_of_theory_(IA_playsactingmusic00symorich).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="beats-flex-wireless-earphones|color-flame-blue" value="c6.jpg">
+          <img src="beats-flex-wireless-earphones/color-flame-blue/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Blue_Book_Magazine_1930-11.pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="apple-homepod-mini-cosmic-grey-color-white">
+      <header>
+        <div>
+          <h2>Apple HomePod Mini Cosmic Grey</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#FFFFFF"></span>
+            wanted: <strong>Color=White</strong>
+            <span class="path">→ apple-homepod-mini-cosmic-grey/color-white/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="apple-homepod-mini-cosmic-grey|color-white">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-white" value="c1.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-white/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:%22Old_Scrooge%22-_a_Christmas_carol_in_five_staves._Dramatized_from_Charles_Dickens%27_celebrated_Christmas_story_(IA_oldscroogechrist00scot).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-white" value="c2.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-white/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Food_and_dietetics_(IA_CAT11013044).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-white" value="c3.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-white/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Food_and_dietetics_(IA_CAT11041304).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-white" value="c4.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-white/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Food_and_dietetics_(IA_fooddietetics00nort).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-white" value="c5.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-white/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Food_and_dietetics_(IA_fooddietetics01nort).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-white" value="c6.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-white/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Home_landscapes,_1935_-_the_Park_Nurseries_;_Holm_%26_Olson,_Inc._(IA_CAT31345208).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="apple-homepod-mini-cosmic-grey-color-blue">
+      <header>
+        <div>
+          <h2>Apple HomePod Mini Cosmic Grey</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#3B6FB6"></span>
+            wanted: <strong>Color=Blue</strong>
+            <span class="path">→ apple-homepod-mini-cosmic-grey/color-blue/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="apple-homepod-mini-cosmic-grey|color-blue">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-blue" value="c1.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-blue/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:%22Old_Scrooge%22-_a_Christmas_carol_in_five_staves._Dramatized_from_Charles_Dickens%27_celebrated_Christmas_story_(IA_oldscroogechrist00scot).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-blue" value="c2.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-blue/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Food_and_dietetics_(IA_CAT11013044).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-blue" value="c3.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-blue/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Food_and_dietetics_(IA_fooddietetics00nort).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-blue" value="c4.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-blue/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Food_and_dietetics_(IA_fooddietetics01nort).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-blue" value="c5.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-blue/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Home_landscapes,_1935_-_the_Park_Nurseries_;_Holm_%26_Olson,_Inc._(IA_CAT31345208).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-homepod-mini-cosmic-grey|color-blue" value="c6.jpg">
+          <img src="apple-homepod-mini-cosmic-grey/color-blue/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Farmer_Seed_%26_Nursery_Co.,_1938._(IA_CAT31350939).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="amazon-echo-plus-color-sandstone">
+      <header>
+        <div>
+          <h2>Amazon Echo Plus (2nd Gen)</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#D8CFC0"></span>
+            wanted: <strong>Color=Sandstone</strong>
+            <span class="path">→ amazon-echo-plus/color-sandstone/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="amazon-echo-plus|color-sandstone">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-sandstone" value="c1.jpg">
+          <img src="amazon-echo-plus/color-sandstone/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:A_million_of_facts,_and_correct_data,_in_the_entire_circle_of_the_sciences_..._(IA_b29286736).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-sandstone" value="c2.jpg">
+          <img src="amazon-echo-plus/color-sandstone/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_better_land;_or,_The_believer%27s_journey_and_future_home_(IA_betterlandorbeli00thom).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-sandstone" value="c3.jpg">
+          <img src="amazon-echo-plus/color-sandstone/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Journal_and_proceedings_of_the_Royal_Society_of_New_South_Wales_(IA_journalproceedi152royaa).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-sandstone" value="c4.jpg">
+          <img src="amazon-echo-plus/color-sandstone/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Athen%C3%A6um_(IA_athenum1863unse).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-sandstone" value="c5.jpg">
+          <img src="amazon-echo-plus/color-sandstone/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_better_land;_or,_The_believer%27s_journey_and_future_home_(IA_betterlandorbeli00thom_0).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-sandstone" value="c6.jpg">
+          <img src="amazon-echo-plus/color-sandstone/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Catalogue_of_the_Library_of_the_Scarborough_Mechanics%27_Institute_(IA_catalogueoflibra00scar).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="amazon-echo-plus-color-heather-grey">
+      <header>
+        <div>
+          <h2>Amazon Echo Plus (2nd Gen)</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#A9A9A6"></span>
+            wanted: <strong>Color=Heather Grey</strong>
+            <span class="path">→ amazon-echo-plus/color-heather-grey/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="amazon-echo-plus|color-heather-grey">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-heather-grey" value="c1.jpg">
+          <img src="amazon-echo-plus/color-heather-grey/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Under_two_flags_ouida.djvu" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-heather-grey" value="c2.jpg">
+          <img src="amazon-echo-plus/color-heather-grey/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:A_C_Doyle_-_The_White_Company.djvu" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-heather-grey" value="c3.jpg">
+          <img src="amazon-echo-plus/color-heather-grey/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Familiar_garden_flowers_(IA_b28122173_0002).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-heather-grey" value="c4.jpg">
+          <img src="amazon-echo-plus/color-heather-grey/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:John_Tamson%27s_Bairns,_and_other_poems_(IA_cu31924013343862).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-heather-grey" value="c5.jpg">
+          <img src="amazon-echo-plus/color-heather-grey/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Earth%27s_voices._Transcripts_from_nature,_Sospitra,_and_other_poems_(IA_cu31924013546548).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="amazon-echo-plus|color-heather-grey" value="c6.jpg">
+          <img src="amazon-echo-plus/color-heather-grey/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Works_of_H_G_Wells_Volume_17.pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="rolex-submariner-watch-dial-green">
+      <header>
+        <div>
+          <h2>Rolex Submariner</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#4C7A52"></span>
+            wanted: <strong>Dial=Green</strong>
+            <span class="path">→ rolex-submariner-watch/dial-green/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="rolex-submariner-watch|dial-green">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="rolex-submariner-watch|dial-green" value="c1.jpg">
+          <img src="rolex-submariner-watch/dial-green/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">openverse · BY-SA 3.0</span>
+          <a class="meta" href="https://commons.wikimedia.org/w/index.php?curid=1610855" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="rolex-submariner-watch|dial-green" value="c2.jpg">
+          <img src="rolex-submariner-watch/dial-green/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">openverse · CC0 1.0</span>
+          <a class="meta" href="https://commons.wikimedia.org/w/index.php?curid=146561276" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="rolex-submariner-watch|dial-green" value="c3.jpg">
+          <img src="rolex-submariner-watch/dial-green/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · CC BY-SA 3.0</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Back_of_Rolex_Submariner_Professional.JPG" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="rolex-submariner-watch|dial-green" value="c4.jpg">
+          <img src="rolex-submariner-watch/dial-green/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Journal_v._28,_no._17,_April_28,_2016_(IA_Journal20160428).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="rolex-submariner-watch|dial-green" value="c5.jpg">
+          <img src="rolex-submariner-watch/dial-green/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Journal_v._28,_no._27,_July_7,_2016_(IA_Journal20160707).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="rolex-submariner-watch|dial-green" value="c6.jpg">
+          <img src="rolex-submariner-watch/dial-green/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Journal_v._28,_no._29,_July_21,_2016_(IA_Journal20160721).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="longines-master-collection-strap-stainless-steel">
+      <header>
+        <div>
+          <h2>Longines Master Collection</h2>
+          <p class="sig">
+            
+            wanted: <strong>Strap=Stainless Steel</strong>
+            <span class="path">→ longines-master-collection/strap-stainless-steel/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="longines-master-collection|strap-stainless-steel">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+    <section class="row" id="brown-leather-belt-watch-color-black">
+      <header>
+        <div>
+          <h2>Brown Leather Belt Watch</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#1A1A1A"></span>
+            wanted: <strong>Color=Black</strong>
+            <span class="path">→ brown-leather-belt-watch/color-black/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="brown-leather-belt-watch|color-black">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="brown-leather-belt-watch|color-black" value="c1.jpg">
+          <img src="brown-leather-belt-watch/color-black/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">openverse · BY-SA 4.0</span>
+          <a class="meta" href="https://commons.wikimedia.org/w/index.php?curid=184555352" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="brown-leather-belt-watch|color-black" value="c2.jpg">
+          <img src="brown-leather-belt-watch/color-black/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">openverse · BY-SA 4.0</span>
+          <a class="meta" href="https://commons.wikimedia.org/w/index.php?curid=184555353" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="brown-leather-belt-watch|color-black" value="c3.jpg">
+          <img src="brown-leather-belt-watch/color-black/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">openverse · CC0 1.0</span>
+          <a class="meta" href="https://commons.wikimedia.org/w/index.php?curid=169572810" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="brown-leather-belt-watch|color-black" value="c4.jpg">
+          <img src="brown-leather-belt-watch/color-black/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:NJROTC_Cadet_Field_Manual_(March_2009).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="brown-leather-belt-watch|color-black" value="c5.jpg">
+          <img src="brown-leather-belt-watch/color-black/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · CC0</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Watch_in_the_mountains_(Unsplash).jpg" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="brown-leather-belt-watch|color-black" value="c6.jpg">
+          <img src="brown-leather-belt-watch/color-black/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Cadet_Field_Manual_11th_ED_2017.pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="brown-leather-belt-watch-color-tan">
+      <header>
+        <div>
+          <h2>Brown Leather Belt Watch</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#B78B60"></span>
+            wanted: <strong>Color=Tan</strong>
+            <span class="path">→ brown-leather-belt-watch/color-tan/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="brown-leather-belt-watch|color-tan">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+    <section class="row" id="apple-magsafe-battery-pack-bundle-with-20w-adapter_color-white">
+      <header>
+        <div>
+          <h2>Apple MagSafe Battery Pack</h2>
+          <p class="sig">
+            
+            wanted: <strong>Bundle=With 20W Adapter&amp;Color=White</strong>
+            <span class="path">→ apple-magsafe-battery-pack/bundle-with-20w-adapter_color-white/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="apple-magsafe-battery-pack|bundle-with-20w-adapter_color-white">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+    <section class="row" id="apple-airpower-wireless-charger-color-black">
+      <header>
+        <div>
+          <h2>Apple AirPower Wireless Charger</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#1A1A1A"></span>
+            wanted: <strong>Color=Black</strong>
+            <span class="path">→ apple-airpower-wireless-charger/color-black/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="apple-airpower-wireless-charger|color-black">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles">
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpower-wireless-charger|color-black" value="c1.jpg">
+          <img src="apple-airpower-wireless-charger/color-black/c1.jpg" alt="c1.jpg" loading="lazy">
+          <span class="cap">c1.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Black_Cat_November_1916.djvu" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpower-wireless-charger|color-black" value="c2.jpg">
+          <img src="apple-airpower-wireless-charger/color-black/c2.jpg" alt="c2.jpg" loading="lazy">
+          <span class="cap">c2.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Comparing_two_tools_for_mobile-device_forensics_(IA_comparingtwotool1094556153).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpower-wireless-charger|color-black" value="c3.jpg">
+          <img src="apple-airpower-wireless-charger/color-black/c3.jpg" alt="c3.jpg" loading="lazy">
+          <span class="cap">c3.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Effectiveness_of_the_factory_reset_on_a_mobile_device_(IA_effectivenessoff1094541441).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpower-wireless-charger|color-black" value="c4.jpg">
+          <img src="apple-airpower-wireless-charger/color-black/c4.jpg" alt="c4.jpg" loading="lazy">
+          <span class="cap">c4.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Anchors_aweigh_(IA_anchorsaweigh00welliala).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpower-wireless-charger|color-black" value="c5.jpg">
+          <img src="apple-airpower-wireless-charger/color-black/c5.jpg" alt="c5.jpg" loading="lazy">
+          <span class="cap">c5.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:The_Billboard_1921-05-21-_Vol_33_Iss_21_(IA_sim_billboard_1921-05-21_33_21).pdf" target="_blank" rel="noreferrer">source</a>
+        </label>
+        <label class="tile">
+          <input type="checkbox" data-set="apple-airpower-wireless-charger|color-black" value="c6.jpg">
+          <img src="apple-airpower-wireless-charger/color-black/c6.jpg" alt="c6.jpg" loading="lazy">
+          <span class="cap">c6.jpg</span>
+          <span class="meta">wikimedia · Public domain</span>
+          <a class="meta" href="https://commons.wikimedia.org/wiki/File:Victoria_Daily_Times_(1906-10-23)_(IA_victoriadailytimes19061023).pdf" target="_blank" rel="noreferrer">source</a>
+        </label></div>
+    </section>
+
+    <section class="row" id="apple-iphone-charger-bundle-with-usb-c-to-lightning-cable">
+      <header>
+        <div>
+          <h2>Apple 20W USB-C Power Adapter</h2>
+          <p class="sig">
+            
+            wanted: <strong>Bundle=With USB-C to Lightning cable</strong>
+            <span class="path">→ apple-iphone-charger/bundle-with-usb-c-to-lightning-cable/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="apple-iphone-charger|bundle-with-usb-c-to-lightning-cable">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+    <section class="row" id="iphone-12-silicone-case-with-magsafe-plum-color-deep-navy">
+      <header>
+        <div>
+          <h2>iPhone 12 Silicone Case with MagSafe — Plum</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#2B3A55"></span>
+            wanted: <strong>Color=Deep Navy</strong>
+            <span class="path">→ iphone-12-silicone-case-with-magsafe-plum/color-deep-navy/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="iphone-12-silicone-case-with-magsafe-plum|color-deep-navy">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+    <section class="row" id="iphone-12-silicone-case-with-magsafe-plum-color-pink-citrus">
+      <header>
+        <div>
+          <h2>iPhone 12 Silicone Case with MagSafe — Plum</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#F2A093"></span>
+            wanted: <strong>Color=Pink Citrus</strong>
+            <span class="path">→ iphone-12-silicone-case-with-magsafe-plum/color-pink-citrus/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="iphone-12-silicone-case-with-magsafe-plum|color-pink-citrus">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+    <section class="row" id="selfie-stick-monopod-color-rose-gold">
+      <header>
+        <div>
+          <h2>Selfie Stick Monopod with Tripod</h2>
+          <p class="sig">
+            <span class="swatch" style="background:#D6A08C"></span>
+            wanted: <strong>Color=Rose Gold</strong>
+            <span class="path">→ selfie-stick-monopod/color-rose-gold/</span>
+          </p>
+        </div>
+        <label class="drop">
+          <input type="checkbox" data-drop="selfie-stick-monopod|color-rose-gold">
+          No acceptable photo — drop this variant
+        </label>
+      </header>
+      <div class="tiles"><p class="empty">Nothing downloaded. Drop a file into this folder and re-run, or mark the variant as dropped.</p></div>
+    </section>
+
+<footer>
+  <button id="save">Copy approvals JSON</button>
+  <button id="download">Download approvals.json</button>
+  <span id="status"></span>
+</footer>
+
+<script>
+  const collect = () => {
+    const out = {};
+    for (const box of document.querySelectorAll('input[data-drop]:checked')) {
+      const [slug, folder] = box.dataset.drop.split('|');
+      out[slug] = out[slug] || {};
+      out[slug][folder] = { drop: true };
+    }
+    for (const box of document.querySelectorAll('input[data-set]:checked')) {
+      const [slug, folder] = box.dataset.set.split('|');
+      out[slug] = out[slug] || {};
+      if (out[slug][folder]?.drop) continue;
+      out[slug][folder] = out[slug][folder] || { approve: [] };
+      out[slug][folder].approve.push(box.value);
+    }
+    return JSON.stringify(out, null, 2);
+  };
+
+  const status = document.getElementById('status');
+
+  document.getElementById('save').onclick = async () => {
+    await navigator.clipboard.writeText(collect());
+    status.textContent = 'Copied — paste into media-staging/approvals.json';
+  };
+
+  document.getElementById('download').onclick = () => {
+    const blob = new Blob([collect()], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'approvals.json';
+    a.click();
+    status.textContent = 'Saved — move it to media-staging/approvals.json';
+  };
+</script>

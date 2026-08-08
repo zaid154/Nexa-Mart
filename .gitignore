@@ -1,0 +1,24 @@
+node_modules/
+.env
+.env.vercel
+.env.render
+backend/.env
+
+# The same files without a leading dot. These hold live credentials (Atlas
+# password, Gmail app password, Brevo and Razorpay keys) and this repo is
+# public, so they must never be committed — only pasted into the Render and
+# Vercel dashboards.
+env
+env.render
+env.vercel
+.claude/
+*.log
+dist/
+.DS_Store
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# Downloaded photo candidates waiting to be reviewed, and the audit output.
+# Only approved photos, promoted into frontend/public, belong in the repo.
+
