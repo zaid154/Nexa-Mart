@@ -732,37 +732,39 @@ const ProductDetail = () => {
       )}
 
       {/* Sticky Mobile Action Bar */}
-      <div className="sticky bottom-0 z-30 -mx-4 mt-4 flex items-center gap-3 border-t border-ink-200 bg-white px-4 py-3 shadow-deep md:hidden">
-        <div className="min-w-0 flex-1">
+      <div className="fixed bottom-[56px] inset-x-0 z-30 flex items-center gap-2 border-t border-ink-200 bg-white px-3 py-2.5 shadow-deep md:hidden">
+        <div className="min-w-max shrink-0">
           <p className="text-2xs uppercase tracking-wide text-ink-400">Price</p>
-          <p className="text-base font-bold text-ink-900">{formatINR(price)}</p>
+          <p className="text-base font-bold whitespace-nowrap text-ink-900">{formatINR(price)}</p>
         </div>
-        {inCart ? (
+        <div className="flex flex-1 gap-2">
+          {inCart ? (
+            <button
+              type="button"
+              onClick={() => navigate("/cart")}
+              className="btn btn-cart flex-1 px-1 py-2 text-[11px] sm:text-xs"
+            >
+              <IconCart size={14} className="hidden sm:block" /> Go to Cart
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={outOfStock}
+              className="btn btn-cart flex-1 px-1 py-2 text-[11px] sm:text-xs"
+            >
+              <IconCart size={14} className="hidden sm:block" /> Add to Cart
+            </button>
+          )}
           <button
             type="button"
-            onClick={() => navigate("/cart")}
-            className="btn btn-cart flex-1 py-2.5 text-xs"
-          >
-            <IconCart size={15} /> Go to Cart
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleAdd}
+            onClick={handleBuyNow}
             disabled={outOfStock}
-            className="btn btn-cart flex-1 py-2.5 text-xs"
+            className="btn btn-buy flex-1 px-1 py-2 text-[11px] sm:text-xs"
           >
-            <IconCart size={15} /> Add to Cart
+            <IconZap size={14} className="hidden sm:block" /> Buy Now
           </button>
-        )}
-        <button
-          type="button"
-          onClick={handleBuyNow}
-          disabled={outOfStock}
-          className="btn btn-buy flex-1 py-2.5 text-xs"
-        >
-          <IconZap size={15} /> Buy Now
-        </button>
+        </div>
       </div>
     </div>
   );

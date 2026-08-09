@@ -579,8 +579,8 @@ const Checkout = () => {
 
       {/* On a phone the rail sits far below the fold, so the action follows the
           shopper down the page instead of hiding under it. */}
-      <div className="sticky bottom-0 z-30 -mx-4 mt-4 flex items-center gap-4 border-t border-ink-200 bg-white px-4 py-3 shadow-deep lg:hidden">
-        <div className="min-w-0">
+      <div className="fixed bottom-[56px] inset-x-0 z-30 flex items-center gap-4 border-t border-ink-200 bg-white px-4 py-3 shadow-deep lg:hidden">
+        <div className="min-w-0 flex-1">
           <p className="text-2xs uppercase tracking-wide text-ink-400">Total</p>
           <p className="text-lg font-bold text-ink-900">{formatINR(total)}</p>
         </div>
