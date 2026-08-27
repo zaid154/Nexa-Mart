@@ -1,626 +1,656 @@
 # NexaMart — Electronics E-Commerce Marketplace
 
-> **Author:** Mohd Zaid &middot; **Contact:** zaidm1323@gmail.com &middot; **GitHub:** [github.com/mohdzaid](https://github.com/mohdzaid)
-> A Flipkart-style, full-stack (MERN) marketplace — storefront, cart, checkout, payments, orders, returns, invoices and an admin console.
+<div align="center">
 
-The UI follows the Flipkart design language: blue header, flat white cards, green rating pills, an amber/orange CTA pair, and the four-step checkout accordion.
+![MERN Stack](https://img.shields.io/badge/Stack-MERN-blue?style=for-the-badge&logo=react)
+![React 18](https://img.shields.io/badge/Frontend-React_18_%7C_Vite_5-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Node.js](https://img.shields.io/badge/Backend-Node.js_20_%7C_Express_4-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![MongoDB](https://img.shields.io/badge/Database-MongoDB_Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind_CSS_3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![OWASP Hardened](https://img.shields.io/badge/Security-OWASP_Hardened-success?style=for-the-badge&logo=shield)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-```
-Live         https://nexa-mart-psi.vercel.app
-Live API     https://nexa-mart.onrender.com/api
+<p align="center">
+  A production-grade, Flipkart-inspired full-stack MERN e-commerce marketplace featuring multi-attribute product variants, dynamic SKU matrix, variant-aware cart & checkout, Razorpay & Cash-on-Delivery payment flows, live order tracking timelines, tax invoice generation, and a dedicated <b>Seller Hub (Admin Console)</b>.
+</p>
 
-Storefront   http://localhost:5173
-Seller Hub   http://localhost:5173/admin
-API          http://localhost:5000/api
-```
+[**🌐 Live Storefront**](https://nexa-mart-psi.vercel.app) &nbsp;&bull;&nbsp; [**⚡ Live API**](https://nexa-mart.onrender.com/api) &nbsp;&bull;&nbsp; [**👨‍💻 Author GitHub**](https://github.com/zaid154) &nbsp;&bull;&nbsp; [**💼 LinkedIn**](https://www.linkedin.com/in/mohd-zaid-794090231/)
 
-> The API runs on Render's free plan, which sleeps after a quiet spell. The
-> first request after that takes 30–50 seconds; the site shows a banner
-> explaining it and retries on its own.
-
----
-
-## Contents
-
-1. [Quick start](#quick-start)
-2. [Demo accounts](#demo-accounts)
-3. [Tech stack](#tech-stack)
-4. [How a request flows](#how-a-request-flows)
-5. [Repository layout](#repository-layout)
-6. [Backend — file by file](#backend--file-by-file)
-7. [Frontend — file by file](#frontend--file-by-file)
-8. [Data models](#data-models)
-9. [Product variants](#product-variants)
-10. [API reference](#api-reference)
-11. [Seed data](#seed-data)
-12. [Environment variables](#environment-variables)
-13. [Deployment](#deployment)
-14. [Design system](#design-system)
-15. [Known scope](#known-scope)
-16. [Troubleshooting](#troubleshooting)
+</div>
 
 ---
 
-## Quick start
+## 📌 Live Deployments & Local Ports
+
+| Environment | URL / Endpoint | Description |
+| :--- | :--- | :--- |
+| **Production Storefront** | [https://nexa-mart-psi.vercel.app](https://nexa-mart-psi.vercel.app) | Deployed on Vercel with automatic API rewrite proxy |
+| **Production API** | [https://nexa-mart.onrender.com/api](https://nexa-mart.onrender.com/api) | Deployed on Render with cold-start mitigation banner |
+| **Local Storefront** | `http://localhost:5173` | Vite 5 Dev Server with hot module replacement (HMR) |
+| **Local Seller Hub** | `http://localhost:5173/admin` | Full-featured Admin Dashboard & Control Center |
+| **Local API Server** | `http://localhost:5000/api` | Express 4 REST API with MongoDB connection |
+
+> **Render Free-Tier Cold Starts:** The live API is hosted on Render's free tier, which goes into standby after periods of inactivity. The first request may take ~30–50 seconds to spin up. NexaMart features a built-in countdown banner and automatic Axios retry mechanism so user sessions are seamlessly resumed.
+
+---
+
+## 📑 Table of Contents
+
+1. [Key Features](#-key-features)
+2. [Quick Start & Installation](#-quick-start--installation)
+3. [Demo Accounts](#-demo-accounts)
+4. [Tech Stack](#-tech-stack)
+5. [Architecture & Request Flow](#-architecture--request-flow)
+6. [Repository Structure](#-repository-structure)
+7. [Backend Architecture](#-backend-architecture)
+8. [Frontend Architecture](#-frontend-architecture)
+9. [Data Models & Schema Design](#-data-models--schema-design)
+10. [Product Variants & SKU Engine](#-product-variants--sku-engine)
+11. [API Reference](#-api-reference)
+12. [Security & OWASP Hardening](#-security--owasp-hardening)
+13. [Seed Data](#-seed-data)
+14. [Environment Variables](#-environment-variables)
+15. [Deployment Guide](#-deployment-guide)
+16. [Design System & Tokens](#-design-system--tokens)
+17. [Troubleshooting & FAQs](#-troubleshooting--faqs)
+18. [Author & Contact](#-author--contact)
+
+---
+
+## ✨ Key Features
+
+### 🛍️ Storefront & User Experience
+- **Flipkart-Style Design Language:** Signature blue headers, flat white cards, green rating pills, amber/orange dual CTA action pairs (`Add to Cart` / `Buy Now`), and seamless 4-step accordion checkout.
+- **Dynamic Product Variant Engine:** Real-time attribute switching (e.g. *Storage: 256GB / 512GB*, *Color: Space Grey / Silver*), dynamic SKU resolving, variant image swatches, instant pricing, and stock status sync.
+- **Cart Drawer & Persisted State:** Instant slide-in cart drawer upon adding items, optimistic quantity adjustments, free-delivery qualification progress bar, and saved-for-later management.
+- **Comprehensive Search & Faceted Filters:** Multi-criteria catalog filtering (category, brand, price slider, customer rating, stock availability), instant search bar with query suggestions, and sort tabs.
+- **Wishlist Management:** One-click wishlist save/unsave, quick "Move to Cart" actions, and persistent user sync.
+- **Mobile-First Responsive Layout:** Custom bottom navigation bar for handheld devices, collapsible filter drawer, touch-friendly swipers, and sticky mobile purchase bars.
+
+### 💳 Checkout, Orders & Invoicing
+- **Multi-Step Checkout:** Verified Indian address validation (regex phone `^[6-9]\d{9}$` and pincode `^[1-9]\d{5}$`), delivery speed estimation, and address book selector.
+- **Dual Payment Gateways:** 
+  - **Razorpay Integration:** Secure signature verification, pop-up payment checkout, webhook capture, and auto-retry for abandoned orders.
+  - **Cash on Delivery (COD):** Instant order placement with zero upfront payment and automatic status progression.
+- **Live Order Tracking Timeline:** Visual step-by-step milestone timeline (`Ordered` &rarr; `Confirmed` &rarr; `Packed` &rarr; `Shipped` &rarr; `Out for Delivery` &rarr; `Delivered`), with audit timestamps and color-coded status badges.
+- **Automated Tax Invoice Generation:** Printable, GST-compliant tax invoices with company seal, buyer details, itemized HSN/variant breakdowns, and discounts.
+- **Returns & Cancellation Workflow:** Self-serve order cancellation with automated stock rollback; return request submission with photo upload attachments and reason tracking.
+
+### 👑 Seller Hub (Admin Console)
+- **Executive Analytics Dashboard:** Real-time GMV revenue counter, order volume charts, order status breakdown bar charts (powered by Recharts), and recent audit log feed.
+- **Complete Product Management:** Multi-image upload (Cloudinary / MongoDB memory fallback), rich specification editor, benefit bullet points, and dynamic variant combination generator.
+- **Order Fulfillment Center:** Update delivery stages, trigger customer notifications, process partial/full refunds, and add private admin notes.
+- **Return & Refund Desk:** Review buyer return submissions with attached photos, inspect reasons, and approve or reject returns.
+- **Coupon & Promotion Engine:** Percentage and fixed discounts, minimum cart value thresholds, maximum discount caps, per-user usage limits, and expiration controls.
+- **CMS & Store Configuration:** Visual page builder for static policies (Terms, Privacy, Shipping, Seller guidelines), global tax/shipping rules, store metadata, and SMTP / Brevo mailer diagnostics.
+- **Activity Logs & CSV Export:** Immutable security audit logs recording admin actions, with 1-click CSV exports for products and orders.
+
+---
+
+## 🚀 Quick Start & Installation
+
+### Prerequisites
+- **Node.js**: `v20.x` or higher
+- **npm**: `v10.x` or higher
+- **MongoDB**: Local MongoDB instance or MongoDB Atlas cluster URI
+
+### Step-by-Step Setup
 
 ```bash
-# 1. install dependencies for root, backend and frontend
+# 1. Clone the repository
+git clone https://github.com/zaid154/Nexa-Mart.git
+cd Nexa-Mart
+
+# 2. Install all root, backend, and frontend dependencies
 npm run install:all
 
-# 2. create the .env file in the project root (see Environment variables)
+# 3. Configure environment variables (create .env in root)
+cp .env.example .env
+# Edit .env and supply your MONGO_URI and JWT secrets (see Environment Variables section)
 
-# 3. fill the database with demo users, products, orders and coupons
+# 4. Populate database with demo products, variants, users, and orders
 npm run seed
 
-# 4. start both servers (backend :5000, frontend :5173)
+# 5. Start development servers concurrently
 npm run dev
 ```
 
-| Script | What it does |
-| --- | --- |
-| `npm run install:all` | Installs root + `backend/` + `frontend/` dependencies |
-| `npm run dev` | Runs API and Vite dev server together via `concurrently` |
-| `npm run seed` | Wipes and refills the database (`backend/src/utils/seed.js`) |
-| `npm run build` | Production build of the React app into `frontend/dist` |
-| `npm run setup` | `install:all` followed by `seed` |
+### Available NPM Scripts
 
-The Vite dev server proxies `/api` to `http://localhost:5000`, so the frontend always calls a relative `/api` path and there is no CORS handling in development.
-
----
-
-## Demo accounts
-
-| Role | Email | Password |
-| --- | --- | --- |
-| Admin | `admin@shop.com` | `Admin@123` |
-| Customer | `user@shop.com` | `User@123` |
-
-Five more customers exist (`priya.sharma@example.com` / `Priya@123`, and so on) so that reviews and orders belong to believable people.
+| Script | Command | Purpose |
+| :--- | :--- | :--- |
+| `npm run install:all` | Root + sub-packages | Installs dependencies across root, `backend/`, and `frontend/` |
+| `npm run dev` | `concurrently` | Starts Express API (`:5000`) and Vite frontend (`:5173`) together |
+| `npm run seed` | `node backend/src/utils/seed.js` | Drops database and inserts 34 products, 99 variants, users, coupons, and orders |
+| `npm run setup` | `install:all && seed` | One-shot setup script for newly cloned repositories |
+| `npm run build` | `vite build` | Compiles optimized production bundle into `frontend/dist` |
 
 ---
 
-## Tech stack
+## 👥 Demo Accounts
 
-**Frontend** — React 18, Vite 5, React Router 6 (lazy routes), Tailwind CSS 3, Axios, Recharts (admin charts). State lives in four React Contexts; there is no Redux.
+Pre-populated accounts created during database seeding:
 
-**Backend** — Node 20, Express 4, Mongoose 8, JWT (access + refresh), bcryptjs, Zod validation, Multer uploads, Cloudinary (optional), Razorpay, Nodemailer/Brevo, Helmet, express-rate-limit, express-mongo-sanitize.
-
-**Database** — MongoDB (Atlas).
-
-**Hosting** — Frontend on Vercel, API on Render, database on Atlas.
+| Role | Email Address | Password | Permissions & Features |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin@shop.com` | `Admin@123` | Full Seller Hub access, order processing, product CRUD, settings |
+| **Customer** | `user@shop.com` | `User@123` | Storefront browsing, cart, checkout, order history, wishlist, reviews |
+| **Demo Customer 1** | `priya.sharma@example.com` | `Priya@123` | Pre-existing orders, saved addresses, verified review history |
+| **Demo Customer 2** | `rahul.verma@example.com` | `Rahul@123` | Pre-existing orders with return requests and delivered states |
 
 ---
 
-## How a request flows
+## 🛠️ Tech Stack
 
-Adding a product to the cart, end to end — this is the clearest way to see how the files connect:
+```mermaid
+graph TD
+    subgraph Client ["Frontend (Vite + React 18)"]
+        React["React 18 & React Router 6"]
+        Tailwind["Tailwind CSS 3 (Custom Tokens)"]
+        Recharts["Recharts (Admin Analytics)"]
+        Axios["Axios (Interceptors & Auth Replay)"]
+        Context["Context API (Auth, Cart, Drawer, Toast, Settings)"]
+        DOMPurify["DOMPurify (XSS Protection)"]
+    end
 
+    subgraph Server ["Backend (Node.js + Express 4)"]
+        Express["Express 4 REST API"]
+        Mongoose["Mongoose 8 (ODM)"]
+        Security["Helmet & Mongo-Sanitize & Rate-Limit"]
+        Auth["JWT (In-Memory Access + HttpOnly Refresh Cookie)"]
+        Zod["Zod Validation Layer"]
+        Services["Razorpay SDK & Cloudinary & Nodemailer/Brevo"]
+    end
+
+    subgraph Storage ["Database & Hosting"]
+        MongoAtlas[("MongoDB Atlas")]
+        Vercel["Vercel (Frontend SPA + API Rewrite)"]
+        Render["Render (Backend Service)"]
+    end
+
+    Client <-->|REST API / HTTPS| Server
+    Server <--> Storage
 ```
-ProductDetail.jsx                  user picks "256 GB · Graphite" and clicks Add to Cart
- └─ CartContext.addToCart(id, qty, variantId)
-     └─ api/client.js              axios instance — injects Authorization: Bearer <token>
-         └─ POST /api/cart         Vite proxy forwards to :5000
-             └─ cartRoutes.js      route table
-                 └─ auth.js        protect — verifies the JWT, loads req.user
-                     └─ cartController.addToCart
-                          • loads the Product
-                          • resolves the chosen variant
-                          • checks that variant's own stock
-                          • pushes { product, variant, quantity } onto user.cart
-                          • returns the rebuilt cart (unit price from the variant)
- └─ setCart(res.data)              every component reading useCart() re-renders
-     └─ CartDrawer opens           the confirmation lands on the item just added
-```
 
-Errors take the reverse path: anything thrown lands in `middleware/error.js`, which returns `{ success:false, message }`; the Axios response interceptor turns that into a plain `Error`, and the calling page surfaces it through `ToastContext`.
+### Frontend
+- **Core:** React 18, Vite 5, React Router 6 (Lazy Loaded Route Code-Splitting)
+- **Styling:** Tailwind CSS 3 with custom brand tokens, responsive grid layouts, and custom utility classes
+- **State Management:** React Context API (`AuthContext`, `CartContext`, `CartDrawerContext`, `SettingsContext`, `ToastContext`, `ConfirmContext`)
+- **Data Visualization:** Recharts for admin analytics and sales tracking
+- **Security & Utilities:** DOMPurify for HTML sanitization, Axios for network requests with automatic token refresh
 
-**The three cart endpoints do not agree on what a quantity means**, which is
-the one thing to know before touching a stepper: `POST /cart` **adds** to
-what is already there, `PUT /cart/:productId` sets an **absolute** value and
-rejects anything below 1, so `DELETE` is the only way to reach zero.
-`CartQuantity` encapsulates that so no caller has to remember it.
+### Backend
+- **Runtime & Framework:** Node.js 20 LTS, Express 4
+- **Database Layer:** MongoDB with Mongoose 8 ODM schemas, indexes, and aggregation pipelines
+- **Authentication:** Dual-token JWT architecture (Short-lived in-memory Access Token + Secure HttpOnly Refresh Cookie) + bcryptjs password hashing
+- **Input Validation:** Zod schemas for request validation across auth, orders, and addresses
+- **File Uploads & Media:** Multer memory storage with sharp optimizations, Cloudinary CDN support, and Buffer fallback
+- **Integrations:** Razorpay SDK for online payments, Nodemailer / Brevo HTTPS API for transactional emails
 
 ---
 
-## Repository layout
+## 🔄 Architecture & Request Flow
+
+### End-to-End Add-to-Cart Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Shopper
+    participant UI as ProductDetail.jsx
+    participant CartCtx as CartContext.jsx
+    participant Axios as api/client.js
+    participant API as cartRoutes.js
+    participant Auth as auth.js (protect)
+    participant Ctrl as cartController.js
+    participant DB as MongoDB (User.cart)
+
+    User->>UI: Selects Variant ("256GB · Space Grey") & Clicks "Add to Cart"
+    UI->>CartCtx: addToCart(productId, qty, variantId)
+    CartCtx->>Axios: POST /api/cart { productId, quantity, variantId }
+    Note over Axios: Injects Bearer token in Authorization header
+    Axios->>API: HTTP Request (Proxied via Vite / Vercel)
+    API->>Auth: Validate JWT & attach req.user
+    Auth->>Ctrl: Invoke addToCart handler
+    Ctrl->>DB: Fetch Product & resolve Variant stock
+    alt Stock Available
+        Ctrl->>DB: Push/Update line item in User.cart
+        Ctrl-->>Axios: 200 OK with Rebuilt Cart Object
+        Axios-->>CartCtx: Update React State
+        CartCtx-->>UI: Cart Drawer slides open with updated item
+    else Out of Stock
+        Ctrl-->>Axios: 400 Bad Request { success: false, message: "Stock unavailable" }
+        Axios-->>CartCtx: Propagate Error
+        CartCtx-->>UI: Trigger Toast Alert ("Requested quantity exceeds stock")
+    end
+```
+
+---
+
+## 📂 Repository Structure
 
 ```
 Nexa-Mart/
-├── package.json              root scripts only (install:all, dev, seed, build)
-├── render.yaml               Render blueprint for the API service
-├── .env                      shared by backend (dotenv) and frontend (Vite, envDir "..")
+├── package.json                   # Root workspace scripts (install:all, dev, seed, build)
+├── render.yaml                    # Render Infrastructure-as-Code blueprint
+├── vercel.json                    # Vercel deployment config with /api reverse proxy
+├── .env.example                   # Template environment variables
+├── .gitignore                     # Git ignore rules
 │
-├── backend/
-│   ├── server.js             entry point — connects Mongo, then listens
+├── backend/                       # Express REST API Server
+│   ├── server.js                  # Application bootstrapper (Env check & DB connect)
+│   ├── package.json               # Backend dependencies & scripts
 │   └── src/
-│       ├── createApp.js      builds the Express app: middleware + route mounting
-│       ├── config/           env validation, DB, Cloudinary, Razorpay
-│       ├── models/           Mongoose schemas
-│       ├── controllers/      request handlers (the business logic)
-│       ├── routes/           URL → controller mapping
-│       ├── middleware/       auth, error handling, uploads, validation
-│       ├── validators/       Zod schemas (auth, orders + addresses)
-│       └── utils/            catalogue, seed, email, SKUs, tokens, order helpers
+│       ├── createApp.js           # Express app factory (middleware, routes, error handler)
+│       ├── config/                # Environment, DB, Razorpay, Cloudinary configurations
+│       ├── controllers/           # Business logic handlers (auth, products, cart, orders, etc.)
+│       ├── middleware/            # Auth, Admin guard, Error handler, Multer uploads, Zod validation
+│       ├── models/                # Mongoose schemas (User, Product, Order, Coupon, Page, Settings)
+│       ├── routes/                # Express routing endpoints
+│       ├── validators/            # Zod validation schemas
+│       ├── scripts/               # Media migration, optimization, and auditing tools
+│       └── utils/                 # Catalogue data, seeders, token helpers, email templates
 │
-└── frontend/
-    ├── index.html            font + Razorpay script tags
-    ├── vite.config.js        dev proxy, envDir, vendor chunk split
-    ├── tailwind.config.js    design tokens (colours, fonts, shadows)
-    ├── src/
-    │   ├── main.jsx          mounts App inside the context providers
-    │   ├── App.jsx           route table
-    │   ├── api/client.js     the single Axios instance
-    │   ├── context/          Auth, Cart, CartDrawer, Toast, Confirm, Settings
-    │   ├── components/       shared UI
-    │   ├── pages/            storefront pages
-    │   ├── pages/admin/      Seller Hub pages
-    │   ├── styles/index.css  Tailwind entry + component recipes
-    │   └── utils/            formatting, address rules, payment, image fallbacks
-    └── public/
-        ├── images/products/  product photos (shipped with the app)
-        └── images/banners/   home page hero art
+└── frontend/                      # React SPA (Vite)
+    ├── index.html                 # Main HTML template with Google Fonts & Razorpay script
+    ├── vite.config.js             # Vite config with API dev proxy & vendor chunk splitting
+    ├── tailwind.config.js         # Design tokens (Flipkart blue, copper accents, typography)
+    ├── package.json               # Frontend dependencies & scripts
+    ├── public/
+    │   └── images/                # Shipped product catalog photography & banners
+    └── src/
+        ├── main.jsx               # Application root wrapped in context providers
+        ├── App.jsx                # Lazy-loaded route table & global banners
+        ├── api/                   # Centralized Axios instance with interceptors
+        ├── context/               # Auth, Cart, Drawer, Toast, Confirm, Settings contexts
+        ├── components/            # Reusable UI components (Navbar, Footers, Steppers, Timeline)
+        ├── pages/                 # Storefront pages (Catalog, ProductDetail, Cart, Checkout, etc.)
+        ├── pages/admin/           # Seller Hub admin views (Dashboard, Products, Orders, Coupons, etc.)
+        ├── styles/                # Tailwind entry point & component CSS recipes
+        └── utils/                 # Formatting, address validation, Razorpay loader, pricing logic
 ```
 
 ---
 
-## Backend — file by file
+## ⚙️ Backend Architecture
 
-### Entry and wiring
+### Core Modules Breakdown
 
-| File | Responsibility |
-| --- | --- |
-| `server.js` | Validates env, connects MongoDB, starts the HTTP listener |
-| `src/createApp.js` | Builds the Express app — Helmet, CORS, JSON parsing, mongo-sanitize, rate limiting — then mounts every route group and the error handler |
-
-### `src/config/`
-
-| File | Responsibility |
-| --- | --- |
-| `env.js` | Reads and exports environment variables |
-| `validateEnv.js` | Fails fast at boot if a required variable is missing |
-| `db.js` | `mongoose.connect()` with connection logging |
-| `cloudinary.js` | Optional image CDN. `isCloudinaryEnabled()` decides whether uploads go to Cloudinary or straight into MongoDB as a Buffer |
-| `razorpay.js` | Razorpay SDK instance built from the key id/secret |
-
-### `src/models/`
-
-| Model | Holds | Notable fields |
-| --- | --- | --- |
-| `User.js` | Accounts | `password` (bcrypt-hashed in a pre-save hook), `role`, `address`, `addresses[]`, `cart[]`, `wishlist[]` |
-| `Product.js` | Catalogue | `images[]`, `specs` (Map), `attributes` (Map), `benefits[]`, `variants[]`, `rating`, `numReviews`; a pre-save hook builds the slug |
-| `Order.js` | Orders | `items[]` (price + variant snapshot), `shippingAddress`, `status`, `trackingHistory[]`, `returnInfo`, `refund` |
-| `Review.js` | Reviews | Unique `(product, user)` index; a post-save hook recalculates the product's `rating` and `numReviews` |
-| `Coupon.js` | Discounts | `type` (percent/fixed), `minOrderAmount`, `maxDiscount`, `usageLimit`, `perUserLimit`, `expiresAt` |
-| `Page.js` | CMS pages | `slug`, `title`, `content` (HTML), `isPublished` |
-| `Settings.js` | Store settings | Site name, social links, invoice details, SMTP config |
-| `ActivityLog.js` | Audit trail | `type`, `action`, `actor` — powers Admin → Logs |
-| `Otp.js` | Email codes | Verification and password-reset codes with expiry |
-
-### `src/controllers/`
-
-| Controller | Does |
-| --- | --- |
-| `authController.js` | Register, OTP verification, login, refresh, logout, forgot/reset password, profile read + update |
-| `productController.js` | Public listing with filters and pagination, single product with reviews, filter facets, admin CRUD with image upload and variant building |
-| `cartController.js` | Variant-aware cart: add, update quantity, remove, clear. Price and stock always come from the chosen variant |
-| `wishlistController.js` | Add / remove / list saved products |
-| `reviewController.js` | Create, list by product, delete |
-| `orderController.js` | Place order (idempotent), my orders, single order, cancel, return request. Snapshots the variant price and label onto each order line |
-| `paymentController.js` | Creates the Razorpay order, verifies the signature, handles the webhook |
-| `couponController.js` | Validates a code against the live cart; admin CRUD |
-| `pageController.js` | Public CMS reads plus `ensureDefaultPages()`, which inserts any missing default page without touching admin edits |
-| `settingsController.js` | Public settings for the footer; admin read/write; test email |
-| `adminController.js` | Dashboard stats, order management, returns, refunds, users, activity logs, CSV export |
-
-### `src/middleware/`
-
-| File | Does |
-| --- | --- |
-| `auth.js` | `protect` verifies the JWT and loads `req.user`; `admin` gates admin-only routes |
-| `optionalAuth.js` | Attaches the user when a token is present but never rejects — for public routes that behave differently when signed in |
-| `error.js` | Converts thrown errors into a consistent JSON error response |
-| `upload.js` | Multer memory storage with file-type and size limits |
-| `validate.js` | Runs a Zod schema against the request body |
-
-### `src/validators/`
-
-| File | Holds |
-| --- | --- |
-| `authValidators.js` | Register, login, OTP, forgot/reset password |
-| `orderValidators.js` | `addressSchema` (phone `^[6-9]\d{9}$`, pincode `^[1-9]\d{5}$`, name/line/city/state lengths), `createOrderSchema` and `updateProfileSchema` |
-
-The address rules are enforced **at the route** and deliberately *not* as
-`match` on the Mongoose schemas — seeded users and older orders hold addresses
-that predate them, and a model-level constraint would make those documents
-unsaveable for unrelated reasons. `frontend/src/utils/address.js` mirrors these
-rules field for field so the browser catches the same mistakes without a round
-trip; change one, change the other.
-
-### `src/utils/`
-
-| File | Does |
-| --- | --- |
-| `catalogue.js` | **The product catalogue** — 34 products with images, specs, highlights and attributes, plus `variantsByProduct` (99 configurations) |
-| `seedData.js` | Users, coupons, review text pools, order plans, and the `seedDatabase()` routine |
-| `seed.js` | CLI wrapper — connect, seed, disconnect (`npm run seed`) |
-| `productView.js` | Turns a Product document into the shape the frontend expects (builds image URLs, converts Maps to plain objects) |
-| `orderStatus.js` | Status transition rules, tracking history, and `adjustStock()` — which moves variant stock as well as product stock |
-| `coupons.js` | Server-side coupon validation (expiry, minimum order, usage caps) |
-| `sku.js` | `generateSku()` and `generateVariantSku()`, plus per-category attribute lists |
-| `tokens.js`, `generateToken.js` | Access and refresh token signing |
-| `otp.js` | OTP generation, hashing and verification |
-| `email.js`, `emailTemplates.js` | Nodemailer/Brevo transport and the HTML templates |
-| `logger.js` | Writes `ActivityLog` entries |
-| `paginate.js` | Shared page/limit/skip helper |
-| `productImages.js` | Normalises uploaded files into image subdocuments |
-| `response.js` | Small success/error response helpers |
+| Module / Directory | Key Files | Purpose & Responsibilities |
+| :--- | :--- | :--- |
+| **Configuration** | `config/db.js`<br>`config/env.js`<br>`config/razorpay.js`<br>`config/cloudinary.js` | Initializes MongoDB connection, performs boot-time environment validation, exports Razorpay and Cloudinary SDK singletons. |
+| **Data Models** | `models/User.js`<br>`models/Product.js`<br>`models/Order.js`<br>`models/Coupon.js`<br>`models/Page.js`<br>`models/Settings.js`<br>`models/ActivityLog.js` | Defines Mongoose schemas with pre/post save hooks, bcrypt password hashing, slug generation, product rating recalculations, and variant embedding. |
+| **Controllers** | `controllers/authController.js`<br>`controllers/productController.js`<br>`controllers/cartController.js`<br>`controllers/orderController.js`<br>`controllers/paymentController.js`<br>`controllers/adminController.js` | Implements end-to-end business logic, transaction handling, variant pricing, order idempotency, and coupon discount validation. |
+| **Middleware** | `middleware/auth.js`<br>`middleware/optionalAuth.js`<br>`middleware/error.js`<br>`middleware/upload.js`<br>`middleware/validate.js` | JWT verification, admin authorization guards, global error interception, Multer file upload handling, and Zod schema execution. |
+| **Validators** | `validators/authValidators.js`<br>`validators/orderValidators.js` | Zod validation rules enforcing Indian mobile numbers (`^[6-9]\d{9}$`), 6-digit postal PIN codes, strong passwords, and payload sanity. |
+| **Utilities & Scripts** | `utils/catalogue.js`<br>`utils/seedData.js`<br>`utils/orderStatus.js`<br>`utils/email.js`<br>`scripts/media/*` | Built-in 34-product catalogue, database wiping/seeding routines, stock rollback logic, Brevo/Nodemailer transports, and media optimization tools. |
 
 ---
 
-## Frontend — file by file
+## 💻 Frontend Architecture
 
-### Shell
+### Context Providers & Hierarchy
 
-| File | Does |
-| --- | --- |
-| `main.jsx` | Mounts `<App/>` inside `SettingsProvider → ToastProvider → ConfirmProvider → AuthProvider → CartProvider → CartDrawerProvider` |
-| `App.jsx` | The route table. Lazy-loads every page; hides the storefront navbar and footer on `/admin/*` so the Seller Hub reads as its own console. Also mounts the cart drawer and the cold-start banner |
-| `api/client.js` | The single Axios instance: base URL `/api`, `withCredentials`, Bearer header injection, retry-on-cold-start (Render free tier), 401 → refresh → replay, and error normalisation. Dispatches `backend-waking` / `backend-ready` window events for the banner |
-
-### `src/context/`
-
-| Context | Exposes | Used by |
-| --- | --- | --- |
-| `AuthContext` | `user`, `login`, `register`, `verifyOtp`, `logout`, `updateUser`, `isAdmin` | Navbar, all auth pages, `ProtectedRoute`, Checkout, Profile |
-| `CartContext` | `cart`, `wishlist`, `addToCart(id, qty, variantId)`, `updateCartItem`, `removeFromCart`, wishlist helpers, `inWishlist` | Navbar badge, ProductCard, ProductDetail, Cart, Checkout, Wishlist |
-| `CartDrawerContext` | `open()` / `close()` (stable identity) and the `isOpen` boolean, split into two contexts so a forty-tile grid does not re-render when the drawer opens | ProductCard, Catalog rows, ProductDetail, CartDrawer |
-| `SettingsContext` | `settings`, `useCommerce()` — the admin's live pricing, delivery and payment rules | Home, product pages, Cart, Checkout, PriceDetails |
-| `ToastContext` | `toast.success/error/info` | Everywhere |
-| `ConfirmContext` | `confirm({ title, message })` returning a promise | Destructive actions (cancel order, delete product) |
-
-### `src/components/`
-
-| Component | Renders |
-| --- | --- |
-| `Navbar.jsx` | Blue sticky header — logo, offers pill, pincode picker, search, login dropdown, cart badge, More menu, mobile drawer |
-| `Footer.jsx` | Dark footer with link columns, social icons, payment glyphs, CMS links |
-| `Logo.jsx` | The single brand lockup (`variant="light"` on blue, `"dark"` on white) |
-| `SearchBar.jsx` | Search input with a recent/popular suggestion dropdown and keyboard navigation |
-| `ProductCard.jsx` | Grid tile — image, title, rating pill, price row, Assured badge, wishlist heart, and the add-to-cart control |
-| `CartDrawer.jsx` | Slide-in panel that opens on a successful add: line items, quantity steppers, free-delivery progress, subtotal, View cart / Checkout |
-| `QuantityStepper.jsx` | The `− 1 +` control. Presentational only |
-| `CartQuantity.jsx` | A stepper bound to a real cart line. Owns its own `busy` flag and knows the cart API is asymmetric — `POST` adds, `PUT` sets and rejects anything below 1, so `DELETE` is the only route to zero |
-| `AddressForm.jsx` | The eight shipping-address fields with their input types, `maxLength`, `inputMode`, `autoComplete` and required markers. Used by **both** Checkout and Profile |
-| `PriceDetails.jsx` | The **PRICE DETAILS** rail shared by Cart, Checkout and OrderDetail |
-| `OrderTimeline.jsx` | Vertical delivery progress (Ordered → Confirmed → Packed → Shipped → Out for delivery → Delivered), plus a return track when there is one. A step counts as done because the order's own tracking events say so, not because of an index — so a cancelled order shows only what really happened |
-| `TrackingHistory.jsx` | The tracking event list, dot coloured per status. Shared by the customer and admin order pages |
-| `BackendWakingBanner.jsx` | The strip that explains Render's free-tier cold start and counts the seconds |
-| `AuthShell.jsx` | Two-panel frame (blue copy panel + white form) used by all five auth screens |
-| `AuthFields.jsx` | `AuthField` (floating label), `PasswordField` (show/hide + strength meter mirroring the server's rules), `CodeInput` (six OTP boxes with paste support) |
-| `Rating.jsx` | Green `4.3 ★` pill |
-| `PageShell.jsx` | Picks the page container: admin passthrough, centred auth, or the standard 1280 px column |
-| `Icons.jsx` | The inline SVG icon set |
-| `Skeleton.jsx`, `Loader.jsx`, `EmptyState.jsx`, `ErrorState.jsx` | Loading, empty and error states |
-| `ProtectedRoute.jsx` | `ProtectedRoute` (needs login) and `AdminRoute` (needs admin) |
-
-### `src/utils/`
-
-| File | Does |
-| --- | --- |
-| `format.js` | Currency and dates, plus the **status vocabulary**: `statusLabel`, `statusTone`, `statusBadgeClass`, `statusDotClass`, `orderActions(order)`. Every badge, dot and timeline node derives its colour from one table here |
-| `address.js` | `EMPTY_ADDRESS`, the phone/pincode patterns, the Indian state list, `validateAddress()` and `formatAddressLine()`. Mirrors `backend/src/validators/orderValidators.js` |
-| `payment.js` | `payForOrder()` — opens the Razorpay window for an order that already exists. Used by Checkout **and** by the order page's Pay Now |
-| `pricing.js` | `calculateTotals`, `calculateSavings`, delivery estimates — all from the admin's commerce rules |
-| `variantMedia.js` | Which photos belong to a chosen variant, plus `lineImage(item)` and `variantLabel(variant)` |
-| `productImage.js` | Placeholder and `onError` fallback for product images |
-| `razorpay.js` | Lazy-loads the Razorpay SDK, so it costs nothing on pages that are not a payment |
-
-### `src/pages/` — storefront
-
-| Route | File | Renders |
-| --- | --- | --- |
-| `/` | `Home.jsx` | Category strip, hero carousel, promo tiles, coupon strip, deal rails, trust strip |
-| `/products` | `Catalog.jsx` | Sticky filter sidebar, sort tabs, grid and list views, pagination |
-| `/products/:id` | `ProductDetail.jsx` | Sticky gallery, offers, **variant picker**, pincode check, seller block, specs / description / reviews tabs, similar products |
-| `/cart` | `Cart.jsx` | Deliver-to strip, line items with quantity steppers, Saved For Later, price rail |
-| `/checkout` | `Checkout.jsx` | One page: saved-address cards and payment side by side, a sticky summary rail with editable quantities, and a sticky bottom bar on phones |
-| `/wishlist` | `Wishlist.jsx` | Saved products with Move to Cart |
-| `/orders` | `Orders.jsx` | Grouped status chips with counts, order cards, pagination |
-| `/orders/:id` | `OrderDetail.jsx` | Delivery timeline, tracking history, items, price rail, invoice / pay / cancel / return |
-| `/orders/:id/invoice` | `Invoice.jsx` | Printable tax invoice |
-| `/profile` | `Profile.jsx` | Account menu and editable profile |
-| `/login`, `/register`, `/verify-otp`, `/forgot-password`, `/reset-password` | five files | Auth screens built on `AuthShell` |
-| `/page/:slug` | `StaticPage.jsx` | Renders an admin-authored CMS page |
-| `*` | `NotFound.jsx` | 404 |
-
-### `src/pages/admin/` — Seller Hub
-
-| Route | File | Does |
-| --- | --- | --- |
-| `/admin` | `Dashboard.jsx` | Eight stat tiles, sales line chart, orders-by-status bars, recent orders and activity |
-| `/admin/products` | `AdminProducts.jsx` | Product table with search, filters and bulk actions |
-| `/admin/products/new`, `/:id/edit` | `ProductForm.jsx` | Create/edit — details, images, specs, **variants** |
-| `/admin/orders` | `AdminOrders.jsx` | Order table with status and payment filters |
-| `/admin/orders/:id` | `AdminOrderDetail.jsx` | Advance status, refund, admin notes |
-| `/admin/returns` | `AdminReturns.jsx` | Approve or reject return requests |
-| `/admin/users` | `AdminUsers.jsx` | Role and status management |
-| `/admin/coupons` | `AdminCoupons.jsx` | Coupon CRUD |
-| `/admin/pages` | `Pages.jsx` | CMS page editor |
-| `/admin/settings` | `Settings.jsx` | Store, invoice, social and SMTP settings |
-| `/admin/logs` | `Logs.jsx` | Activity log viewer |
-| — | `AdminLayout.jsx` | White top bar with the Seller Hub wordmark plus the sidebar |
-
----
-
-## Data models
+The application state is structured hierarchically in `src/main.jsx`:
 
 ```
-User ──< Order >── Product ──< Review >── User
- │                    │
- ├─ cart[]      ──────┤   (each line stores product + variant + quantity)
- └─ wishlist[]  ──────┘
+SettingsProvider (Store rules, tax rates, delivery threshold)
+  └─ ToastProvider (Global notification toasts)
+      └─ ConfirmProvider (Async confirmation modals for destructive actions)
+          └─ AuthProvider (User profile, login/logout, in-memory JWT)
+              └─ CartProvider (Persisted cart & wishlist synchronizer)
+                  └─ CartDrawerProvider (High-performance slide-in drawer state)
+                      └─ <App /> (Route table & page rendering)
+```
 
-Product.variants[]   configurations with their own SKU, price and stock
-Coupon               validated against the live cart at checkout
-Page                 CMS content rendered at /page/:slug
-Settings             single document holding store configuration
-ActivityLog          append-only audit trail
+### Component Highlights
+
+| Component | Path | Description |
+| :--- | :--- | :--- |
+| `Navbar.jsx` | `src/components/Navbar.jsx` | Sticky Flipkart-blue header with logo, category navigation, search bar, login triggers, and live cart item count badge. |
+| `MobileBottomNav.jsx` | `src/components/MobileBottomNav.jsx` | Fixed bottom action bar on mobile screens (Home, Categories, Wishlist, Orders, Profile). |
+| `ProductCard.jsx` | `src/components/ProductCard.jsx` | Responsive catalog tile with image switcher, discount badges, green star rating pill, and instant Add-to-Cart trigger. |
+| `ProductGallery.jsx` | `src/components/ProductGallery.jsx` | Thumbnail rail and high-resolution image viewer with zoom support and variant color selection. |
+| `VariantPicker.jsx` | `src/components/VariantPicker.jsx` | Interactive selector for multi-attribute configurations (Storage, RAM, Color swatches) with dynamic stock updates. |
+| `CartDrawer.jsx` | `src/components/CartDrawer.jsx` | Slide-in drawer with itemized summary, quantity steppers, free delivery progress, and direct Checkout CTA. |
+| `OrderTimeline.jsx` | `src/components/OrderTimeline.jsx` | Milestone progress tracker indicating exact shipment stages based on recorded database events. |
+| `BackendWakingBanner.jsx` | `src/components/BackendWakingBanner.jsx` | Non-intrusive alert banner showing a live countdown when Render's free API instance is waking up from sleep. |
+
+---
+
+## 🗄️ Data Models & Schema Design
+
+```mermaid
+erDiagram
+    USER ||--o{ ORDER : places
+    USER ||--o{ REVIEW : writes
+    USER ||--o{ WISHLIST : saves
+    USER {
+        ObjectId _id PK
+        string name
+        string email
+        string password
+        string role
+        array addresses
+        array cart
+        boolean isVerified
+    }
+
+    PRODUCT ||--|{ VARIANT : contains
+    PRODUCT ||--o{ REVIEW : receives
+    PRODUCT {
+        ObjectId _id PK
+        string title
+        string slug
+        string brand
+        string category
+        number price
+        number countInStock
+        array images
+        map specs
+        map attributes
+    }
+
+    VARIANT {
+        ObjectId _id PK
+        string sku
+        number price
+        number countInStock
+        map attributes
+    }
+
+    ORDER ||--|{ ORDER_ITEM : contains
+    ORDER {
+        ObjectId _id PK
+        ObjectId user FK
+        array items
+        object shippingAddress
+        string paymentMethod
+        string paymentStatus
+        string status
+        array trackingHistory
+        object invoice
+    }
+
+    COUPON {
+        ObjectId _id PK
+        string code
+        string discountType
+        number discountAmount
+        number minOrderAmount
+        number maxDiscount
+        date expiresAt
+    }
 ```
 
 ---
 
-## Product variants
+## 🏷️ Product Variants & SKU Engine
 
-Every product sells in several configurations, and the variant is the unit that actually carries price and stock:
+NexaMart uses a multi-attribute variant architecture where each variant acts as an independent SKU carrying its own price, stock, and attributes:
 
 ```js
 // backend/src/models/Product.js
 variants: [{
-  attributes: Map,      // { Storage: "256 GB", Color: "Graphite" }
-  sku: String,          // APP-APPLEIPH-001-256-GRA
-  price: Number,
-  countInStock: Number,
+  sku: { type: String, required: true },           // e.g. "APP-IPH15P-256-BLK"
+  price: { type: Number, required: true },         // Variant specific price (₹)
+  originalPrice: { type: Number },                 // MRP for discount calculation
+  countInStock: { type: Number, default: 0 },      // Individual inventory count
+  attributes: { type: Map, of: String }            // { Storage: "256 GB", Color: "Black Titanium" }
 }]
 ```
 
-How it holds together:
-
-1. **Catalogue** — `utils/catalogue.js` declares each product's configurations in `variantsByProduct`.
-2. **Seeding** — `seedData.js` gives every variant a SKU derived from the product SKU, and sets the product's headline stock to the sum of its variants.
-3. **Product page** — `ProductDetail.jsx` renders the picker; choosing an option changes the price, the discount, the stock warning and the specification table.
-4. **Cart** — `cart[]` stores `{ product, variant, quantity }`, so the same product in two configurations is two separate lines. `cartController` reads price and stock from the variant.
-5. **Order** — `orderController` snapshots `price`, `variantLabel` and `variantSku` onto the order line, so the order still reads correctly even if the catalogue changes later.
-6. **Stock** — `orderStatus.adjustStock()` moves the variant's own stock along with the product total, and restores it if the order is cancelled.
-
-Products without variants keep working unchanged — `variantId` is optional at every layer.
+### How the Variant Engine Operates:
+1. **SKU Generation:** `sku.js` automatically generates deterministic, readable SKUs based on category, product slug, and attribute abbreviations.
+2. **Dynamic Stock Aggregation:** The parent product's headline stock is automatically computed as the sum of all its active variants.
+3. **Cart Isolation:** Adding two different configurations of the same product (e.g. *128GB* vs *256GB*) creates two distinct line items in `user.cart`.
+4. **Order Immutability:** When an order is placed, the exact variant attributes, SKU, and unit price are permanently snapshotted into the order line items.
+5. **Atomic Stock Rollback:** If an order is cancelled or rejected, `orderStatus.adjustStock()` restores the exact variant's inventory without affecting sibling variants.
 
 ---
 
-## API reference
+## 📡 API Reference
 
-All routes are prefixed with `/api`. 🔒 needs a login, 👑 needs an admin.
+All endpoints are hosted at `/api`. Protected routes require a valid JWT token.
 
-### Auth — `/auth`
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/register` | Create an account, send an OTP |
-| POST | `/verify-otp` | Activate the account |
-| POST | `/resend-otp` | Send the code again |
-| POST | `/login` | Returns the user plus an access token |
-| POST | `/refresh` | New access token from the refresh cookie |
-| POST | `/logout` | Clears the refresh cookie |
-| POST | `/forgot-password`, `/reset-password` | Password reset by OTP |
-| GET/PUT | `/profile` 🔒 | Read and update the profile |
+### 🔐 Authentication (`/api/auth`)
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `POST` | `/register` | Public | Register new account and dispatch email OTP |
+| `POST` | `/verify-otp` | Public | Verify OTP code and activate account |
+| `POST` | `/resend-otp` | Public | Request a new OTP code |
+| `POST` | `/login` | Public | Authenticate user and issue tokens |
+| `POST` | `/refresh` | Public | Issue new access token via HttpOnly refresh cookie |
+| `POST` | `/logout` | Public | Invalidate refresh token and clear cookie |
+| `POST` | `/forgot-password` | Public | Send password reset OTP |
+| `POST` | `/reset-password` | Public | Reset password using verified OTP |
+| `GET` | `/profile` | 🔒 User | Retrieve current user profile and addresses |
+| `PUT` | `/profile` | 🔒 User | Update profile details and address book |
 
-### Products — `/products`
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/` | Listing — `keyword`, `category`, `brand`, `minPrice`, `maxPrice`, `rating`, `featured`, `sort`, `page`, `limit` |
-| GET | `/filters` | Facet data for the catalogue sidebar |
-| GET | `/:id` | One product with its reviews |
-| GET | `/:id/image/:imageId` | Serves an image stored as a Buffer |
-| POST/PUT/DELETE | `/` 👑 | Catalogue management (multipart, up to 6 images) |
+### 📦 Products (`/api/products`)
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/` | Public | Paginated product list with search, brand, category, rating, and price filters |
+| `GET` | `/filters` | Public | Get aggregate filter facets (categories, brands, price ranges) |
+| `GET` | `/:id` | Public | Retrieve single product by ID/slug with active reviews |
+| `POST` | `/` | 👑 Admin | Create a new product with image uploads and variant matrix |
+| `PUT` | `/:id` | 👑 Admin | Update product details, specifications, and variants |
+| `DELETE` | `/:id` | 👑 Admin | Delete product and associated reviews |
 
-### Cart — `/cart` 🔒
-`GET /` · `POST /` (`productId`, `variantId`, `quantity`) · `PUT /:productId` (`quantity`, `variantId`) · `DELETE /:productId?variantId=` · `DELETE /`
+### 🛒 Cart & Wishlist (`/api/cart` & `/api/wishlist`)
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/cart` | 🔒 User | Fetch current user's cart with live variant prices and stock checks |
+| `POST` | `/cart` | 🔒 User | Add product/variant to cart (increments quantity) |
+| `PUT` | `/cart/:productId` | 🔒 User | Set absolute quantity for a specific cart line item |
+| `DELETE` | `/cart/:productId` | 🔒 User | Remove a specific variant/product from cart |
+| `DELETE` | `/cart` | 🔒 User | Clear all items from cart |
+| `GET` | `/wishlist` | 🔒 User | Get saved wishlist items |
+| `POST` | `/wishlist` | 🔒 User | Toggle product in/out of wishlist |
 
-### Wishlist — `/wishlist` 🔒
-`GET /` · `POST /` · `DELETE /:productId`
+### 💳 Orders & Payments (`/api/orders` & `/api/payment`)
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `POST` | `/orders` | 🔒 User | Place order (COD or initialize Razorpay) with address validation |
+| `GET` | `/orders/my` | 🔒 User | Retrieve authenticated user's order history |
+| `GET` | `/orders/:id` | 🔒 User | Get detailed order summary, tracking milestones, and invoice |
+| `PUT` | `/orders/:id/cancel` | 🔒 User | Cancel order (if eligible) and trigger stock rollback |
+| `POST` | `/orders/:id/return` | 🔒 User | Submit return request with reason and photo attachments |
+| `POST` | `/payment/razorpay/:orderId` | 🔒 User | Create Razorpay order instance |
+| `POST` | `/payment/verify` | 🔒 User | Verify Razorpay HMAC payment signature |
+| `POST` | `/payment/webhook` | Public | Asynchronous Razorpay event webhook handler |
 
-### Orders — `/orders`
-`GET /return-reasons` · `POST /` 🔒 · `GET /my` 🔒 · `GET /:id` 🔒 · `PUT /:id/cancel` 🔒 · `POST /:id/return` 🔒 (up to 3 photos)
-
-`POST /` is validated by `createOrderSchema`: `shippingAddress` (full address
-rules), `paymentMethod` one of `razorpay` | `cod`, optional `couponCode` and
-`idempotencyKey`. A bad phone or pincode returns 400 with the field's own
-message. `PUT /auth/profile` runs the same address rules on `address` and
-`addresses[]`.
-
-### Payment — `/payment`
-`POST /razorpay/:orderId` 🔒 · `POST /verify` 🔒 · `POST /webhook`
-
-### Reviews, Coupons, Pages
-`/reviews/product/:productId` (GET, POST 🔒) · `/coupons/validate` 🔒 and coupon CRUD 👑 · `/pages`, `/pages/:slug`
-
-### Admin — `/admin` 👑
-`/stats` · `/orders` · `/orders/:id/status` · `/returns` · `/refund` · `/users` · `/logs` · `/export/orders` · `/export/products` · `/settings` · `/pages`
-
----
-
-## Seed data
-
-`npm run seed` clears the database and writes:
-
-| | |
-| --- | --- |
-| Users | 1 admin + 6 customers, each with a real Indian address |
-| Products | 34 across Smartphones, Laptops, Tablets, Audio, Watches, Accessories |
-| Variants | 99 configurations (2–5 per product) with their own SKU, price and stock |
-| Images | 89 product photos served from `frontend/public/images/products/` |
-| Reviews | ~120 real `Review` documents — ratings are recalculated by the model hook, never hardcoded |
-| Orders | 10, covering every status from pending to delivered, cancelled and return requested, across COD and Razorpay |
-| Coupons | `NEXA15`, `WELCOME10`, `FESTIVE500`, `FLASH20` |
-
-Product photos live inside the repository rather than being hot-linked, so the demo never depends on a third-party CDN staying up.
+### 👑 Admin / Seller Hub (`/api/admin`)
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/admin/stats` | 👑 Admin | Executive dashboard metrics (Revenue, Orders, Users, Stock alerts) |
+| `GET` | `/admin/orders` | 👑 Admin | Manage and filter all store orders |
+| `PUT` | `/admin/orders/:id/status` | 👑 Admin | Advance order shipment status and append tracking event |
+| `GET` | `/admin/returns` | 👑 Admin | View pending customer return requests |
+| `PUT` | `/admin/returns/:id` | 👑 Admin | Approve or reject return requests |
+| `GET` | `/admin/users` | 👑 Admin | View customer list and toggle account statuses |
+| `GET` | `/admin/logs` | 👑 Admin | View chronological audit activity logs |
+| `GET` | `/admin/export/orders` | 👑 Admin | Export order history to CSV |
+| `GET` | `/admin/export/products` | 👑 Admin | Export product inventory to CSV |
 
 ---
 
-## Environment variables
+## 🛡️ Security & OWASP Hardening
 
-Create `.env` in the project root. The backend reads it through dotenv; Vite reads it too (`envDir: ".."` in `vite.config.js`), which is why the client variables live in the same file.
+NexaMart implements defense-in-depth security adhering to the **OWASP Top 10** standards:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        SECURITY ARCHITECTURE                           │
+├────────────────────────────┬───────────────────────────────────────────┤
+│ In-Memory JWT Access Token │ Stored in React state; immune to XSS theft│
+│ HttpOnly Refresh Cookie    │ Secure, SameSite=Strict; prevents CSRF   │
+│ DOMPurify Sanitization     │ Strips malicious scripts from CMS HTML    │
+│ express-mongo-sanitize     │ Neutralizes NoSQL injection operators ($) │
+│ Zod Schema Validation      │ Strict type & regex enforcement at routes │
+│ Helmet & Strict CSP        │ Disallows untrusted scripts & frame hijack│
+│ express-rate-limit         │ Throttles auth endpoints & prevents DDoS  │
+│ Bcrypt Password Hashing    │ 10 rounds of salt against rainbow tables  │
+└────────────────────────────┴───────────────────────────────────────────┘
+```
+
+1. **In-Memory JWT Access Tokens:** Access tokens are stored exclusively in React memory, never written to `localStorage` or `sessionStorage` where malicious third-party scripts could extract them.
+2. **HttpOnly Refresh Cookies:** Refresh tokens are stored in `HttpOnly`, `SameSite=Strict`, `Secure` cookies inaccessible to JavaScript.
+3. **NoSQL Injection Defense:** `express-mongo-sanitize` scrubs all incoming `req.body`, `req.query`, and `req.params` of MongoDB query operator characters (`$` and `.`).
+4. **Cross-Site Scripting (XSS) Prevention:** All dynamic HTML rendered from the database (e.g. CMS static pages) is sanitized through `DOMPurify` before mounting.
+5. **Content Security Policy (CSP):** Express is secured using `Helmet` configured with strict script and object source directives (`script-src 'self'`, `object-src 'none'`).
+6. **Strict Input Sanitization:** Route-level Zod schemas validate phone numbers, pincodes, strings, and types before requests ever hit controller logic.
+7. **Rate Limiting:** IP-based rate limiting on authentication routes prevents brute-force credential stuffing.
+
+---
+
+## 🌿 Seed Data
+
+The database seeder (`npm run seed`) populates a complete, realistic e-commerce environment:
+
+- **Users:** 1 Admin + 6 Customers with authentic Indian addresses across Delhi, Mumbai, Bengaluru, etc.
+- **Products:** 34 Electronics products across 6 categories (Smartphones, Laptops, Audio, Tablets, Smartwatches, Accessories).
+- **Variants:** 99 unique variant configurations with individualized pricing, SKUs, and stock counts.
+- **Product Photography:** 89 optimized product images served directly from `frontend/public/images/products/`.
+- **Verified Reviews:** ~120 authentic reviews with ratings dynamically calculated via Mongoose model hooks.
+- **Orders:** 10 pre-configured orders spanning various fulfillment statuses (`Delivered`, `Shipped`, `Processing`, `Return Requested`, `Cancelled`).
+- **Promotional Coupons:** `NEXA15` (15% off), `WELCOME10` (10% off), `FESTIVE500` (₹500 flat off), `FLASH20` (20% off).
+
+---
+
+## 🔐 Environment Variables
+
+Create a `.env` file in the root directory (or copy `.env.example`):
 
 ```ini
-# Server
+# ==============================================================================
+# Server & Environment Configuration
+# ==============================================================================
 PORT=5000
 NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 
-# Database
-MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>/<db>
+# ==============================================================================
+# Database (MongoDB Atlas or Local MongoDB)
+# ==============================================================================
+MONGO_URI=mongodb+srv://<username>:<password>@<cluster-url>/<database-name>?retryWrites=true&w=majority
 
-# Auth
-JWT_SECRET=<random string>
-JWT_REFRESH_SECRET=<random string>
+# ==============================================================================
+# JWT Authentication Secrets
+# ==============================================================================
+JWT_SECRET=your_super_secret_access_jwt_key_at_least_32_chars
+JWT_REFRESH_SECRET=your_super_secret_refresh_jwt_key_at_least_32_chars
 JWT_EXPIRE=15m
 JWT_REFRESH_EXPIRE=7d
 
-# Payments (Razorpay test keys are fine for the demo)
-RAZORPAY_KEY_ID=
-RAZORPAY_KEY_SECRET=
-RAZORPAY_WEBHOOK_SECRET=
+# ==============================================================================
+# Payment Gateway (Razorpay)
+# ==============================================================================
+RAZORPAY_KEY_ID=rzp_test_yourKeyId
+RAZORPAY_KEY_SECRET=yourRazorpayKeySecret
+RAZORPAY_WEBHOOK_SECRET=yourWebhookSecret
 
-# Email (optional — without it, OTPs are logged to the console)
-SMTP_HOST=
-SMTP_PORT=
-SMTP_USER=
-SMTP_PASS=
-SMTP_FROM=
+# ==============================================================================
+# Transactional Email (SMTP or Brevo API)
+# ==============================================================================
+# Option 1: Standard SMTP (Local Development)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM="NexaMart <no-reply@nexamart.com>"
 
-# Brevo — mail over HTTPS instead of SMTP. Required on Render (see Deployment).
-BREVO_API_KEY=
+# Option 2: Brevo API (Recommended for Render Production Hosting)
+BREVO_API_KEY=xkeysib-yourBrevoApiKey
 
-# Image CDN (optional — without it, uploaded images are stored in MongoDB)
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+# ==============================================================================
+# Cloudinary CDN (Optional for Admin Product Uploads)
+# ==============================================================================
+CLOUDINARY_CLOUD_NAME=your_cloudinary_name
+CLOUDINARY_API_KEY=your_cloudinary_key
+CLOUDINARY_API_SECRET=your_cloudinary_secret
 
-# Client (read by Vite)
+# ==============================================================================
+# Frontend Environment Variables (Read by Vite)
+# ==============================================================================
+# Keep blank locally to use Vite's internal proxy
 VITE_API_URL=
 VITE_LOGO_URL=
 ```
 
-`VITE_API_URL` stays blank locally so the Vite proxy handles `/api` — **and it
-is deliberately left unset in production too.** See Deployment.
+---
+
+## 🚢 Deployment Guide
+
+### 1. Frontend on Vercel
+1. Connect your GitHub repository to Vercel.
+2. Set the **Root Directory** to `./` (root).
+3. **Build Command:** `npm run build`
+4. **Output Directory:** `frontend/dist`
+5. *Note:* Leave `VITE_API_URL` **empty** in Vercel environment variables. The included `vercel.json` automatically routes `/api/*` traffic to the backend on Render, preventing CORS issues.
+
+### 2. Backend API on Render
+1. Create a new **Web Service** on Render connected to your repository.
+2. Alternatively, use the included `render.yaml` blueprint.
+3. **Root Directory:** `backend`
+4. **Build Command:** `npm install`
+5. **Start Command:** `node server.js`
+6. Add environment variables in the Render dashboard (`MONGO_URI`, `JWT_SECRET`, `BREVO_API_KEY`, `RAZORPAY_KEY_ID`, etc.).
+7. Set Health Check path to `/api/health`.
+
+### 3. Database on MongoDB Atlas
+1. Create an M0 free tier cluster on [MongoDB Atlas](https://www.mongodb.com/atlas).
+2. Add a database user with read/write permissions.
+3. In Network Access, allow access from `0.0.0.0/0` (or Render's outbound IP range).
+4. Copy the connection string to `MONGO_URI`.
 
 ---
 
-## Deployment
+## 🎨 Design System & Tokens
 
-- **API** → Render (`render.yaml`, root directory `backend`, health check `/api/health`), live at `https://nexa-mart.onrender.com`.
-- **Frontend** → Vercel, live at `https://nexa-mart-psi.vercel.app`. Build `npm run build`, output `frontend/dist`.
-- **Database** → MongoDB Atlas.
+Configured in `frontend/tailwind.config.js` and `frontend/src/styles/index.css`:
 
-The API only serves `/api/*` and never serves the SPA, so there is no client-side routing fallback to configure on the backend.
-
-**The frontend does not hold the API URL.** `VITE_API_URL` is left unset on
-Vercel, so the client calls a relative `/api` and the rewrite in `vercel.json`
-proxies it to Render. That keeps the backend address in git — where it can be
-reviewed and changed with a commit — rather than in a dashboard field that can
-silently point at a service that no longer exists. It also makes the two
-same-origin, so there is no CORS involved.
-
-**Render's free tier blocks the outbound SMTP ports**, so the `SMTP_*` block
-cannot connect there and a send fails with `ENETUNREACH …:587`. `BREVO_API_KEY`
-must be set in the Render dashboard; `utils/email.js` only takes the Brevo HTTPS
-path when that key is present, and without it no OTP or password-reset code ever
-leaves the server — silently, because `forgot-password` sends in the background.
-The sender address must be verified in Brevo first.
-
-**Free instances also sleep** after a quiet spell. The first request then takes
-30–50 seconds: `api/client.js` detects it, retries, and dispatches the events
-`BackendWakingBanner` uses to explain the wait.
+```
+┌─────────────────┬───────────┬──────────────────────────────────────────┐
+│ Token Name      │ Hex Code  │ Primary Application                      │
+├─────────────────┼───────────┼──────────────────────────────────────────┤
+│ accent-500      │ #2874f0   │ Primary Brand Blue (Header, Links, Focus)│
+│ copper-400      │ #ff9f00   │ Add to Cart CTA & Transit status badges  │
+│ copper-500      │ #fb641b   │ Buy Now CTA & Checkout actions           │
+│ success         │ #388e3c   │ Rating Badges, Discounts, Delivered tags │
+│ paper           │ #f1f3f6   │ App Background canvas                    │
+│ footer          │ #172337   │ Dark footer background                   │
+│ ink-50…950      │ Cool Gray │ Text hierarchy, borders, card outlines   │
+└─────────────────┴───────────┴──────────────────────────────────────────┘
+```
 
 ---
 
-## Design system
+## ❓ Troubleshooting & FAQs
 
-Tokens live in `frontend/tailwind.config.js`; shared component recipes live in `frontend/src/styles/index.css`.
-
-| Token | Value | Used for |
-| --- | --- | --- |
-| `accent-500` | `#2874f0` | Primary blue — header, links, active states |
-| `copper-400` | `#ff9f00` | Add to Cart |
-| `copper-500` | `#fb641b` | Buy Now, Place Order |
-| `success` | `#388e3c` | Rating pills, discounts, delivery confirmation |
-| `paper` | `#f1f3f6` | Page background |
-| `footer` | `#172337` | Dark footer |
-| `ink-50…950` | cool greys | Text, borders, muted surfaces |
-
-Recipes: `.btn` (with `-cart`, `-buy`, `-outline`, `-ghost`, `-danger`, `-sm`), `.input` (plus an `[aria-invalid]` state), `.input-line`, `.select`, `.textarea`, `.label` / `.label-req`, `.card`, `.badge-*`, `.chip`, `.qty-btn` / `.qty-value`, `.table`, `.rating-pill`, `.price-row`, `.step-head`. Cards and buttons are `rounded-sm` throughout — the flat, square-ish look of the reference design. Typography is Roboto.
-
-### Order status tones
-
-Twelve backend statuses, five tones. Everything that shows a status — the
-badge, the list dot, the timeline node, the history bullet — reads the one
-table in `utils/format.js`, so they can never drift apart.
-
-| Tone | Statuses | Reads as |
-| --- | --- | --- |
-| `warning` | `pending`, `return_requested` | waiting on someone |
-| `info` | `confirmed`, `processing`, `packed`, `return_approved` | being handled |
-| `transit` | `shipped`, `out_for_delivery` | **on its way** |
-| `success` | `delivered`, `returned` | finished well |
-| `danger` | `cancelled`, `return_rejected` | ended badly |
-
-`transit` takes the copper ramp rather than a fifth shade of blue: "it is
-physically moving" is the distinction that matters most to a shopper, and blue
-already means "we are handling it".
+| Issue / Symptom | Possible Cause | Resolution |
+| :--- | :--- | :--- |
+| `EADDRINUSE :5000` | Port 5000 is occupied by another process. | Terminate the existing Node process or change `PORT` in `.env`. |
+| `Nodemon command not found` | Sub-package dependencies are missing. | Run `npm run install:all` from the root directory. |
+| Storefront opens but displays no products | Database has not been seeded. | Execute `npm run seed` to load demo catalogue data. |
+| Product images appear broken | Image assets missing in `frontend/public/images/`. | Ensure the `frontend/public/images/` directory is present from the repository. |
+| Email OTP not received locally | SMTP is not configured in `.env`. | Check your server terminal; OTPs are automatically printed to the terminal console during development. |
+| Email OTP fails on Render deployment | Render blocks outbound SMTP port 587. | Add `BREVO_API_KEY` to Render environment variables to send emails over HTTPS. |
+| "Waking the server up" notice appears | Render free-tier cold start. | Wait 30–40 seconds. The frontend banner will automatically count down and reconnect. |
 
 ---
 
-## Security (OWASP Hardened)
-
-This application has been hardened against common web vulnerabilities (OWASP Top 10):
-- **Cross-Site Scripting (XSS)**: JWT access tokens are stored entirely in React memory (never in `localStorage`). All admin-authored CMS HTML is sanitized via `DOMPurify` before rendering.
-- **Cross-Site Request Forgery (CSRF) & Token Theft**: Refresh tokens are stored in HttpOnly, Secure, SameSite cookies.
-- **Injection Attacks**: Mongoose queries are protected against NoSQL injection via `express-mongo-sanitize`. All API inputs are strictly validated using `Zod` schemas before reaching the database.
-- **Security Misconfiguration**: Express uses `Helmet` with a strict Content Security Policy (`script-src 'none'`, `object-src 'none'`) and hides the `X-Powered-By` header.
-- **Brute Force & DDoS**: APIs are protected by `express-rate-limit` (strict limits on auth endpoints, standard limits globally).
-- **Broken Authentication**: Passwords are hashed with `bcryptjs` (salt 10 rounds). Protected routes are implemented for both authenticated users and admin-only access.
-- **Secrets Management**: No hardcoded credentials. All secrets are loaded via environment variables and validated at server boot.
-
----
-
-## Known scope
-
-Deliberate boundaries, so nothing here reads as an accidental gap:
-
-- **Single seller.** Every product is sold by NexaMart Retail. "Become a Seller" opens the *Sell on NexaMart* CMS page, which explains that onboarding runs through the category team; the Seller Hub at `/admin` is where the catalogue is actually managed. There is no multi-vendor model or seller registration flow.
-- **Payments run on Razorpay test keys.** The full order → payment → verification path works; no live money moves. Cash on Delivery is a real second path — the order is confirmed and stock moves without a payment.
-- **Email is optional.** Without SMTP configured, OTPs are printed to the server console so registration still completes. On Render it goes over Brevo's HTTPS API instead (see Deployment).
-- **India only.** Prices are ₹, dates are `en-IN`, and the address rules assume a 10-digit mobile and a 6-digit PIN code.
-- **Product images ship with the repository.** They are not pushed to a CDN in this configuration; admin uploads do go to Cloudinary when its keys are set.
-
----
-
-## Troubleshooting
-
-| Symptom | Cause and fix |
-| --- | --- |
-| `EADDRINUSE :5000` | An old API process is still running. Kill it, then `npm run dev` again |
-| `'nodemon' is not recognized` | Backend dependencies were never installed — run `npm run install:all` |
-| Storefront loads but every list is empty | The database has not been seeded — run `npm run seed` |
-| Products show a grey placeholder | The `frontend/public/images/products/` folder is missing; restore it from the repository |
-| "Waking the server up…" on the deployed site | Render's free tier cold start. It clears itself; the client retries and the banner counts the wait |
-| OTP email never arrives locally | SMTP is not configured — read the code from the API server console |
-| OTP email never arrives **on the deployed site** | `BREVO_API_KEY` is not set on Render. Free instances block the SMTP ports, so without it the send fails with `ENETUNREACH …:587` — and silently, because `forgot-password` sends in the background. Check with **Admin → Settings → Send test email**, which surfaces the real error |
-| Checkout rejects an address that used to work | The phone and pincode rules are new and are enforced on the server too. A saved address that predates them opens in the form so it can be corrected |
-| The deployed site loads but every list is empty | The frontend is calling an API that is not there. `VITE_API_URL` should be **unset** on Vercel so the `vercel.json` rewrite handles `/api` |
-
-## Author & Developer
+## 👨‍💻 Author & Contact
 
 Developed with ❤️ by **Mohd Zaid**
-- **GitHub**: [github.com/zaid154](https://github.com/zaid154)
-- **LinkedIn**: [linkedin.com/in/mohd-zaid-794090231](https://www.linkedin.com/in/mohd-zaid-794090231/)
-- **Email**: [trendykart.app@gmail.com](mailto:trendykart.app@gmail.com)
 
+- **GitHub:** [@zaid154](https://github.com/zaid154)
+- **LinkedIn:** [Mohd Zaid](https://www.linkedin.com/in/mohd-zaid-794090231/)
+- **Email:** [trendykart.app@gmail.com](mailto:trendykart.app@gmail.com)
+- **Project Repo:** [Nexa-Mart on GitHub](https://github.com/zaid154/Nexa-Mart)
+
+---
+
+<div align="center">
+  <sub>Released under the <a href="LICENSE">MIT License</a>. © 2026 NexaMart. All rights reserved.</sub>
+</div>
