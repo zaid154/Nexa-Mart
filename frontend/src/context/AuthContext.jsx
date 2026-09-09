@@ -18,15 +18,20 @@ export const AuthProvider = ({ children }) => {
     api
       .post("/auth/refresh")
       .then((res) => {
-        setAccessToken(res.data.token);
-        return api.get("/auth/profile");
-      })
-      .then((res) => {
-        setUser(res.data.user);
+        if (res.data?.token) {
+          setAccessToken(res.data.token);
+          return api.get("/auth/profile").then((profileRes) => {
+            setUser(profileRes.data.user);
+          });
+        } else {
+          clearAccessToken();
+          setUser(null);
+        }
       })
       .catch(() => {
         // No valid refresh cookie — user is not logged in.
         clearAccessToken();
+        setUser(null);
       })
       .finally(() => {
         setLoading(false);

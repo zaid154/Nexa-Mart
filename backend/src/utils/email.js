@@ -102,18 +102,33 @@ export const createTransport = async () => {
 };
 
 // Send a basic email with a subject and HTML body.
-// Uses the Brevo HTTP API when a key is configured, otherwise plain SMTP.
+// Uses direct SMTP (e.g. Gmail) when configured, falling back to Brevo HTTPS API.
 export const sendMail = async ({ to, subject, html }) => {
   const cfg = await getSmtpConfig();
+
+  // Try direct SMTP first (e.g. Gmail App Password delivers instantly to inbox)
+  if (cfg.host && cfg.user && cfg.pass) {
+    try {
+      const transport = await createTransport();
+      const from = cfg.from || `NexaMart <${cfg.user}>`;
+      await transport.sendMail({ from, to, subject, html });
+      return;
+    } catch (smtpErr) {
+      console.warn(`[email] SMTP failed (${smtpErr.message}), trying Brevo fallback...`);
+      if (cfg.brevoKey) {
+        await sendViaBrevo(cfg, { to, subject, html });
+        return;
+      }
+      throw smtpErr;
+    }
+  }
 
   if (cfg.brevoKey) {
     await sendViaBrevo(cfg, { to, subject, html });
     return;
   }
 
-  const transport = await createTransport();
-  const from = cfg.from || cfg.user;
-  await transport.sendMail({ from, to, subject, html });
+  throw new Error("No valid email transport configured.");
 };
 
 // Send an OTP email. The template and subject depend on the purpose.

@@ -90,6 +90,23 @@ export const makeImage = (label, brand) => {
 
 const customerSeed = [
   {
+    name: "Mohd Zaid",
+    email: "zaidm1323@gmail.com",
+    password: "User@123",
+    address: {
+      label: "Home",
+      fullName: "Mohd Zaid",
+      phone: "9876543210",
+      line1: "Flat 402, Royal Residency",
+      line2: "Near City Center",
+      city: "Indore",
+      state: "Madhya Pradesh",
+      postalCode: "452001",
+      country: "India",
+      isDefault: true,
+    },
+  },
+  {
     name: "Demo Customer",
     email: "user@shop.com",
     password: "User@123",

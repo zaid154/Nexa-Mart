@@ -90,21 +90,40 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new Error(pwdErr);
   }
 
-  // Do not allow two accounts with the same email.
-  const exists = await User.findOne({ email, isDeleted: { $ne: true } });
+  // Do not allow duplicate verified accounts. If unverified, refresh password and send new OTP.
+  const exists = await User.findOne({ email: email.toLowerCase(), isDeleted: { $ne: true } });
   if (exists) {
+    if (!exists.isVerified) {
+      exists.name = name;
+      exists.password = password;
+      await exists.save();
+
+      const code = generateOtpCode();
+      const expiryMin = await getOtpExpiryMin();
+      console.log(`\n========================================\n[AUTH OTP] Code for ${email}: ${code}\n========================================\n`);
+      await Otp.createOtp(email, code, "verify", expiryMin);
+      sendOtpEmailInBackground({ to: email, name, otp: code, purpose: "verify" });
+
+      return res.status(200).json({
+        message: "Account already exists but is unverified. We sent a new verification code.",
+        email,
+        requiresVerification: true,
+      });
+    }
+
     res.status(400);
-    throw new Error("User with this email already exists");
+    throw new Error("User with this email already exists. Please log in.");
   }
 
   // Create the user as not-yet-verified.
-  const user = await User.create({ name, email, password, isVerified: false });
+  const user = await User.create({ name, email: email.toLowerCase(), password, isVerified: false });
 
   // Make and email a verification OTP. The account exists from here on, so the
   // email goes out in the background: a slow or failing mail provider must not
   // hold up (or fail) a registration that already succeeded.
   const code = generateOtpCode();
   const expiryMin = await getOtpExpiryMin();
+  console.log(`\n========================================\n[AUTH OTP] Code for ${email}: ${code}\n========================================\n`);
   await Otp.createOtp(email, code, "verify", expiryMin);
   sendOtpEmailInBackground({ to: email, name, otp: code, purpose: "verify" });
 
@@ -206,6 +225,7 @@ export const resendOtp = asyncHandler(async (req, res) => {
 
   const code = generateOtpCode();
   const expiryMin = await getOtpExpiryMin();
+  console.log(`\n========================================\n[RESEND OTP] Code for ${email}: ${code}\n========================================\n`);
   await Otp.createOtp(email, code, purpose, expiryMin);
   await sendOtpEmail({
     to: email,
@@ -238,8 +258,17 @@ export const loginUser = asyncHandler(async (req, res) => {
 
   // The email must be verified first.
   if (!user.isVerified) {
-    res.status(403);
-    throw new Error("Please verify your email before logging in");
+    const code = generateOtpCode();
+    const expiryMin = await getOtpExpiryMin();
+    console.log(`\n========================================\n[LOGIN UNVERIFIED OTP] Code for ${email}: ${code}\n========================================\n`);
+    await Otp.createOtp(user.email, code, "verify", expiryMin);
+    sendOtpEmailInBackground({ to: user.email, name: user.name, otp: code, purpose: "verify" });
+
+    return res.status(403).json({
+      message: "Please verify your email before logging in. A new OTP has been sent.",
+      requiresVerification: true,
+      email: user.email,
+    });
   }
 
   // Suspended accounts cannot log in.
@@ -348,8 +377,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
 export const refreshToken = asyncHandler(async (req, res) => {
   const token = req.cookies?.[REFRESH_COOKIE];
   if (!token) {
-    res.status(401);
-    throw new Error("No refresh token");
+    return res.status(200).json({ success: true, loggedIn: false, token: null, user: null });
   }
 
   // The refresh token starts with the user id, so we can find the user quickly.

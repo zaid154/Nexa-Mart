@@ -13,12 +13,14 @@ const VerifyOtp = () => {
   const location = useLocation();
   const toast = useToast();
 
-  // The email is passed from the register page through navigation state.
-  let email = "";
-  if (location.state && location.state.email) {
-    email = location.state.email;
-  }
-
+  const [email, setEmail] = useState(() => {
+    return (
+      (location.state && location.state.email) ||
+      sessionStorage.getItem("pending_verification_email") ||
+      ""
+    );
+  });
+  const [editingEmail, setEditingEmail] = useState(!email);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -27,8 +29,10 @@ const VerifyOtp = () => {
   const submit = async (e) => {
     e.preventDefault();
 
-    if (!email) {
-      toast.error("Email missing. Please register again.");
+    const targetEmail = email.trim();
+    if (!targetEmail) {
+      toast.error("Please enter your email address.");
+      setEditingEmail(true);
       return;
     }
     if (!code.trim()) {
@@ -39,7 +43,8 @@ const VerifyOtp = () => {
     setError("");
     setLoading(true);
     try {
-      await verifyOtp(email, code);
+      await verifyOtp(targetEmail, code);
+      sessionStorage.removeItem("pending_verification_email");
       toast.success("Email verified!");
       navigate("/");
     } catch (err) {
@@ -51,13 +56,17 @@ const VerifyOtp = () => {
 
   // Ask the server to send the OTP again.
   const resend = async () => {
-    if (!email) {
+    const targetEmail = email.trim();
+    if (!targetEmail) {
+      toast.error("Please enter your email address to resend OTP.");
+      setEditingEmail(true);
       return;
     }
     setResending(true);
     try {
-      await api.post("/auth/resend-otp", { email, purpose: "verify" });
-      toast.success("OTP sent again");
+      await api.post("/auth/resend-otp", { email: targetEmail, purpose: "verify" });
+      sessionStorage.setItem("pending_verification_email", targetEmail);
+      toast.success("OTP sent again to " + targetEmail);
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -84,10 +93,37 @@ const VerifyOtp = () => {
         </Link>
       }
     >
-      <div className="mb-6 rounded-sm bg-accent-50 px-4 py-3 text-sm text-ink-600">
-        Code sent to{" "}
-        <strong className="font-semibold text-ink-900">{email || "your email"}</strong>
+      <div className="mb-6 rounded-sm bg-accent-50 px-4 py-3 text-sm text-ink-600 flex items-center justify-between">
+        <div>
+          Code sent to{" "}
+          <strong className="font-semibold text-ink-900">{email || "your email"}</strong>
+        </div>
+        <button
+          type="button"
+          onClick={() => setEditingEmail((prev) => !prev)}
+          className="text-xs text-accent-600 hover:underline font-medium ml-2"
+        >
+          {editingEmail ? "Done" : "Change"}
+        </button>
       </div>
+
+      {editingEmail && (
+        <div className="mb-5 space-y-1">
+          <label className="text-xs font-semibold uppercase tracking-wider text-ink-500">
+            Account Email Address
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              sessionStorage.setItem("pending_verification_email", e.target.value.trim());
+            }}
+            placeholder="e.g. name@example.com"
+            className="w-full rounded border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500"
+          />
+        </div>
+      )}
 
       <form className="space-y-6" onSubmit={submit} noValidate>
         <div>

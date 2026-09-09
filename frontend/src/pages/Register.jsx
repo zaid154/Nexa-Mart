@@ -46,8 +46,9 @@ const Register = () => {
     setLoading(true);
     try {
       const data = await register(form.name, form.email, form.password);
-      toast.success("Check your email for the verification code");
-      navigate("/verify-otp", { state: { email: data.email } });
+      sessionStorage.setItem("pending_verification_email", (data?.email || form.email).trim());
+      toast.success(data?.message || "Check your email for the verification code");
+      navigate("/verify-otp", { state: { email: (data?.email || form.email).trim() } });
     } catch (err) {
       toast.error(err.message);
     } finally {

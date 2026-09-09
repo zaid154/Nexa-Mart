@@ -4,8 +4,15 @@
 // exists so the cart and the checkout show the shopper the same numbers the
 // order will charge, without either page keeping its own copy of the rules.
 
+import {
+  lookupPincode,
+  formatEstimatedDate,
+  calculatePincodeDelivery,
+  isValidIndianPincode,
+} from "./pincode.js";
+
 // Work out delivery, tax and total for a subtotal and an applied discount.
-export const calculateTotals = ({ subtotal = 0, discount = 0, commerce }) => {
+export const calculateTotals = ({ subtotal = 0, discount = 0, commerce = {} }) => {
   const discountedSubtotal = subtotal - discount;
 
   const fee = commerce.shippingFee ?? 0;
@@ -20,7 +27,13 @@ export const calculateTotals = ({ subtotal = 0, discount = 0, commerce }) => {
 
 // Everything the shopper saves against list price: the MRP difference, the
 // coupon, and the waived delivery fee.
-export const calculateSavings = ({ items = [], subtotal = 0, discount = 0, shipping = 0, commerce }) => {
+export const calculateSavings = ({
+  items = [],
+  subtotal = 0,
+  discount = 0,
+  shipping = 0,
+  commerce = {},
+}) => {
   const mrpTotal = items.reduce((sum, item) => {
     const product = item.product;
     if (!product) {
@@ -38,20 +51,32 @@ export const calculateSavings = ({ items = [], subtotal = 0, discount = 0, shipp
   return Math.max(0, mrpTotal - subtotal + discount + deliverySaving);
 };
 
-// "Tue, 12 Aug" — the delivery estimate, using the configured window.
-export const deliveryEstimate = (commerce) => {
-  const days = commerce.deliveryDaysMax ?? commerce.deliveryDaysMin ?? 0;
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  return date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+// Delivery estimate formatted as "Tomorrow, 10 Sept" or "Fri, 12 Sept".
+// If a pincode is provided or saved in localStorage, it computes the exact transit
+// days for that postal district; otherwise uses the configured commerce delivery window.
+export const deliveryEstimate = (commerce = {}, pincode = null) => {
+  const codeToCheck =
+    pincode || (typeof window !== "undefined" ? localStorage.getItem("nexamart_pincode") : null);
+
+  if (codeToCheck && isValidIndianPincode(codeToCheck)) {
+    const info = lookupPincode(codeToCheck);
+    if (info.valid) {
+      return formatEstimatedDate(info.daysMax);
+    }
+  }
+
+  const days = commerce?.deliveryDaysMax ?? commerce?.deliveryDaysMin ?? 3;
+  return formatEstimatedDate(days);
 };
 
 // "3-5 business days", or "3 business days" when the window is a single value.
-export const deliveryWindowLabel = (commerce) => {
-  const min = commerce.deliveryDaysMin ?? 0;
-  const max = commerce.deliveryDaysMax ?? min;
+export const deliveryWindowLabel = (commerce = {}) => {
+  const min = commerce?.deliveryDaysMin ?? 2;
+  const max = commerce?.deliveryDaysMax ?? min;
   if (min === max) {
     return `${min} business days`;
   }
   return `${min}-${max} business days`;
 };
+
+export { lookupPincode, formatEstimatedDate, calculatePincodeDelivery, isValidIndianPincode };

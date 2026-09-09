@@ -1,6 +1,5 @@
-// This is the main starting point of our backend server.
-// It loads the environment variables, connects to the database,
-// and then starts the Express app so it can listen for requests.
+// This is the main starting point of the NexaMart backend server.
+// It loads environment variables, connects to the database, and starts the Express app.
 
 import "./src/config/env.js";
 

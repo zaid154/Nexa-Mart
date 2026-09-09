@@ -15,6 +15,7 @@ const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [unverifiedEmail, setUnverifiedEmail] = useState(null);
 
   // After login, send the user back to the page they came from (or home).
   let from = "/";
@@ -44,6 +45,18 @@ const Login = () => {
       navigate(from, { replace: true });
     } catch (err) {
       toast.error(err.message);
+      if (
+        err.response?.status === 403 &&
+        (err.data?.requiresVerification ||
+          err.message?.toLowerCase().includes("verify your email"))
+      ) {
+        const emailToVerify = form.email.trim();
+        setUnverifiedEmail(emailToVerify);
+        sessionStorage.setItem("pending_verification_email", emailToVerify);
+        setTimeout(() => {
+          navigate("/verify-otp", { state: { email: emailToVerify } });
+        }, 1200);
+      }
     } finally {
       setLoading(false);
     }
@@ -52,6 +65,7 @@ const Login = () => {
   const handleEmailChange = (e) => {
     setForm({ ...form, email: e.target.value });
     setErrors({ ...errors, email: "" });
+    setUnverifiedEmail(null);
   };
 
   const handlePasswordChange = (e) => {
@@ -77,6 +91,22 @@ const Login = () => {
         </Link>
       }
     >
+      {unverifiedEmail && (
+        <div className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 flex items-center justify-between">
+          <div>
+            <p className="font-semibold">Email Not Verified</p>
+            <p className="text-xs text-amber-700">A new verification code was sent to your email.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/verify-otp", { state: { email: unverifiedEmail } })}
+            className="ml-2 whitespace-nowrap rounded bg-amber-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-amber-700 shadow-sm"
+          >
+            Verify Now &rarr;
+          </button>
+        </div>
+      )}
+
       <form className="space-y-5" onSubmit={submit} noValidate>
         <AuthField
           id="email"

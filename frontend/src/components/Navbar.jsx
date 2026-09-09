@@ -18,6 +18,7 @@ import {
   IconTag,
   IconStar,
 } from "./Icons.jsx";
+import { lookupPincode, isValidIndianPincode } from "../utils/pincode.js";
 
 const Navbar = () => {
   const { user, logout, isAdmin } = useAuth();
@@ -31,6 +32,28 @@ const Navbar = () => {
 
   const loginRef = useRef(null);
   const moreRef = useRef(null);
+
+  const updateLocationFromStorage = () => {
+    try {
+      const saved = localStorage.getItem("nexamart_pincode");
+      if (saved && isValidIndianPincode(saved)) {
+        const info = lookupPincode(saved);
+        setLocationText(`${info.city} ${info.pincode}`);
+        return;
+      }
+      if (user?.address?.postalCode) {
+        setLocationText(`${user.address.city || "Delivery"} ${user.address.postalCode}`);
+        return;
+      }
+    } catch {}
+    setLocationText("Select delivery location");
+  };
+
+  useEffect(() => {
+    updateLocationFromStorage();
+    window.addEventListener("pincode-changed", updateLocationFromStorage);
+    return () => window.removeEventListener("pincode-changed", updateLocationFromStorage);
+  }, [user]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -62,9 +85,19 @@ const Navbar = () => {
   };
 
   const promptLocation = () => {
-    const loc = window.prompt("Enter your Delivery Pincode or City:", "Mumbai 400001");
+    const defaultVal =
+      localStorage.getItem("nexamart_pincode") || user?.address?.postalCode || "400001";
+    const loc = window.prompt("Enter your 6-digit Delivery Pincode:", defaultVal);
     if (loc) {
-      setLocationText(loc);
+      const clean = loc.trim().replace(/\D/g, "");
+      if (isValidIndianPincode(clean)) {
+        const info = lookupPincode(clean);
+        localStorage.setItem("nexamart_pincode", clean);
+        setLocationText(`${info.city} ${clean}`);
+        window.dispatchEvent(new Event("pincode-changed"));
+      } else {
+        alert("Please enter a valid 6-digit Indian PIN code (e.g. 110001, 454553, 400001)");
+      }
     }
   };
 

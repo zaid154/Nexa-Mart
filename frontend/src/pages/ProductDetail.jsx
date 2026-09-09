@@ -17,7 +17,7 @@ import {
   iconByName,
 } from "../components/Icons.jsx";
 import { useSettings, useCommerce } from "../context/SettingsContext.jsx";
-import { deliveryEstimate } from "../utils/pricing.js";
+import { deliveryEstimate, calculatePincodeDelivery, lookupPincode } from "../utils/pricing.js";
 import ProductGallery from "../components/ProductGallery.jsx";
 import VariantPicker from "../components/VariantPicker.jsx";
 import { mediaForVariant, mediaFromProduct } from "../utils/variantMedia.js";
@@ -52,7 +52,13 @@ const ProductDetail = () => {
   const [variantId, setVariantId] = useState(null);
 
   const [activeTab, setActiveTab] = useState("specifications");
-  const [pincode, setPincode] = useState("");
+  const [pincode, setPincode] = useState(() => {
+    try {
+      return localStorage.getItem("nexamart_pincode") || user?.address?.postalCode || "";
+    } catch {
+      return "";
+    }
+  });
   const [pincodeStatus, setPincodeStatus] = useState(null);
   const [form, setForm] = useState({ rating: 5, comment: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -98,12 +104,24 @@ const ProductDetail = () => {
     load(controller.signal);
     setQty(1);
     setVariantId(null);
-    setPincodeStatus(null);
     setShowAllOffers(false);
     setActiveTab("specifications");
     return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const currentPrice = variantId
+    ? product?.variants?.find((v) => String(v._id) === String(variantId))?.price ?? product?.price ?? 0
+    : product?.price ?? 0;
+
+  useEffect(() => {
+    if (pincode && pincode.length === 6) {
+      const res = calculatePincodeDelivery(pincode, { price: currentPrice, commerce });
+      if (res.valid) {
+        setPincodeStatus(res);
+      }
+    }
+  }, [pincode, currentPrice, commerce]);
 
   if (loading) {
     return <SkeletonDetail />;
@@ -225,15 +243,24 @@ const ProductDetail = () => {
   };
 
   const handleCheckPincode = (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!pincode || pincode.length < 6) {
-      toast.error("Enter a valid 6-digit PIN code");
+      toast.error("Enter a valid 6-digit Indian PIN code");
+      setPincodeStatus(null);
       return;
     }
-    setPincodeStatus({
-      text: `Delivery by ${deliveryEstimate(commerce)}`,
-      free: true,
-    });
+    const res = calculatePincodeDelivery(pincode, { price, commerce });
+    if (!res.valid) {
+      toast.error(res.error || "Delivery not available for this pincode");
+      setPincodeStatus(null);
+      return;
+    }
+    setPincodeStatus(res);
+    try {
+      localStorage.setItem("nexamart_pincode", pincode);
+      window.dispatchEvent(new Event("pincode-changed"));
+    } catch {}
+    toast.success(`Delivery available to ${res.city}, ${res.state}`);
   };
 
   const submitReview = async (e) => {
@@ -504,22 +531,42 @@ const ProductDetail = () => {
                   <IconMapPin size={15} className="shrink-0 text-accent-500" />
                   <input
                     type="text"
-                    placeholder="Enter pincode"
+                    placeholder="Enter pincode (e.g. 454553)"
                     value={pincode}
                     maxLength={6}
-                    onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
-                    className="w-28 sm:w-40 min-w-0 border-0 bg-transparent px-1 text-sm font-medium text-ink-900 placeholder:font-normal placeholder:text-ink-400 focus:outline-none"
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      setPincode(val);
+                      if (val.length < 6) {
+                        setPincodeStatus(null);
+                      }
+                    }}
+                    className="w-32 sm:w-44 min-w-0 border-0 bg-transparent px-1 text-sm font-medium text-ink-900 placeholder:font-normal placeholder:text-ink-400 focus:outline-none"
                   />
                   <button type="submit" className="shrink-0 text-sm font-semibold text-accent-500 hover:underline">
                     Check
                   </button>
                 </form>
-                {pincodeStatus ? (
-                  <p className="mt-1.5 text-sm text-ink-800">
-                    <span className="font-semibold">{pincodeStatus.text}</span>{" "}
-                    <span className="font-semibold text-success">| Free</span>{" "}
-                    <span className="text-xs text-ink-400 line-through">₹40</span>
-                  </p>
+                {pincodeStatus?.valid ? (
+                  <div className="mt-2 space-y-0.5 text-sm">
+                    <p className="text-ink-900">
+                      <span className="font-semibold">{pincodeStatus.etaText}</span>{" "}
+                      {pincodeStatus.isFree ? (
+                        <>
+                          <span className="font-semibold text-success">| Free</span>{" "}
+                          <span className="text-xs text-ink-400 line-through">₹{pincodeStatus.shippingFee}</span>
+                        </>
+                      ) : (
+                        <span className="font-semibold text-ink-700">| ₹{pincodeStatus.shippingFee}</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-ink-500 flex flex-wrap items-center gap-1.5">
+                      <span>Delivering to <strong className="text-ink-700">{pincodeStatus.location}</strong></span>
+                      <span className="rounded bg-accent-50 px-1.5 py-0.5 font-medium text-accent-700">
+                        {pincodeStatus.daysMin}-{pincodeStatus.daysMax} days
+                      </span>
+                    </p>
+                  </div>
                 ) : (
                   <p className="mt-1.5 text-xs text-ink-400">
                     Enter pincode for exact delivery dates and charges

@@ -231,7 +231,11 @@ api.interceptors.response.use(
       message = error.message;
     }
 
-    return Promise.reject(new Error(message));
+    const err = new Error(message);
+    err.response = response;
+    err.status = status;
+    err.data = response?.data;
+    return Promise.reject(err);
   }
 );
 
