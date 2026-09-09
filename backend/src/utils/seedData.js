@@ -90,23 +90,6 @@ export const makeImage = (label, brand) => {
 
 const customerSeed = [
   {
-    name: "Mohd Zaid",
-    email: "zaidm1323@gmail.com",
-    password: "User@123",
-    address: {
-      label: "Home",
-      fullName: "Mohd Zaid",
-      phone: "9876543210",
-      line1: "Flat 402, Royal Residency",
-      line2: "Near City Center",
-      city: "Indore",
-      state: "Madhya Pradesh",
-      postalCode: "452001",
-      country: "India",
-      isDefault: true,
-    },
-  },
-  {
     name: "Demo Customer",
     email: "user@shop.com",
     password: "User@123",
@@ -506,12 +489,38 @@ export const seedDatabase = async ({ clear = true } = {}) => {
   // ── 1. Users ────────────────────────────────────────────────
   console.log("Creating users...");
   await User.create({
-    name: "Admin",
-    email: "admin@shop.com",
-    password: "Admin@123",
+    name: "Mohd Zaid (Super Admin)",
+    email: "zaidm1323@gmail.com",
+    password: "Zaid@Nexa2026#Admin",
     role: "admin",
     isVerified: true,
     status: "active",
+    address: {
+      label: "Office",
+      fullName: "Mohd Zaid",
+      phone: "9876543210",
+      line1: "Flat 402, Royal Residency",
+      line2: "Near City Center",
+      city: "Indore",
+      state: "Madhya Pradesh",
+      postalCode: "452001",
+      country: "India",
+      isDefault: true,
+    },
+    addresses: [
+      {
+        label: "Office",
+        fullName: "Mohd Zaid",
+        phone: "9876543210",
+        line1: "Flat 402, Royal Residency",
+        line2: "Near City Center",
+        city: "Indore",
+        state: "Madhya Pradesh",
+        postalCode: "452001",
+        country: "India",
+        isDefault: true,
+      },
+    ],
   });
 
   const customers = [];
@@ -710,8 +719,8 @@ export const seedDatabase = async ({ clear = true } = {}) => {
   // ── Summary ─────────────────────────────────────────────────
   const featured = products.filter((p) => p.isFeatured).length;
   console.log("\nSeed complete!");
-  console.log("  Admin login:      admin@shop.com / Admin@123");
-  console.log("  Customer login:   user@shop.com  / User@123");
+  console.log("  Super Admin login: zaidm1323@gmail.com / Zaid@Nexa2026#Admin");
+  console.log("  Customer login:    user@shop.com  / User@123");
   console.log(`  Customers:        ${customers.length}`);
   console.log(`  Products:         ${createdProducts.length} (${featured} featured)`);
   const imageCount = createdProducts.reduce((n, p) => n + p.images.length, 0);

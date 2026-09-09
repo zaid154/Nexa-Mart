@@ -127,16 +127,17 @@ npm run dev
 
 ---
 
-## 👥 Demo Accounts
+## 👥 Demo & Super Admin Accounts
 
 Pre-populated accounts created during database seeding:
 
 | Role | Email Address | Password | Permissions & Features |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@shop.com` | `Admin@123` | Full Seller Hub access, order processing, product CRUD, settings |
-| **Customer** | `user@shop.com` | `User@123` | Storefront browsing, cart, checkout, order history, wishlist, reviews |
-| **Demo Customer 1** | `priya.sharma@example.com` | `Priya@123` | Pre-existing orders, saved addresses, verified review history |
-| **Demo Customer 2** | `rahul.verma@example.com` | `Rahul@123` | Pre-existing orders with return requests and delivered states |
+| 👑 **Super Admin** | `zaidm1323@gmail.com` | `Zaid@Nexa2026#Admin` | **Sole Root Super Admin**: Full Seller Hub access, product CRUD, returns & online refund processing, sales analytics, site settings |
+| 👤 **Customer** | `user@shop.com` | `User@123` | Storefront browsing, cart, checkout, live order tracking, wishlist, verified product reviews |
+| 👤 **Customer (Priya)** | `priya.sharma@example.com` | `Priya@123` | Pre-existing orders, saved addresses across Mumbai, verified review history |
+| 👤 **Customer (Rohan)** | `rohan.mehta@example.com` | `Rohan@123` | Bengaluru address, delivered orders with active return window |
+| 👤 **Customer (Ananya)** | `ananya.iyer@example.com` | `Ananya@123` | Chennai address, order tracking and wishlist items |
 
 ---
 
@@ -508,11 +509,11 @@ NexaMart implements defense-in-depth security adhering to the **OWASP Top 10** s
 
 The database seeder (`npm run seed`) populates a complete, realistic e-commerce environment:
 
-- **Users:** 1 Admin + 6 Customers with authentic Indian addresses across Delhi, Mumbai, Bengaluru, etc.
+- **Users:** 1 Super Admin (`Mohd Zaid` / `zaidm1323@gmail.com`) + 6 verified Customers with authentic Indian addresses across Indore, Noida, Mumbai, Bengaluru, Chennai, and Jaipur.
 - **Products:** 34 Electronics products across 6 categories (Smartphones, Laptops, Audio, Tablets, Smartwatches, Accessories).
 - **Variants:** 99 unique variant configurations with individualized pricing, SKUs, and stock counts.
-- **Product Photography:** 89 optimized product images served directly from `frontend/public/images/products/`.
-- **Verified Reviews:** ~120 authentic reviews with ratings dynamically calculated via Mongoose model hooks.
+- **Product Photography:** 98 optimized product images served directly from `frontend/public/images/products/`.
+- **Verified Reviews:** 123 authentic reviews with ratings dynamically calculated via Mongoose model hooks.
 - **Orders:** 10 pre-configured orders spanning various fulfillment statuses (`Delivered`, `Shipped`, `Processing`, `Return Requested`, `Cancelled`).
 - **Promotional Coupons:** `NEXA15` (15% off), `WELCOME10` (10% off), `FESTIVE500` (₹500 flat off), `FLASH20` (20% off).
 

@@ -26,10 +26,17 @@ const start = async () => {
       console.log(`Server running on http://${HOST}:${PORT}`);
     });
   } catch (err) {
-    // If anything above fails, print the error and stop the program.
     console.error("Failed to start server:", err.message);
     process.exit(1);
   }
 };
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[SERVER] Unhandled Rejection:", reason?.message || reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("[SERVER] Uncaught Exception:", err?.message || err);
+});
 
 start();
