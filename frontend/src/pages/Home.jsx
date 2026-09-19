@@ -306,6 +306,26 @@ const DealCard = ({ product, assuredMinRating }) => {
 };
 
 // ── 6. White card section with a horizontal product rail ─────────────────
+const DealRowSkeleton = ({ title }) => (
+  <section className="overflow-hidden rounded-sm bg-white shadow-card" aria-label="Loading collection">
+    <div className="flex items-center justify-between border-b border-ink-100 px-4 py-3 sm:px-5">
+      <h3 className="text-base font-bold text-ink-900 sm:text-lg">{title}</h3>
+      <div className="skeleton h-6 w-16 rounded-sm" />
+    </div>
+    <div className="rail-scroll flex gap-2.5 overflow-x-auto p-3 sm:p-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="flex w-[165px] sm:w-[185px] shrink-0 flex-col gap-2 rounded-sm bg-white p-2">
+          <div className="skeleton aspect-square w-full rounded-sm" />
+          <div className="skeleton h-3 w-1/3" />
+          <div className="skeleton h-3.5 w-full" />
+          <div className="skeleton h-3.5 w-2/3" />
+          <div className="skeleton mt-1 h-4 w-1/2" />
+        </div>
+      ))}
+    </div>
+  </section>
+);
+
 const DealRow = ({ title, to, products, assuredMinRating }) => {
   if (!products || products.length === 0) {
     return null;
@@ -377,12 +397,13 @@ const Home = () => {
     return () => controller.abort();
   }, [reloadKey]);
 
-  if (loading) {
-    return <SkeletonHome />;
-  }
-
   return (
     <div className="flex animate-fade-in flex-col gap-3">
+      <CategoryStrip tiles={homepage.categoryTiles || []} />
+      <HeroCarousel slides={homepage.heroSlides || []} />
+      <PromoTiles tiles={homepage.promoTiles || []} />
+      <CouponBanner strip={homepage.couponStrip} />
+
       {error && (
         <ErrorState
           title="Error Loading Products"
@@ -391,20 +412,20 @@ const Home = () => {
         />
       )}
 
-      <CategoryStrip tiles={homepage.categoryTiles || []} />
-      <HeroCarousel slides={homepage.heroSlides || []} />
-      <PromoTiles tiles={homepage.promoTiles || []} />
-      <CouponBanner strip={homepage.couponStrip} />
-
-      {configuredCollections.map((col) => (
-        <DealRow
-          key={col.title}
-          title={col.title}
-          to={collectionLink(col)}
-          products={collections[col.title]}
-          assuredMinRating={commerce.assuredMinRating}
-        />
-      ))}
+      {configuredCollections.map((col) => {
+        if (loading) {
+          return <DealRowSkeleton key={col.title} title={col.title} />;
+        }
+        return (
+          <DealRow
+            key={col.title}
+            title={col.title}
+            to={collectionLink(col)}
+            products={collections[col.title]}
+            assuredMinRating={commerce.assuredMinRating}
+          />
+        );
+      })}
 
       {(homepage.trustBadges || []).length > 0 && (
         <div className="grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-ink-100 bg-ink-100 lg:grid-cols-4">
