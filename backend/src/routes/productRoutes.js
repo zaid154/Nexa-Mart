@@ -34,8 +34,7 @@ router.get("/admin/list", protect, admin, getAdminProducts);
 router.get("/:id", optionalAuth, getProductById);
 router.get("/:id/image/:imageId", getProductImage);
 
-// Admin-only write routes. A product with three colourways and three shots
-// each needs more than the six slots this used to allow.
+// Admin product management routes (supports up to 24 images per product)
 router.post("/", protect, admin, upload.array("images", 24), createProduct);
 router.put("/:id", protect, admin, upload.array("images", 24), updateProduct);
 router.delete("/:id", protect, admin, deleteProduct);

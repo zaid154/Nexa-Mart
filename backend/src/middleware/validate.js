@@ -1,17 +1,14 @@
-// This middleware validates the request using a Zod schema.
-// If the data is wrong, it sends a 400 error with a clear message.
+// Request validation middleware using Zod schemas.
 
 export const validate = (schema) => (req, res, next) => {
-  // Check the body, query and params against the schema.
+  // Validate request body, query, and path parameters
   const result = schema.safeParse({
     body: req.body,
     query: req.query,
     params: req.params,
   });
 
-  // If validation failed, join all the error messages into one string.
-  // Zod v4 keeps the list on `issues`. (In v3 it was `errors`, which is
-  // undefined here and used to crash this line with a confusing 500.)
+  // If validation fails, extract error messages and pass to error handler
   if (!result.success) {
     const messages = result.error.issues.map((e) => e.message);
     const message = messages.join(", ");
@@ -19,7 +16,7 @@ export const validate = (schema) => (req, res, next) => {
     return next(new Error(message));
   }
 
-  // Replace the request data with the cleaned/validated data.
+  // Attach sanitized data back to request
   if (result.data.body) {
     req.body = result.data.body;
   }

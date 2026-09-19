@@ -1,5 +1,4 @@
-// This file creates and configures the Express application.
-// It sets up security, CORS, body parsing, rate limiting and all the routes.
+// Express application factory and middleware configuration.
 
 import express from "express";
 import cors from "cors";
@@ -23,17 +22,13 @@ import adminRoutes from "./routes/adminRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import pageRoutes, { adminPageRouter } from "./routes/pageRoutes.js";
 
-// The list of website addresses that are allowed to call this API.
-// We use filter(Boolean) to drop any empty values (like a missing CLIENT_URL).
+// Whitelisted origins allowed to access the API via CORS
 const allowedOrigins = [
-  // CLIENT_URL may contain more than one deployed frontend, separated by commas.
   ...String(process.env.CLIENT_URL || "")
     .split(",")
     .map((url) => url.trim())
     .filter(Boolean),
   "http://localhost:5173",
-  "https://nexamart-28c93.web.app",
-  "https://nexamart-28c93.firebaseapp.com",
   "https://nexa-mart-psi.vercel.app",
   "https://nexa-mart.onrender.com",
 ];
@@ -41,21 +36,13 @@ const allowedOrigins = [
 export const createApp = () => {
   const app = express();
 
-  // On Render our app sits behind one reverse proxy, so the visitor's real
-  // IP arrives in the X-Forwarded-For header. Trusting exactly one hop lets
-  // the rate limiter count each visitor separately instead of counting
-  // everyone as the proxy. We use 1 and not `true`, because `true` would let
-  // a visitor fake the header and get around the rate limit.
+  // Trust first reverse proxy hop for rate limiting client IP extraction
   app.set("trust proxy", 1);
 
-  // Gzip every response. Product listings are the biggest payloads the API
-  // sends and they are almost entirely repeated JSON keys, so this is the
-  // cheapest win available.
+  // Gzip compression for API responses
   app.use(compression());
 
-  // Helmet adds safe HTTP headers to protect the app. Since this server
-  // only serves JSON (/api/*), the CSP is locked down to prevent any
-  // accidental HTML rendering from executing scripts.
+  // Security headers configuration
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -72,49 +59,30 @@ export const createApp = () => {
           formAction: ["'self'"],
         },
       },
-      // Prevent MIME-type sniffing
-      // Already included by default, but being explicit
       xContentTypeOptions: true,
-      // Disable X-Powered-By header (hides Express)
       hidePoweredBy: true,
-      // Strict referrer policy
       referrerPolicy: { policy: "strict-origin-when-cross-origin" },
     })
   );
 
-  // CORS decides which websites are allowed to talk to our API.
+  // CORS middleware configuration
   app.use(
     cors({
       origin(origin, callback) {
-        // Requests with no origin (like Postman or server-to-server) are allowed.
-        if (!origin) {
+        if (!origin || allowedOrigins.includes(origin)) {
           callback(null, true);
           return;
         }
-
-        // Allow our known origins, plus any Firebase hosting subdomain.
-        if (
-          allowedOrigins.includes(origin) ||
-          origin.endsWith(".web.app") ||
-          origin.endsWith(".firebaseapp.com")
-        ) {
-          callback(null, true);
-          return;
-        }
-
-        // Otherwise, do not allow this origin.
         callback(null, false);
       },
       credentials: true,
     })
   );
 
-  // Read cookies from incoming requests.
+  // Cookie parser
   app.use(cookieParser());
 
-  // Read JSON and form data from the request body (max size 10mb).
-  // We also keep the raw body around so the Razorpay webhook can verify
-  // its signature against the exact bytes that were sent.
+  // Parse JSON and URL-encoded bodies; preserve raw buffer for webhook signature verification
   app.use(
     express.json({
       limit: "10mb",
@@ -125,14 +93,13 @@ export const createApp = () => {
   );
   app.use(express.urlencoded({ extended: true }));
 
-  // Remove any dangerous MongoDB operators from user input.
+  // Sanitize user-supplied input to prevent MongoDB operator injection
   app.use(mongoSanitize());
 
-  // Rate limiting settings (how many requests are allowed in a time window).
+  // Global rate limiting configuration
   const windowMs = Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000;
   const max = Number(process.env.RATE_LIMIT_MAX) || 200;
 
-  // General rate limit for the whole API.
   app.use(
     rateLimit({
       windowMs,
@@ -143,7 +110,7 @@ export const createApp = () => {
     })
   );
 
-  // A stricter rate limit just for the auth routes (login, register, etc.).
+  // Stricter rate limiting for authentication endpoints
   app.use(
     "/api/auth",
     rateLimit({
@@ -153,12 +120,12 @@ export const createApp = () => {
     })
   );
 
-  // A simple health-check route to test if the server is alive.
+  // Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", time: new Date().toISOString() });
   });
 
-  // Connect each group of routes to its base path.
+  // API route mounts
   app.use("/api/auth", authRoutes);
   app.use("/api/products", productRoutes);
   app.use("/api/cart", cartRoutes);
@@ -172,11 +139,7 @@ export const createApp = () => {
   app.use("/api/admin/pages", adminPageRouter);
   app.use("/api/admin", adminRoutes);
 
-  // This server only serves /api/*. The website itself lives on Vercel.
-  // Render shows its own URL after every deploy, so people do open it and
-  // land here. Instead of a confusing JSON 404, send them to the real site
-  // and keep the path, so /products lands on the frontend's /products page.
-  // Anything under /api/ is left alone and still gives a proper JSON 404.
+  // Redirect root and web requests to frontend application (API requests continue under /api)
   const frontendUrl =
     String(process.env.CLIENT_URL || "").split(",")[0].trim() ||
     "https://nexa-mart-psi.vercel.app";
@@ -190,7 +153,7 @@ export const createApp = () => {
     next();
   });
 
-  // If no route matched, send a 404. Then handle any errors.
+  // Error handling middleware
   app.use(notFound);
   app.use(errorHandler);
 

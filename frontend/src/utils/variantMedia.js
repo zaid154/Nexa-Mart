@@ -24,16 +24,7 @@ const matches = (imageAttributes, variantAttributes) => {
   return true;
 };
 
-// The photos for one variant.
-//
-// Tagged photos win. Failing that, the shared photos — the right answer for a
-// product whose variants differ only by storage or size.
-//
-// If the product tags its photos but has none for this variant we return
-// nothing rather than falling back to the whole list. Falling back is what made
-// a Deep Navy case show the Plum photos. An empty gallery is visibly missing; a
-// wrong photo silently misleads the shopper. Only a product with no tags at all
-// shows everything.
+// Filter media items that match the selected variant attributes
 export const mediaForVariant = (media, variantAttributes) => {
   const all = media || [];
   if (all.length === 0) {

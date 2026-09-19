@@ -14,7 +14,7 @@ import {
   canCancel,
   canReturn,
   RETURN_REASONS,
-} from "../utils/orderStatus.js";
+} from "../services/orderService.js";
 import { buildImageUrls } from "../utils/productView.js";
 
 // Pricing rules are read from the admin Settings on every order, so changing

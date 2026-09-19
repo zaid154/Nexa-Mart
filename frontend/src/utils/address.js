@@ -1,9 +1,5 @@
-// One place that decides what a shipping address may contain. Checkout and the
-// profile page both used to carry their own copy of the blank address and their
-// own idea of what counted as valid — the profile page had no rules at all, so
-// a 20-digit phone saved there flowed straight into checkout as a "saved
-// address". These rules are mirrored field-for-field by the Zod schema in
-// backend/src/validators/orderValidators.js; change one, change the other.
+// Shipping address validation schema and utilities.
+// Validation rules mirror the backend Zod addressSchema in orderValidators.js.
 
 export const EMPTY_ADDRESS = {
   fullName: "",
@@ -32,9 +28,7 @@ export const INDIAN_STATES = [
   "Ladakh", "Lakshadweep", "Puducherry",
 ];
 
-// Which fields the shopper must fill. Used by the form to mark them and by the
-// validator below, so a field can never be starred but unchecked (or worse,
-// checked but unstarred, which is what the old checkout did to state/country).
+// Required fields for order placement and validation
 export const REQUIRED_ADDRESS_FIELDS = [
   "fullName",
   "phone",

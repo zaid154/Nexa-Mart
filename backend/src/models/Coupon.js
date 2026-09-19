@@ -1,11 +1,8 @@
-// This file describes how a discount Coupon is stored in the database.
-// Coupons are created and managed by admins (Admin -> Coupons) and applied
-// by customers at checkout.
+// Coupon schema and per-user usage tracking.
 
 import mongoose from "mongoose";
 
-// Keeps track of how many times a single user has used this coupon
-// (so we can enforce a per-user usage limit).
+// Per-user usage counter for coupon redemption limits
 const couponUsageSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -16,7 +13,7 @@ const couponUsageSchema = new mongoose.Schema(
 
 const couponSchema = new mongoose.Schema(
   {
-    // The code the customer types in, for example "NEXA15". Always stored uppercase.
+    // Normalized uppercase coupon code
     code: {
       type: String,
       required: [true, "Coupon code is required"],
@@ -26,37 +23,35 @@ const couponSchema = new mongoose.Schema(
     },
     description: { type: String, default: "" },
 
-    // "percent" gives a % off; "fixed" gives a flat rupee amount off.
+    // Discount calculation type: percent or fixed
     type: { type: String, enum: ["percent", "fixed"], default: "percent" },
 
-    // For percent: a number like 15 means 15% off.
-    // For fixed: a number like 200 means ₹200 off.
+    // Discount value: percentage or flat amount
     value: { type: Number, required: [true, "Discount value is required"], min: 0 },
 
-    // The smallest cart subtotal (before tax/shipping) needed to use this coupon.
+    // Minimum subtotal required for coupon eligibility
     minOrderAmount: { type: Number, default: 0, min: 0 },
 
-    // For percent coupons, the largest rupee discount allowed (0 = no cap).
+    // Maximum discount cap for percentage discounts (0 = uncapped)
     maxDiscount: { type: Number, default: 0, min: 0 },
 
-    // Total number of times this coupon may be used across all users.
-    // null means unlimited.
+    // Global redemption limit (null = unlimited)
     usageLimit: { type: Number, default: null },
 
-    // How many times this coupon has been used so far (all users).
+    // Total redemption count across all customers
     usedCount: { type: Number, default: 0 },
 
-    // How many times a single user may use this coupon. null means unlimited.
+    // Per-user usage limit (null = unlimited)
     perUserLimit: { type: Number, default: 1 },
 
-    // Per-user usage records, used to enforce perUserLimit.
+    // Per-user redemption tracking
     usedBy: [couponUsageSchema],
 
-    // The window in which the coupon works. Either can be left empty.
+    // Validity schedule
     startsAt: { type: Date },
     expiresAt: { type: Date },
 
-    // Admins can turn a coupon off without deleting it.
+    // Active status toggle
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

@@ -1,5 +1,4 @@
-// A CMS content page (About, Contact, Privacy, Terms, etc.) shown in the
-// storefront footer. Content is admin-editable HTML.
+// CMS static content page schema (About, Terms, Privacy, etc.).
 
 import mongoose from "mongoose";
 

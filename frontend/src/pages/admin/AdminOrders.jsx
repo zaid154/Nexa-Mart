@@ -32,9 +32,7 @@ const BULK_ACTIONS = [
   { value: "delivered", label: "Mark Delivered" },
 ];
 
-// Which page buttons to show: always the first and last, plus a window around
-// the current page. "..." marks a gap. Without this a shop with 40 pages of
-// orders renders 40 buttons.
+// Generate pagination page numbers with ellipsis gaps
 const pageList = (current, total) => {
   const wanted = new Set([1, total, current, current - 1, current + 1]);
   const sorted = [...wanted].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
@@ -344,7 +342,7 @@ const AdminOrders = () => {
         </button>
       </div>
 
-      {/* Filters stack on phones instead of being crushed onto one row. */}
+      {/* Search and filter controls */}
       <form className="card mb-5 grid gap-3 p-3.5 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto_auto_auto]" onSubmit={handleSearch}>
         <input
           className="input min-w-0"

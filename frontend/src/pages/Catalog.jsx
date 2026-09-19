@@ -5,7 +5,7 @@ import ProductCard from "../components/ProductCard.jsx";
 import { SkeletonCard } from "../components/Skeleton.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import ErrorState from "../components/ErrorState.jsx";
-import { IconGrid, IconList, IconHeart, IconChevron, IconSearch, IconClose } from "../components/Icons.jsx";
+import { IconGrid, IconList, IconHeart, IconChevron, IconSearch, IconClose, IconCheckSmall } from "../components/Icons.jsx";
 import { useCart } from "../context/CartContext.jsx";
 import { useCartDrawer } from "../context/CartDrawerContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -48,9 +48,7 @@ const ProductListRow = ({ product }) => {
     }
   };
 
-  // Same default configuration the grid tile and the product page use. Adding
-  // with no variant here is what used to put the row's line and the product
-  // page's line in the cart as two separate entries for one product.
+  // Default variant configuration for initial selection
   const defaultVariantId = product.variants?.[0]?._id || null;
 
   const handleAdd = async () => {
@@ -109,8 +107,7 @@ const ProductListRow = ({ product }) => {
         </button>
       </div>
 
-      {/* On phones the price sits under the details instead of fighting them
-          for width in a third column. */}
+      {/* Product details and responsive layout */}
       <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:gap-6">
         <div className="pointer-events-none min-w-0 flex-1">
           <p className="text-2xs font-bold uppercase tracking-wide text-ink-400">{product.brand}</p>
@@ -198,16 +195,13 @@ const FilterSection = ({ title, count, open, onToggle, children }) => (
   </div>
 );
 
-// One checkbox row. Categories and Brand both use this, so they finally look
-// the same (before, categories used a fake tick span and brands a raw input).
+// Reusable checkbox filter row component
 const CheckRow = ({ label, checked, onChange }) => (
   <li>
     <label className="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2 py-[7px] transition-colors hover:bg-accent-50">
       <input type="checkbox" checked={checked} onChange={onChange} className="peer sr-only" />
       <span className="grid h-[17px] w-[17px] shrink-0 place-items-center rounded border-[1.5px] border-ink-300 bg-white text-transparent transition-colors peer-checked:border-accent-500 peer-checked:bg-accent-500 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-accent-500/30">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 6 9 17l-5-5" />
-        </svg>
+        <IconCheckSmall size={11} />
       </span>
       <span className={`text-sm ${checked ? "font-semibold text-accent-600" : "text-ink-600"}`}>
         {label}

@@ -38,7 +38,10 @@ export const getCloudinary = () => {
 };
 
 // Upload an image (given as a buffer) to Cloudinary and return the result.
-export const uploadImageBuffer = async (buffer, folder = "nexamart/products") => {
+export const uploadImageBuffer = async (
+  buffer,
+  folder = `${process.env.CLOUDINARY_FOLDER || "Nexa Mart"}/products`
+) => {
   const cld = getCloudinary();
   if (!cld) {
     return null;
@@ -70,6 +73,6 @@ export const deleteCloudinaryImage = async (publicId) => {
   try {
     await cld.uploader.destroy(publicId);
   } catch {
-    // If deleting fails, we just ignore the error on purpose.
+    // Best-effort cleanup; ignore deletion failures
   }
 };

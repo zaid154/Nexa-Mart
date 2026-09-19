@@ -22,11 +22,7 @@ const ProductCard = ({ product }) => {
 
   const isWished = inWishlist(product._id);
 
-  // A grid has no variant picker, so a variant product is added in its default
-  // configuration — the same one the product page pre-selects, so the tile and
-  // the product page always land on the same cart line rather than creating
-  // two. The chosen configuration is named under the button so nobody is
-  // surprised by what turns up in the cart.
+  // Default to first variant if product has options
   const defaultVariant = product.variants?.[0] || null;
   const variantId = defaultVariant?._id || null;
   const defaultVariantLabel = variantLabel(defaultVariant);
@@ -44,8 +40,7 @@ const ProductCard = ({ product }) => {
     setAdding(true);
     try {
       await addToCart(product._id, 1, variantId);
-      // The drawer is the confirmation. A toast as well would put two messages
-      // in opposite corners of the screen for one action.
+      // Open cart drawer on successful add
       openCartDrawer();
     } catch (error) {
       toast.error(error.message);
@@ -53,8 +48,7 @@ const ProductCard = ({ product }) => {
       setAdding(false);
     }
   };
-  // A grid has no variant selection, so the first photo — the default
-  // configuration — is the right one to show.
+  // Display cover media or fallback to first image
   const cover = product.media?.[0];
   const image = cover?.url || product.images?.[0] || PRODUCT_IMAGE_PLACEHOLDER;
 

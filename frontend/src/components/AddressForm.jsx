@@ -1,19 +1,11 @@
-// The shipping-address fields, in one place. Checkout wrote them through a
-// helper that set no attributes at all — every box was a plain text input, so
-// the "10-digit mobile number" happily took twenty characters and phones showed
-// an alphabetic keyboard. The profile page wrote the same eight fields out
-// longhand with no validation whatsoever. Both now render this.
-
+// Reusable address form used in checkout and user profile
 import { useId } from "react";
 import { INDIAN_STATES, REQUIRED_ADDRESS_FIELDS } from "../utils/address.js";
 
-// Keep only digits and stop at `maxLength`. The product page's pincode widget
-// already did this; the checkout never did.
+// Restrict input to digits only up to maxLength
 const digitsOnly = (value, maxLength) => value.replace(/\D/g, "").slice(0, maxLength);
 
-// Declared at module scope on purpose. Defined inside AddressForm it would be a
-// brand-new component type on every render, so React would unmount and remount
-// each input as you typed and the caret would jump out of the field.
+// Defined outside component so inputs don't lose focus on re-render
 const Field = ({ id, name, label, error, hint, wide, children }) => {
   const required = REQUIRED_ADDRESS_FIELDS.includes(name);
 
@@ -44,7 +36,7 @@ const AddressForm = ({ value, onChange, errors = {}, disabled = false }) => {
     onChange({ ...value, [name]: next });
   };
 
-  // Shared props for every plain text box, so no field can quietly miss one.
+  // Common props for standard text inputs
   const inputProps = (name) => ({
     id: idFor(name),
     name,

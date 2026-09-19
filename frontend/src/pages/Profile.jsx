@@ -7,8 +7,7 @@ import { IconCart, IconUser, IconHeart } from "../components/Icons.jsx";
 import AddressForm from "../components/AddressForm.jsx";
 import { EMPTY_ADDRESS, validateAddress } from "../utils/address.js";
 
-// True when the shopper has not typed anything into the address at all, so we
-// can leave it out of the request entirely rather than send eight blanks.
+// Check if all address fields are empty
 const isBlankAddress = (address) =>
   Object.entries(address || {}).every(
     ([key, value]) => key === "country" || !String(value || "").trim()
@@ -35,10 +34,7 @@ const Profile = () => {
       payload.password = password;
     }
 
-    // An untouched address is omitted rather than sent as blanks — otherwise
-    // "just change my name" would fail the server's address rules. A partly
-    // filled one is checked here first, so the shopper sees which field is
-    // wrong instead of one long joined error string from the API.
+    // Validate address fields before submitting
     if (!isBlankAddress(address)) {
       const found = validateAddress(address);
       if (Object.keys(found).length > 0) {
@@ -152,10 +148,7 @@ const Profile = () => {
               This is the address offered first at checkout. Leave it blank if you would rather
               add one there.
             </p>
-            {/* The same component the checkout uses. These eight fields were
-                written out a second time here with no validation at all, which
-                is how an unusable phone number could be saved and then picked
-                at checkout as a "saved address". */}
+            {/* Shared address form */}
             <AddressForm
               value={address}
               onChange={(next) => {

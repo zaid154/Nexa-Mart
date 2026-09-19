@@ -56,8 +56,7 @@ const Dashboard = () => {
           setStats(res.data);
         }
       })
-      // Without this the page would sit on the loading spinner forever
-      // whenever the stats request fails.
+      // Handle fetch failure gracefully
       .catch((err) => {
         if (active) {
           setError(err.message);

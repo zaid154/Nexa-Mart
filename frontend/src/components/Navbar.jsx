@@ -33,13 +33,20 @@ const Navbar = () => {
   const loginRef = useRef(null);
   const moreRef = useRef(null);
 
-  const updateLocationFromStorage = () => {
+  const updateLocationFromStorage = async () => {
     try {
+      const savedCity = localStorage.getItem("nexamart_city");
       const saved = localStorage.getItem("nexamart_pincode");
       if (saved && isValidIndianPincode(saved)) {
-        const info = lookupPincode(saved);
-        setLocationText(`${info.city} ${info.pincode}`);
-        return;
+        if (savedCity) {
+          setLocationText(`${savedCity} ${saved}`);
+          return;
+        }
+        const info = await lookupPincode(saved);
+        if (info?.valid) {
+          setLocationText(`${info.city} ${info.pincode}`);
+          return;
+        }
       }
       if (user?.address?.postalCode) {
         setLocationText(`${user.address.city || "Delivery"} ${user.address.postalCode}`);
@@ -234,10 +241,7 @@ const Navbar = () => {
               <div className="relative">
                 <IconCart size={20} />
                 {cart.count > 0 && (
-                  // Keyed on the count so React remounts the badge and replays
-                  // the pop whenever the number changes — it used to update in
-                  // total silence, which is half of why an add felt like
-                  // nothing had happened.
+                  // Keyed by count to trigger CSS animation on quantity change
                   <span
                     key={cart.count}
                     className="absolute -right-2 -top-2 grid h-4 w-4 animate-scale-in place-items-center rounded-full bg-yellow-400 text-[10px] font-bold text-ink-900"

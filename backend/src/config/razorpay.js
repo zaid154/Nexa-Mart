@@ -1,29 +1,19 @@
-// This file gives us the Razorpay payment client and the API keys.
-// The keys can come from the admin Settings page, or from the .env file.
+// Razorpay client and credential resolution.
 
 import Razorpay from "razorpay";
 import Settings from "../models/Settings.js";
 
-// Every Razorpay key id looks like rzp_test_xxx or rzp_live_xxx.
-//
-// This check exists because the Settings page once ended up holding an email
-// address and a password in these two fields — browser autofill filled the
-// admin login into them and they were saved. Settings take priority over .env,
-// so those junk values silently overrode the real keys and every payment failed
-// with "Authentication failed". Anything that is not shaped like a key is
-// ignored rather than trusted.
+// Validate key format (rzp_test_xxx or rzp_live_xxx) to prevent invalid values from overriding env.
 export const isValidRazorpayKeyId = (value) => /^rzp_(test|live)_[A-Za-z0-9]+$/.test(String(value || "").trim());
 
-// Get the Razorpay key id and secret.
-// First we check the saved Settings, then we fall back to the .env values.
+// Resolve Razorpay credentials from Settings singleton with fallback to environment variables.
 export const getRazorpayKeys = async () => {
   const settings = await Settings.getSingleton();
 
   const savedId = String(settings.api?.razorpayKeyId || "").trim();
   const savedSecret = String(settings.api?.razorpayKeySecret || "").trim();
 
-  // Only use the saved pair when the id is genuinely a Razorpay key and a
-  // secret is present alongside it. A half-filled pair falls back to .env too.
+  // Use saved database credentials only if both key ID format and secret are valid.
   const useSaved = isValidRazorpayKeyId(savedId) && savedSecret.length > 0;
 
   if (!useSaved && savedId) {
@@ -39,18 +29,16 @@ export const getRazorpayKeys = async () => {
   };
 };
 
-// Get the Razorpay webhook secret (used to verify incoming webhook calls).
-// Like the keys, it can come from Settings or from the .env file.
+// Resolve Razorpay webhook secret from Settings or environment variables.
 export const getRazorpayWebhookSecret = async () => {
   const settings = await Settings.getSingleton();
   return settings.api?.razorpayWebhookSecret || process.env.RAZORPAY_WEBHOOK_SECRET || "";
 };
 
-// Build a Razorpay client using the keys above.
+// Initialize Razorpay instance with resolved credentials.
 export const getRazorpay = async () => {
   const { keyId, keySecret } = await getRazorpayKeys();
 
-  // We cannot make payments without both keys.
   if (!keyId || !keySecret) {
     throw new Error("Razorpay keys missing. Set them in Admin → Settings → API, or in .env");
   }
@@ -58,8 +46,7 @@ export const getRazorpay = async () => {
   return new Razorpay({ key_id: keyId, key_secret: keySecret });
 };
 
-// Refund a Razorpay payment. amountPaise is the amount in paise (so ₹100 = 10000).
-// Returns the Razorpay refund object (with id and status).
+// Process refund through Razorpay API (amount in paise).
 export const createRefund = async (paymentId, amountPaise, notes = {}) => {
   const razorpay = await getRazorpay();
   return razorpay.payments.refund(paymentId, {

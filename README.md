@@ -121,7 +121,8 @@ npm run dev
 | :--- | :--- | :--- |
 | `npm run install:all` | Root + sub-packages | Installs dependencies across root, `backend/`, and `frontend/` |
 | `npm run dev` | `concurrently` | Starts Express API (`:5000`) and Vite frontend (`:5173`) together |
-| `npm run seed` | `node backend/src/utils/seed.js` | Drops database and inserts 34 products, 99 variants, users, coupons, and orders |
+| `npm run seed` | `node backend/src/seed/seed.js` | Drops database and inserts 34 products, 99 variants, users, coupons, and orders with Cloudinary CDN media |
+| `npm run cloudinary:upload` | `node backend/src/seed/uploadCloudinary.js` | Synchronizes local photography to Cloudinary under `Nexa Mart/products/` |
 | `npm run setup` | `install:all && seed` | One-shot setup script for newly cloned repositories |
 | `npm run build` | `vite build` | Compiles optimized production bundle into `frontend/dist` |
 
@@ -244,13 +245,14 @@ Nexa-Mart/
 │   └── src/
 │       ├── createApp.js           # Express app factory (middleware, routes, error handler)
 │       ├── config/                # Environment, DB, Razorpay, Cloudinary configurations
-│       ├── controllers/           # Business logic handlers (auth, products, cart, orders, etc.)
+│       ├── controllers/           # Request handlers (auth, products, cart, orders, admin, etc.)
 │       ├── middleware/            # Auth, Admin guard, Error handler, Multer uploads, Zod validation
 │       ├── models/                # Mongoose schemas (User, Product, Order, Coupon, Page, Settings)
 │       ├── routes/                # Express routing endpoints
-│       ├── validators/            # Zod validation schemas
-│       ├── scripts/               # Media migration, optimization, and auditing tools
-│       └── utils/                 # Catalogue data, seeders, token helpers, email templates
+│       ├── services/              # Business logic & external drivers (email, orders, tokens)
+│       ├── seed/                  # Isolated database seeders & Cloudinary asset sync
+│       ├── utils/                 # Lean cross-cutting utilities (coupons, otp, paginate, sku)
+│       └── validators/            # Zod validation schemas
 │
 └── frontend/                      # React SPA (Vite)
     ├── index.html                 # Main HTML template with Google Fonts & Razorpay script
@@ -281,10 +283,12 @@ Nexa-Mart/
 | :--- | :--- | :--- |
 | **Configuration** | `config/db.js`<br>`config/env.js`<br>`config/razorpay.js`<br>`config/cloudinary.js` | Initializes MongoDB connection, performs boot-time environment validation, exports Razorpay and Cloudinary SDK singletons. |
 | **Data Models** | `models/User.js`<br>`models/Product.js`<br>`models/Order.js`<br>`models/Coupon.js`<br>`models/Page.js`<br>`models/Settings.js`<br>`models/ActivityLog.js` | Defines Mongoose schemas with pre/post save hooks, bcrypt password hashing, slug generation, product rating recalculations, and variant embedding. |
-| **Controllers** | `controllers/authController.js`<br>`controllers/productController.js`<br>`controllers/cartController.js`<br>`controllers/orderController.js`<br>`controllers/paymentController.js`<br>`controllers/adminController.js` | Implements end-to-end business logic, transaction handling, variant pricing, order idempotency, and coupon discount validation. |
+| **Controllers** | `controllers/authController.js`<br>`controllers/productController.js`<br>`controllers/cartController.js`<br>`controllers/orderController.js`<br>`controllers/paymentController.js`<br>`controllers/adminController.js` | Implements end-to-end HTTP request handlers, transaction orchestration, and response formatting. |
+| **Services Layer** | `services/emailService.js`<br>`services/emailTemplates.js`<br>`services/orderService.js`<br>`services/tokenService.js` | Decoupled business logic, mail delivery (SMTP / Brevo), inventory adjustment, and crypto SHA-256 token hashing. |
 | **Middleware** | `middleware/auth.js`<br>`middleware/optionalAuth.js`<br>`middleware/error.js`<br>`middleware/upload.js`<br>`middleware/validate.js` | JWT verification, admin authorization guards, global error interception, Multer file upload handling, and Zod schema execution. |
 | **Validators** | `validators/authValidators.js`<br>`validators/orderValidators.js` | Zod validation rules enforcing Indian mobile numbers (`^[6-9]\d{9}$`), 6-digit postal PIN codes, strong passwords, and payload sanity. |
-| **Utilities & Scripts** | `utils/catalogue.js`<br>`utils/seedData.js`<br>`utils/orderStatus.js`<br>`utils/email.js`<br>`scripts/media/*` | Built-in 34-product catalogue, database wiping/seeding routines, stock rollback logic, Brevo/Nodemailer transports, and media optimization tools. |
+| **Seed & Cloudinary** | `seed/seed.js`<br>`seed/seedData.js`<br>`seed/catalogue.js`<br>`seed/cloudinaryMap.js`<br>`seed/uploadCloudinary.js` | Standalone seed dataset, 34-product catalogue, Cloudinary asset syncing, and full database provisioning runner. |
+| **Utilities** | `utils/coupons.js`<br>`utils/logger.js`<br>`utils/otp.js`<br>`utils/paginate.js`<br>`utils/productImages.js`<br>`utils/sku.js` | Lean cross-cutting helper functions without business coupling. |
 
 ---
 
@@ -509,11 +513,11 @@ NexaMart implements defense-in-depth security adhering to the **OWASP Top 10** s
 
 The database seeder (`npm run seed`) populates a complete, realistic e-commerce environment:
 
-- **Users:** 1 Super Admin (`Mohd Zaid` / `zaidm1323@gmail.com`) + 6 verified Customers with authentic Indian addresses across Indore, Noida, Mumbai, Bengaluru, Chennai, and Jaipur.
+- **Users:** 1 Super Admin (`Mohd Zaid` / `zaidm1323@gmail.com`) + 6 verified Customers with authentic Indian addresses across Indore, Noida, Mumbai, Bengaluru, Chennai, and Ahmedabad.
 - **Products:** 34 Electronics products across 6 categories (Smartphones, Laptops, Audio, Tablets, Smartwatches, Accessories).
 - **Variants:** 99 unique variant configurations with individualized pricing, SKUs, and stock counts.
-- **Product Photography:** 98 optimized product images served directly from `frontend/public/images/products/`.
-- **Verified Reviews:** 123 authentic reviews with ratings dynamically calculated via Mongoose model hooks.
+- **Product Photography:** 102 high-resolution product photos hosted on Cloudinary CDN (`Nexa Mart/products/`) with local fallback.
+- **Verified Reviews:** 117 authentic reviews with ratings dynamically calculated via Mongoose model hooks.
 - **Orders:** 10 pre-configured orders spanning various fulfillment statuses (`Delivered`, `Shipped`, `Processing`, `Return Requested`, `Cancelled`).
 - **Promotional Coupons:** `NEXA15` (15% off), `WELCOME10` (10% off), `FESTIVE500` (₹500 flat off), `FLASH20` (20% off).
 
@@ -534,15 +538,24 @@ CLIENT_URL=http://localhost:5173
 # ==============================================================================
 # Database (MongoDB Atlas or Local MongoDB)
 # ==============================================================================
-MONGO_URI=mongodb+srv://<username>:<password>@<cluster-url>/<database-name>?retryWrites=true&w=majority
+MONGO_URI=mongodb+srv://<username>:<password>@<cluster-url>/nexamart?retryWrites=true&w=majority&appName=Cluster0
 
 # ==============================================================================
 # JWT Authentication Secrets
 # ==============================================================================
 JWT_SECRET=your_super_secret_access_jwt_key_at_least_32_chars
 JWT_REFRESH_SECRET=your_super_secret_refresh_jwt_key_at_least_32_chars
-JWT_EXPIRE=15m
-JWT_REFRESH_EXPIRE=7d
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# ==============================================================================
+# Security, OTP & Rate Limiting
+# ==============================================================================
+COOKIE_SECURE=false
+OTP_EXPIRES_MIN=10
+OTP_LENGTH=6
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX=200
 
 # ==============================================================================
 # Payment Gateway (Razorpay)
@@ -557,6 +570,7 @@ RAZORPAY_WEBHOOK_SECRET=yourWebhookSecret
 # Option 1: Standard SMTP (Local Development)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
+SMTP_SECURE=false
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_FROM="NexaMart <no-reply@nexamart.com>"
@@ -565,11 +579,12 @@ SMTP_FROM="NexaMart <no-reply@nexamart.com>"
 BREVO_API_KEY=xkeysib-yourBrevoApiKey
 
 # ==============================================================================
-# Cloudinary CDN (Optional for Admin Product Uploads)
+# Cloudinary CDN (Product Images & Media Storage)
 # ==============================================================================
 CLOUDINARY_CLOUD_NAME=your_cloudinary_name
 CLOUDINARY_API_KEY=your_cloudinary_key
 CLOUDINARY_API_SECRET=your_cloudinary_secret
+CLOUDINARY_FOLDER="Nexa Mart"
 
 # ==============================================================================
 # Frontend Environment Variables (Read by Vite)
@@ -634,7 +649,7 @@ Configured in `frontend/tailwind.config.js` and `frontend/src/styles/index.css`:
 | `EADDRINUSE :5000` | Port 5000 is occupied by another process. | Terminate the existing Node process or change `PORT` in `.env`. |
 | `Nodemon command not found` | Sub-package dependencies are missing. | Run `npm run install:all` from the root directory. |
 | Storefront opens but displays no products | Database has not been seeded. | Execute `npm run seed` to load demo catalogue data. |
-| Product images appear broken | Image assets missing in `frontend/public/images/`. | Ensure the `frontend/public/images/` directory is present from the repository. |
+| Product images appear broken | Database unseeded or Cloudinary CDN config missing. | Run `npm run seed` to populate Cloudinary URLs, or run `npm run cloudinary:upload` to sync images. |
 | Email OTP not received locally | SMTP is not configured in `.env`. | Check your server terminal; OTPs are automatically printed to the terminal console during development. |
 | Email OTP fails on Render deployment | Render blocks outbound SMTP port 587. | Add `BREVO_API_KEY` to Render environment variables to send emails over HTTPS. |
 | "Waking the server up" notice appears | Render free-tier cold start. | Wait 30–40 seconds. The frontend banner will automatically count down and reconnect. |

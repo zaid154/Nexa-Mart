@@ -1,16 +1,4 @@
-// Validation rules for placing an order and for saving an address.
-//
-// Until now nothing between the browser and the database ever looked at a
-// shipping address: there was no schema on the route, and every field on the
-// Order and User models is a bare String. A phone number of twenty digits went
-// straight through and got stored. These rules are mirrored field-for-field by
-// frontend/src/utils/address.js; change one, change the other.
-//
-// Deliberately enforced here at the edge and NOT as `match` on the Mongoose
-// schemas: existing seeded users and orders hold addresses that would fail
-// these patterns, and a model-level constraint would make those documents
-// unsaveable for unrelated reasons.
-
+// Validation schema for orders, addresses, and profile updates
 import { z } from "zod";
 
 // Indian mobile numbers are ten digits and never start below 6.
@@ -54,26 +42,9 @@ export const createOrderSchema = z.object({
   body: z.object({
     shippingAddress: addressSchema,
     couponCode: optionalText(40, "Coupon code"),
-    // The checkout used to send this under the wrong key, so every order was
-    // created as razorpay whatever the shopper picked. Naming it here means a
-    // future mismatch is a 400 rather than a silent wrong order.
     paymentMethod: z
       .enum(["razorpay", "cod"], { message: "Choose a valid payment method" })
       .default("razorpay"),
     idempotencyKey: optionalText(100, "Idempotency key"),
-  }),
-});
-
-// Rules for PUT /api/auth/profile. Every key the controller reads has to be
-// listed: Zod strips what it does not know, and the middleware replaces
-// req.body with the parsed result, so an omitted key would silently vanish.
-export const updateProfileSchema = z.object({
-  body: z.object({
-    name: z.string().trim().min(2, "Name must be at least 2 characters").max(60).optional(),
-    // Left as a plain string on purpose — the controller runs the shared
-    // strongPassword() check and returns its own message.
-    password: z.string().optional(),
-    address: addressSchema.optional(),
-    addresses: z.array(addressSchema).max(10, "You can save up to 10 addresses").optional(),
   }),
 });

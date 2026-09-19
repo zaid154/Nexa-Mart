@@ -1,9 +1,7 @@
-// This file stores the site-wide admin Settings (SMTP, email templates,
-// company info, security, API keys and social links).
-// There is only ever ONE settings document in the database.
+// Application-wide settings schema (singleton document).
 
 import mongoose from "mongoose";
-import { EMAIL_TEMPLATES } from "../utils/emailTemplates.js";
+import { EMAIL_TEMPLATES } from "../services/emailTemplates.js";
 import {
   DEFAULT_CATEGORY_TILES,
   DEFAULT_HERO_SLIDES,
@@ -39,9 +37,9 @@ const settingsSchema = new mongoose.Schema(
       name: { type: String, default: "NexaMart Electronics Pvt Ltd" },
       address: { type: String, default: "" },
       gstin: { type: String, default: "" },
-      // GST percentage applied to orders and shown (split CGST/SGST) on invoices.
+      // Default GST percentage for invoice calculations
       gstRate: { type: Number, default: 18 },
-      // Authorised-signatory image for invoices (base64 data URL or URL).
+      // Authorised signatory image for invoices (data URL or URL)
       signature: { type: String, default: "" },
     },
     security: {
@@ -62,8 +60,7 @@ const settingsSchema = new mongoose.Schema(
       whatsapp: { type: String, default: "" },
       github: { type: String, default: "https://github.com/zaid154" },
     },
-    // Storefront content the admin can edit: product-page benefit bullets and
-    // the footer tagline / credit line.
+    // Storefront promotional and layout content
     storefront: {
       productBenefits: {
         type: [String],
@@ -86,38 +83,33 @@ const settingsSchema = new mongoose.Schema(
       },
     },
 
-    // ── Commerce rules ───────────────────────────────────────────────
-    // Every price the shopper sees is derived from these numbers. The API is
-    // the single source of truth: the cart, the checkout and the order all
-    // read the same values, so changing one here changes them everywhere.
+    // Commerce business rules
     commerce: {
       currency: { type: String, default: "INR" },
-      // Tax charged on the discounted order subtotal.
+      // Order subtotal tax rate percentage
       taxRatePercent: { type: Number, default: 18, min: 0, max: 100 },
-      // Delivery fee, waived once the order reaches the threshold.
+      // Standard shipping fee
       shippingFee: { type: Number, default: 99, min: 0 },
       freeShippingThreshold: { type: Number, default: 5000, min: 0 },
-      // Shown as "Delivery in X-Y business days" and used for date estimates.
+      // Estimated delivery business day window
       deliveryDaysMin: { type: Number, default: 3, min: 0 },
       deliveryDaysMax: { type: Number, default: 5, min: 0 },
-      // How many months the "No Cost EMI from ₹X/month" figure is spread over.
+      // EMI calculation tenure in months
       emiMonths: { type: Number, default: 12, min: 1 },
-      // Return window advertised on the product page.
+      // Return policy eligibility window in days
       returnWindowDays: { type: Number, default: 7, min: 0 },
-      // Stock at or below this shows the "Hurry, only N left!" warning.
+      // Low inventory notification threshold
       lowStockThreshold: { type: Number, default: 10, min: 0 },
-      // Who the storefront says fulfils the order.
+      // Fulfillment seller display name
       sellerName: { type: String, default: "NexaMart Retail" },
-      // Payment methods offered at checkout.
+      // Checkout payment gateway toggles
       codEnabled: { type: Boolean, default: true },
       onlinePaymentEnabled: { type: Boolean, default: true },
-      // Minimum rating for a product to earn the "Assured" badge.
+      // Minimum rating threshold for Assured badge
       assuredMinRating: { type: Number, default: 4, min: 0, max: 5 },
     },
 
-    // ── Home page content ────────────────────────────────────────────
-    // Each section is a list the admin can reorder, extend or empty. An empty
-    // list simply hides that section — no code change needed.
+    // Homepage layout sections
     homepage: {
       categoryTiles: {
         type: [
@@ -157,8 +149,7 @@ const settingsSchema = new mongoose.Schema(
         ],
         default: () => DEFAULT_PROMO_TILES,
       },
-      // Horizontal product rails. `query` is a category name, `sort` an API
-      // sort key; `featured` pulls the featured products instead.
+      // Product collections configuration
       collections: {
         type: [
           {
@@ -191,9 +182,8 @@ const settingsSchema = new mongoose.Schema(
       },
     },
 
-    // ── Product page content ─────────────────────────────────────────
+    // Product page promotional copy
     productPage: {
-      // The "Available offers" list. Purely promotional copy.
       offers: {
         type: [
           {
@@ -204,7 +194,7 @@ const settingsSchema = new mongoose.Schema(
         ],
         default: () => DEFAULT_PRODUCT_OFFERS,
       },
-      // Icons shown in the services strip under the price block.
+      // Service highlight badges
       serviceBadges: {
         type: [
           {
@@ -217,7 +207,7 @@ const settingsSchema = new mongoose.Schema(
       },
     },
 
-    // ── Search ───────────────────────────────────────────────────────
+    // Storefront search configuration
     search: {
       popularSearches: { type: [String], default: () => DEFAULT_POPULAR_SEARCHES },
       placeholder: {
@@ -229,8 +219,7 @@ const settingsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Get the single settings document. If it does not exist yet, create it.
-// We also select the hidden fields (smtp.pass and razorpayKeySecret).
+// Retrieve singleton settings document including sensitive credentials
 settingsSchema.statics.getSingleton = async function () {
   let doc = await this.findOne().select(
     "+smtp.pass +api.razorpayKeySecret +api.razorpayWebhookSecret"

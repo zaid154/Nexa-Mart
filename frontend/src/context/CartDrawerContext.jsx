@@ -1,11 +1,5 @@
-// Whether the slide-in cart panel is showing.
-//
-// Deliberately two contexts rather than one. The actions object never changes
-// identity, so the product tiles that only need `open` never re-render when the
-// panel opens or closes; only the drawer itself subscribes to the boolean. A
-// forty-tile grid re-rendering on every open is exactly what this avoids — and
-// it is why this does not just live as another field on CartContext, which
-// every tile already subscribes to for the wishlist heart.
+// Cart drawer state management.
+// Splits actions and visibility state into two separate contexts to optimize rendering performance.
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
@@ -18,7 +12,7 @@ export const CartDrawerProvider = ({ children }) => {
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
 
-  // Empty dep list on purpose: this object must stay referentially stable.
+  // Memoize action handlers for referential stability
   const actions = useMemo(() => ({ open, close }), [open, close]);
 
   return (

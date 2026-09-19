@@ -2,15 +2,7 @@
 
 import mongoose from "mongoose";
 
-// A single product image. It can be a URL (Cloudinary) or raw data (Buffer).
-//
-// `attributes` says which variant the photo belongs to. An empty map means the
-// photo is generic and can be shown for any variant; { Color: "Deep Navy" }
-// means it only ever shows when the shopper has picked Deep Navy. We link by
-// attribute value rather than by variant id on purpose: updateProduct rebuilds
-// the variants array on every save, so variant ids are not stable, but the
-// attribute values are. It also means one set of photos serves every storage
-// tier of the same colour without duplicating a single file.
+// Product image schema with optional variant attribute mappings
 const imageSchema = new mongoose.Schema(
   {
     url: { type: String },
@@ -29,9 +21,7 @@ const imageSchema = new mongoose.Schema(
   { _id: true }
 );
 
-// A variant is a version of the product (for example a different color or size).
-// A variant does not point at its photos; the photos point at the variant. See
-// the note on imageSchema.attributes above.
+// Product variant schema representing size, color, or other variations
 const variantSchema = new mongoose.Schema(
   {
     attributes: { type: Map, of: String, default: {} },
@@ -93,8 +83,7 @@ const productSchema = new mongoose.Schema(
 productSchema.index({ name: "text", description: "text", brand: "text", category: "text" });
 productSchema.index({ status: 1, category: 1 });
 productSchema.index({ name: 1, brand: 1 });
-// The storefront's default query: not deleted, active, newest first. Without
-// this the listing sorts in memory on every catalog page and every home rail.
+// Compound index for storefront listings: active, non-deleted, sorted by creation date
 productSchema.index({ isDeleted: 1, status: 1, createdAt: -1 });
 productSchema.index({ category: 1, price: 1 });
 

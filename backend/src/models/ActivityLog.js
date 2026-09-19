@@ -1,5 +1,4 @@
-// This file describes how an activity/audit log entry is stored.
-// We use it to record logins, admin actions, errors and security events.
+// Activity and audit log schema.
 
 import mongoose from "mongoose";
 
@@ -18,7 +17,7 @@ const activityLogSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Indexes to make reading the logs faster.
+// Indexes
 activityLogSchema.index({ type: 1, createdAt: -1 });
 activityLogSchema.index({ actor: 1, createdAt: -1 });
 

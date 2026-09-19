@@ -1,12 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
-// This context shows a popup box that asks the user to confirm or cancel.
+// Modal confirmation dialog provider exposing a Promise-based confirm API
 const ConfirmContext = createContext(null);
 
-// Helper hook so other files can ask for confirmation easily.
 export const useConfirm = () => useContext(ConfirmContext);
 
-// Default text for the popup box.
 const defaultOptions = {
   title: "Are you sure?",
   message: "",
@@ -15,35 +13,22 @@ const defaultOptions = {
   tone: "danger",
 };
 
-// Everything inside the dialog that can take keyboard focus.
 const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export const ConfirmProvider = ({ children }) => {
-  // "popup" holds the current popup options, or null when nothing is shown.
   const [popup, setPopup] = useState(null);
-  // We keep the promise "resolve" function here so we can call it later.
   const resolveRef = useRef(null);
-
   const dialogRef = useRef(null);
   const confirmBtnRef = useRef(null);
   const cancelBtnRef = useRef(null);
-  // Whatever had focus before we opened, so we can hand it back on close.
   const lastFocusedRef = useRef(null);
 
-  // Open the popup. You can pass a string message or an options object.
   const confirm = useCallback((options) => {
     if (!options) {
       options = {};
     }
-    let chosenOptions;
-    if (typeof options === "string") {
-      chosenOptions = { message: options };
-    } else {
-      chosenOptions = options;
-    }
+    const chosenOptions = typeof options === "string" ? { message: options } : options;
 
-    // If a popup is somehow already open, settle its promise instead of
-    // leaving the caller waiting forever.
     if (resolveRef.current) {
       resolveRef.current(false);
       resolveRef.current = null;
@@ -51,21 +36,17 @@ export const ConfirmProvider = ({ children }) => {
 
     lastFocusedRef.current = document.activeElement;
     setPopup({ ...defaultOptions, ...chosenOptions });
-    // Return a promise. It finishes when the user clicks a button.
     return new Promise((resolve) => {
       resolveRef.current = resolve;
     });
   }, []);
 
-  // Close the popup and send back the result (true or false).
   const close = useCallback((result) => {
     setPopup(null);
     if (resolveRef.current) {
       resolveRef.current(result);
       resolveRef.current = null;
     }
-    // Put focus back where it was, so keyboard users are not dumped at the
-    // top of the page.
     const last = lastFocusedRef.current;
     lastFocusedRef.current = null;
     if (last && typeof last.focus === "function") {
@@ -73,9 +54,7 @@ export const ConfirmProvider = ({ children }) => {
     }
   }, []);
 
-  // Move focus into the dialog when it opens. For destructive actions we focus
-  // Cancel, so a stray Enter left over from whatever opened the dialog cannot
-  // delete anything by itself.
+  // Set initial focus on open
   useEffect(() => {
     if (!popup) {
       return;
@@ -87,7 +66,7 @@ export const ConfirmProvider = ({ children }) => {
     }
   }, [popup]);
 
-  // Escape cancels, and Tab is kept inside the dialog while it is open.
+  // Trap keyboard focus and handle Escape to dismiss
   useEffect(() => {
     if (!popup) {
       return;

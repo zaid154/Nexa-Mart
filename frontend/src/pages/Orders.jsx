@@ -13,11 +13,7 @@ import {
 } from "../utils/format.js";
 import { onProductImageError, PRODUCT_IMAGE_PLACEHOLDER } from "../utils/productImage.js";
 
-// Grouped, because raw statuses made a bad filter: the old rail offered eight
-// radios covering only eight of the twelve statuses, so packed,
-// out_for_delivery, return_approved, return_rejected and returned could not be
-// filtered at all, and "Returns" matched return_requested alone — an approved
-// return vanished from every filter except All.
+// Order status filter categories
 const FILTERS = [
   { key: "", label: "All orders", statuses: null },
   { key: "pending", label: "Pending", statuses: ["pending"] },
@@ -65,10 +61,7 @@ const Orders = () => {
   const [params] = useSearchParams();
   const justPlaced = params.get("placed") === "1";
 
-  // Fetched once, unfiltered. The list endpoint takes a single status string,
-  // so grouped filters would need several round trips — and on a cold free
-  // instance every one of those is a visible wait. Filtering in the browser
-  // makes switching instant, which is what matters at this size.
+  // Fetch all orders once and filter by status on client-side
   useEffect(() => {
     let active = true;
     setLoading(true);

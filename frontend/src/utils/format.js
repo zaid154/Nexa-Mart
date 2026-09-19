@@ -140,12 +140,7 @@ export const refundStatusLabel = (status) => {
   return status;
 };
 
-// One tone per status, and everything that shows a status derives its colour
-// from here — the badge, the dot on the orders list, the timeline node. The old
-// version gave confirmed, processing, packed, shipped and out_for_delivery the
-// same blue, so a shopper could not tell "being packed" from "at your door".
-// "transit" is the tone that split those apart; it uses the copper ramp, which
-// no status treatment was using.
+// Color theme mapping for order and return statuses
 const STATUS_TONES = {
   pending: "warning",
   confirmed: "info",
@@ -190,9 +185,7 @@ export const statusBadgeClass = (status) => {
   return TONE_BADGE[statusTone(status)];
 };
 
-// Solid colour for the small status dot on the orders list and the tracking
-// history. Lives here so it can never drift from the badge again — it used to
-// be a second copy of the branching inside pages/Orders.jsx.
+// Solid indicator dot color for order lists and tracking history
 export const statusDotClass = (status) => {
   return TONE_DOT[statusTone(status)];
 };

@@ -1,17 +1,12 @@
-// This file handles connecting to and disconnecting from the MongoDB database.
-
+// MongoDB connection management
 import mongoose from "mongoose";
 import dns from "dns";
 
-// Some networks/ISPs block DNS SRV lookups, which the mongodb+srv:// URI needs.
-// Pointing Node at a public DNS resolver makes Atlas connections work anywhere.
+// Use reliable public DNS resolvers for MongoDB Atlas SRV records
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
-// Connect to the database using the MONGO_URI from the .env file.
 export const connectDB = async () => {
   const uri = process.env.MONGO_URI;
-
-  // Stop early if the connection string is missing.
   if (!uri) {
     throw new Error("MONGO_URI is not defined in .env");
   }
@@ -23,7 +18,7 @@ export const connectDB = async () => {
   return conn;
 };
 
-// Close the database connection (useful for scripts).
+// Disconnect database connection
 export const disconnectDB = async () => {
   await mongoose.disconnect();
 };

@@ -11,9 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // When the app first loads, try a silent refresh to restore the session
-  // from the HttpOnly refresh-token cookie. The access token is never
-  // persisted in localStorage — it lives only in memory.
+  // Restore session on mount via HttpOnly refresh cookie (access token stored in-memory only)
   useEffect(() => {
     api
       .post("/auth/refresh")
@@ -29,7 +27,6 @@ export const AuthProvider = ({ children }) => {
         }
       })
       .catch(() => {
-        // No valid refresh cookie — user is not logged in.
         clearAccessToken();
         setUser(null);
       })
@@ -38,52 +35,41 @@ export const AuthProvider = ({ children }) => {
       });
   }, []);
 
-  // Log the user in with email and password.
   const login = async (email, password) => {
-    const res = await api.post("/auth/login", { email: email, password: password });
+    const res = await api.post("/auth/login", { email, password });
     setAccessToken(res.data.token);
     setUser(res.data.user);
     return res.data.user;
   };
 
-  // Create a new account.
   const register = async (name, email, password) => {
-    const res = await api.post("/auth/register", { name: name, email: email, password: password });
+    const res = await api.post("/auth/register", { name, email, password });
     return res.data;
   };
 
-  // Verify the OTP code sent to the user's email.
   const verifyOtp = async (email, code) => {
-    const res = await api.post("/auth/verify-otp", { email: email, code: code });
+    const res = await api.post("/auth/verify-otp", { email, code });
     setAccessToken(res.data.token);
     setUser(res.data.user);
     return res.data.user;
   };
 
-  // Log the user out.
   const logout = async () => {
     try {
       await api.post("/auth/logout");
     } catch {
-      // If the server call fails we still log out on our side.
+      // Ignored: client-side session is cleared regardless
     }
     clearAccessToken();
     setUser(null);
   };
 
-  // Update only some fields of the user object.
   const updateUser = (changes) => {
     setUser((oldUser) => ({ ...oldUser, ...changes }));
   };
 
-  // Check if the current user is an admin.
-  let isAdmin = false;
-  if (user && user.role === "admin") {
-    isAdmin = true;
-  }
+  const isAdmin = Boolean(user && user.role === "admin");
 
-  // Memoised so a re-render here does not cascade into every consumer — and
-  // through them into CartContext, which depends on `user`.
   const value = useMemo(
     () => ({ user, loading, login, register, verifyOtp, logout, updateUser, isAdmin }),
     // eslint-disable-next-line react-hooks/exhaustive-deps

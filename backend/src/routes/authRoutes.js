@@ -1,5 +1,3 @@
-// These are the routes for everything under /api/auth.
-
 import express from "express";
 import {
   registerUser,
@@ -21,12 +19,11 @@ import {
   verifyOtpSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  updateProfileSchema,
 } from "../validators/authValidators.js";
-import { updateProfileSchema } from "../validators/orderValidators.js";
 
 const router = express.Router();
 
-// Public routes (no login needed). Some are validated first.
 router.post("/register", validate(registerSchema), registerUser);
 router.post("/verify-otp", validate(verifyOtpSchema), verifyOtp);
 router.post("/resend-otp", resendOtp);
@@ -35,11 +32,8 @@ router.post("/forgot-password", validate(forgotPasswordSchema), forgotPassword);
 router.post("/reset-password", validate(resetPasswordSchema), resetPassword);
 router.post("/refresh", refreshToken);
 
-// Routes that need the user to be logged in.
 router.post("/logout", protect, logoutUser);
 router.get("/profile", protect, getProfile);
-// Saved addresses go through the same rules as a checkout address — otherwise
-// an invalid one could be stored here and then picked at checkout.
 router.put("/profile", protect, validate(updateProfileSchema), updateProfile);
 
 export default router;

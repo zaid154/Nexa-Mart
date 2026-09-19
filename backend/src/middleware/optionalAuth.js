@@ -1,6 +1,4 @@
-// This middleware tries to load the user if a token is present,
-// but it does NOT block the request when there is no token.
-// It is used for routes that work for both guests and logged-in users.
+// Optional JWT authentication middleware; attaches user if token is present without blocking guest requests.
 
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
@@ -9,7 +7,6 @@ import User from "../models/User.js";
 export const optionalAuth = asyncHandler(async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
-  // No token? Just continue as a guest.
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return next();
   }
@@ -22,7 +19,7 @@ export const optionalAuth = asyncHandler(async (req, res, next) => {
       req.user = user;
     }
   } catch {
-    // If the token is invalid we ignore it and continue as a guest.
+    // Ignore invalid or expired token for guest mode
   }
 
   next();

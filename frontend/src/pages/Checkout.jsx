@@ -22,9 +22,7 @@ import {
   validateAddress,
 } from "../utils/address.js";
 
-// A section of the checkout. One page, everything on it — the four-step
-// accordion this replaced hid the payment options behind two clicks and made
-// the primary button move around as you changed payment method.
+// Reusable checkout section panel card
 const Panel = ({ title, subtitle, children, action }) => (
   <section className="card">
     <header className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-3.5">
@@ -58,11 +56,7 @@ const Checkout = () => {
     return [user?.address].filter((a) => a && a.line1);
   }, [user]);
 
-  // Start on the address marked default, falling back to the first. The old
-  // page kept two sources of truth — a separate `address` seeded from
-  // user.address, and a selected index that defaulted to 0 without ever being
-  // applied — so the highlighted card and the address actually submitted could
-  // be different ones. There is now a single derived address.
+  // Default to saved default address or first available address
   const defaultIdx = Math.max(
     0,
     savedAddresses.findIndex((a) => a.isDefault)
@@ -138,10 +132,7 @@ const Checkout = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [couponFromCart, loading, cart.items.length]);
 
-  // Quantities are editable on this page now, and a coupon carries minimum-order
-  // and cap rules, so a discount worked out for the old subtotal can be wrong
-  // for the new one. Drop it and make them re-apply rather than charge a total
-  // the server will not agree with. The ref keeps this from firing on mount.
+  // Reset applied coupon if subtotal changes to re-verify discount eligibility
   const lastSubtotal = useRef(null);
   useEffect(() => {
     if (lastSubtotal.current !== null && lastSubtotal.current !== cart.subtotal) {
@@ -219,10 +210,7 @@ const Checkout = () => {
     setErrors({});
   };
 
-  // Store the address on the account. Best effort: a failure here must never
-  // stop an order the shopper has already paid attention to. Legacy saved
-  // addresses that predate these rules are dropped from the list rather than
-  // failing the whole request.
+  // Save valid addresses to user profile
   const persistAddress = async (address) => {
     try {
       const keep = savedAddresses.filter(isAddressValid);
@@ -240,9 +228,7 @@ const Checkout = () => {
     const found = validateAddress(shippingAddress);
     if (Object.keys(found).length > 0) {
       setErrors(found);
-      // A saved address can fail these rules if it was stored before they
-      // existed. Open it in the form so it can actually be corrected instead
-      // of leaving the shopper stuck on an unfixable card.
+      // Prompt user to complete missing address fields
       if (!addingNew) {
         setAddingNew(true);
         setNewAddress({ ...EMPTY_ADDRESS, ...shippingAddress });
@@ -266,9 +252,6 @@ const Checkout = () => {
       const { data } = await api.post("/orders", {
         shippingAddress,
         couponCode: discountAmount > 0 && appliedCode ? appliedCode : "",
-        // The key the server reads. This used to be sent as `activePayment`,
-        // which the controller never looked at — so every order was created as
-        // razorpay and Cash on Delivery had never once actually worked.
         paymentMethod: activePayment,
         idempotencyKey,
       });
@@ -577,8 +560,7 @@ const Checkout = () => {
         </div>
       </div>
 
-      {/* On a phone the rail sits far below the fold, so the action follows the
-          shopper down the page instead of hiding under it. */}
+      {/* Mobile fixed bottom checkout action bar */}
       <div className="fixed bottom-[56px] inset-x-0 z-30 flex items-center gap-4 border-t border-ink-200 bg-white px-4 py-3 shadow-deep lg:hidden">
         <div className="min-w-0 flex-1">
           <p className="text-2xs uppercase tracking-wide text-ink-400">Total</p>

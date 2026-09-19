@@ -1,11 +1,7 @@
-// Order maths, derived entirely from the admin's commerce settings.
-//
-// The server recalculates all of this when the order is placed — this module
-// exists so the cart and the checkout show the shopper the same numbers the
-// order will charge, without either page keeping its own copy of the rules.
-
+// Cart and checkout pricing calculations matching backend order rules
 import {
   lookupPincode,
+  lookupPincodeSync,
   formatEstimatedDate,
   calculatePincodeDelivery,
   isValidIndianPincode,
@@ -51,16 +47,14 @@ export const calculateSavings = ({
   return Math.max(0, mrpTotal - subtotal + discount + deliverySaving);
 };
 
-// Delivery estimate formatted as "Tomorrow, 10 Sept" or "Fri, 12 Sept".
-// If a pincode is provided or saved in localStorage, it computes the exact transit
-// days for that postal district; otherwise uses the configured commerce delivery window.
+// Delivery date estimate based on transit days or default commerce window
 export const deliveryEstimate = (commerce = {}, pincode = null) => {
   const codeToCheck =
     pincode || (typeof window !== "undefined" ? localStorage.getItem("nexamart_pincode") : null);
 
   if (codeToCheck && isValidIndianPincode(codeToCheck)) {
-    const info = lookupPincode(codeToCheck);
-    if (info.valid) {
+    const info = lookupPincodeSync(codeToCheck);
+    if (info?.valid) {
       return formatEstimatedDate(info.daysMax);
     }
   }

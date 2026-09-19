@@ -1,9 +1,4 @@
-// Starting content for the storefront sections that the admin can edit.
-//
-// These are only DEFAULTS — they seed the Settings document the first time it
-// is created. After that the admin panel is the source of truth, and editing a
-// section there never touches this file. Emptying a list in the admin hides
-// that section on the storefront.
+// Default fallback content for storefront CMS sections (categories, banners, offers)
 
 export const DEFAULT_CATEGORY_TILES = [
   { name: "Mobiles", link: "/products?category=Smartphones", image: "/images/products/iphone-13-pro/color-sierra-blue/1-800.webp" },

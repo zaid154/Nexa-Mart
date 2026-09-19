@@ -3,11 +3,27 @@
 
 import asyncHandler from "express-async-handler";
 import Settings from "../models/Settings.js";
-import { sendMail, maskSettings } from "../utils/email.js";
+import { sendMail } from "../services/emailService.js";
 import { logActivity } from "../utils/logger.js";
 import { isValidRazorpayKeyId } from "../config/razorpay.js";
 
-// GET /api/admin/settings  - get all settings (with secrets masked).
+// Mask sensitive credentials before returning settings to client
+const maskSettings = (settings) => {
+  const obj = settings?.toObject ? settings.toObject() : { ...settings };
+
+  if (obj.smtp?.pass) {
+    obj.smtp.pass = "********";
+  }
+  if (obj.api?.razorpayKeySecret) {
+    obj.api.razorpayKeySecret = "********";
+  }
+  if (obj.api?.razorpayWebhookSecret) {
+    obj.api.razorpayWebhookSecret = "********";
+  }
+
+  return obj;
+};
+
 export const getSettings = asyncHandler(async (req, res) => {
   const settings = await Settings.getSingleton();
   res.json({ settings: maskSettings(settings) });

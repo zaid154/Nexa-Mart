@@ -227,11 +227,6 @@ const Cart = () => {
                       onError={onProductImageError}
                     />
                   </Link>
-                  {/* Stepping down to zero removes the line. The old control
-                      disabled "−" at 1, because PUT /cart rejects a quantity
-                      below 1 — CartQuantity routes that case to DELETE
-                      instead. It also guards against the double-fire the old
-                      buttons had, since nothing was disabled mid-request. */}
                   <CartQuantity
                     productId={product._id}
                     variantId={variantId}

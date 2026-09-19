@@ -145,48 +145,10 @@
   .price-off {
     @apply text-sm font-semibold text-success;
   }
-  /* Checkout accordion step header: numbered chip + uppercase title */
-  .step-head {
-    @apply flex items-center gap-4 bg-white px-6 py-3.5;
-  }
-  .step-head-active {
-    @apply bg-accent-500 text-white;
-  }
-  .step-num {
-    @apply grid h-5 w-5 shrink-0 place-items-center rounded-sm bg-accent-50 text-xs font-bold text-accent-500;
-  }
-  .step-head-active .step-num {
-    @apply bg-white/20 text-white;
-  }
-  .step-title {
-    @apply text-sm font-medium uppercase tracking-wide text-ink-500;
-  }
-  .step-head-active .step-title {
-    @apply text-white;
-  }
-
-  /* ── Badges & chips ───────────────────────────────────── */
-  .badge {
-    @apply inline-flex items-center gap-1 rounded-full border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-2xs font-bold uppercase tracking-wider text-ink-500;
-  }
-  .badge-success {
-    @apply border-success-edge bg-success-soft text-success;
-  }
-  .badge-danger {
-    @apply border-danger-edge bg-danger-soft text-danger;
-  }
-  .badge-warning {
-    @apply border-warning-edge bg-warning-soft text-warning;
-  }
   .badge-info {
     @apply border-accent-100 bg-accent-50 text-accent-700;
   }
-  /* "On its way" — the one status tone that is neither waiting nor finished.
-     Blue already means "we are handling it", so shipped and out-for-delivery
-     borrow the CTA amber instead of being a fifth shade of the same blue.
-     The fill has to stay pale, and copper-50 is very close to warning-soft, so
-     the separation is carried by the border and the text: copper-400 is a
-     saturated amber no other badge uses, against warning's muted edge. */
+  /* In-transit delivery status badge */
   .badge-transit {
     @apply border-copper-400 bg-copper-50 text-copper-600;
   }

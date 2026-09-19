@@ -6,14 +6,16 @@ import { isCloudinaryEnabled, uploadImageBuffer, deleteCloudinaryImage } from ".
 // Turn uploaded files into image objects we can save on the product.
 export const processUploadedFiles = async (files = []) => {
   const images = [];
+  const useCloudinary = isCloudinaryEnabled();
 
   for (const file of files) {
-    if (isCloudinaryEnabled()) {
-      // Upload to Cloudinary and keep the URL + public id.
+    if (useCloudinary) {
       const result = await uploadImageBuffer(file.buffer);
       images.push({ url: result.secure_url, publicId: result.public_id });
     } else {
-      // No Cloudinary: just store the file data directly in MongoDB.
+      if (file.buffer.length > 2 * 1024 * 1024) {
+        throw new Error("Image exceeds 2MB limit for database storage. Configure Cloudinary for larger uploads.");
+      }
       images.push({ data: file.buffer, contentType: file.mimetype });
     }
   }

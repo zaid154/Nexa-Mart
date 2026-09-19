@@ -4,14 +4,11 @@ import axios from "axios";
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "/api",
   withCredentials: true,
-  // Without this a hung socket hangs the page forever.
+  // Request timeout in milliseconds
   timeout: 20000,
 });
 
-// ── In-memory token storage (never touches localStorage) ─────────────
-// Storing the JWT in a module-level variable instead of localStorage
-// means JavaScript injected via an XSS hole cannot read it — the token
-// lives only in this closure and is never accessible from the DOM.
+// In-memory access token storage (isolated from localStorage to mitigate XSS risk)
 let _accessToken = null;
 
 export const setAccessToken = (token) => { _accessToken = token; };
@@ -73,16 +70,15 @@ function isWakeUpError(error) {
 }
 
 const wakeUpMessage =
-  "Backend is waking up (free Render server). Wait 30–50 seconds and click Try again.";
+  "Server is starting up. Please wait a moment and click Try again.";
 
-// A request the user (or React) gave up on is not a failure worth retrying.
+// Ignore requests aborted by user navigation or component unmounting
 function isCancelled(error) {
   const config = error.config || {};
   return error.code === "ERR_CANCELED" || config.signal?.aborted === true;
 }
 
-// Only these are worth another go. The old code retried on *any* response-less
-// error, which swept in CORS failures, DNS errors and aborted requests.
+// Retry on gateway errors (502, 503, 504) or network dropouts
 function isRetryable(error) {
   if (isCancelled(error)) {
     return false;
@@ -94,22 +90,14 @@ function isRetryable(error) {
   return status === 502 || status === 503 || status === 504;
 }
 
-// Backoff with jitter, so ten requests failing together do not all come back at
-// the same instant and stampede a server that is still starting.
+// Exponential backoff with random jitter to prevent thundering herd
 function backoffDelay(attempt) {
   const base = attempt === 1 ? 400 : 1200;
   return Math.round(base * (0.75 + Math.random() * 0.5));
 }
 
-// When the backend is cold, every in-flight request discovers it at once. Let
-// the first one probe /health and have the rest wait on that single promise
-// instead of each running its own retry ladder.
+// Deduplicate health probes across concurrent requests during startup
 let warmingUp = null;
-
-// Whether we have told the app the backend is asleep. Used to fire the
-// matching "it is back" event exactly once, on the first response that really
-// succeeds — resolving on the /health probe instead would clear the notice
-// even when that probe failed, since it swallows its own errors.
 let announcedWaking = false;
 
 function warmUpBackend() {
@@ -121,7 +109,6 @@ function warmUpBackend() {
         warmingUp = null;
       });
 
-    // Let the app show "waking the server up" rather than freezing silently.
     if (typeof window !== "undefined") {
       announcedWaking = true;
       window.dispatchEvent(new CustomEvent("backend-waking"));
@@ -142,8 +129,6 @@ api.interceptors.response.use(
       return Promise.reject(err);
     }
 
-    // A real response means the server is up. If we told the app it was
-    // waking, take that back now.
     if (announcedWaking && typeof window !== "undefined") {
       announcedWaking = false;
       window.dispatchEvent(new CustomEvent("backend-ready"));
@@ -160,22 +145,18 @@ api.interceptors.response.use(
       status = response.status;
     }
 
-    // A cancelled request is not an error the user should ever see.
     if (isCancelled(error)) {
       return Promise.reject(error);
     }
 
-    // Retry GETs on a cold or flapping backend. Two attempts with jittered
-    // backoff, so the worst case is ~1.6s rather than the ~12.8s of silent
-    // hang the old flat 4x3s ladder produced on every one of the ten requests
-    // a page load fires.
+    // Retry idempotent GET requests with jittered backoff on connection drops (up to 2 attempts)
     const isGetRequest = config.method === "get";
     const attempt = config._retryCount || 0;
 
     if (isGetRequest && !config.noRetry && isRetryable(error) && attempt < 2) {
       config._retryCount = attempt + 1;
 
-      // The first request to notice wakes the server; the rest just wait.
+      // Wait for backend warm-up probe or backoff delay
       await Promise.race([
         warmUpBackend(),
         new Promise((resolve) => setTimeout(resolve, backoffDelay(config._retryCount))),

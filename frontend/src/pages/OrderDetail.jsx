@@ -186,9 +186,7 @@ const OrderDetail = () => {
     return <p className="text-xs text-ink-400">Payment pending.</p>;
   };
 
-  // The return details. These accompany the timeline now rather than replacing
-  // it: the old page threw the whole delivery track away the moment a return
-  // was opened, hiding everything that had already happened.
+  // Render return request details and reason if return flow is active
   const renderReturnDetails = () => {
     if (!isReturnFlow) {
       return null;

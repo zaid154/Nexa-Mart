@@ -9,7 +9,7 @@ import {
   getRazorpayKeys,
   getRazorpayWebhookSecret,
 } from "../config/razorpay.js";
-import { adjustStock } from "../utils/orderStatus.js";
+import { adjustStock } from "../services/orderService.js";
 
 // Mark an order as paid: confirm it, reduce stock and clear the buyer's cart.
 // This is shared by the browser verify step and the Razorpay webhook so that

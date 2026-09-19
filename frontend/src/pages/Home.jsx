@@ -358,11 +358,7 @@ const Home = () => {
   const configuredCollections = homepage.collections || [];
 
   useEffect(() => {
-    // One request for every rail. This used to be one request per collection —
-    // seven of them — and none could start until the settings round trip had
-    // finished, because only then did the browser know which collections
-    // existed. The server knows the collection list already, so it does the
-    // whole job in a single call that starts on first render.
+    // Fetch all configured product collections in a single request
     const controller = new AbortController();
 
     setLoading(true);

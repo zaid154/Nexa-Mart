@@ -32,9 +32,7 @@ const PaymentGlyph = ({ label }) => (
 );
 
 const Footer = () => {
-  // Settings come from the provider. The footer used to fetch
-  // /admin/settings/public itself, which meant every page load asked for the
-  // same document twice and kept two copies of it in state.
+  // Storefront settings consumed from SettingsContext provider
   const { settings } = useSettings();
   const site = settings.site;
   const social = settings.social || {};
@@ -42,7 +40,7 @@ const Footer = () => {
 
   const [pages, setPages] = useState([]);
 
-  // The CMS pages are the footer's own data, so it still loads those.
+  // Fetch published CMS static pages for footer navigation links
   useEffect(() => {
     api
       .get("/pages")

@@ -2,19 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { onProductImageError, PRODUCT_IMAGE_PLACEHOLDER } from "../utils/productImage.js";
 import { mediaKey } from "../utils/variantMedia.js";
 
-// The product page gallery: one large photo with a thumbnail strip underneath.
-//
-// The photos passed in are already narrowed to the selected variant, so this
-// component only has to decide which of them is showing. It tracks the photo by
-// URL rather than by position, which gives the right behaviour on both kinds of
-// variant change for free:
-//
-//   Sierra Blue -> Graphite   the list changes entirely, so fall back to the
-//                             first photo of the new colour
-//   128 GB -> 512 GB          the list is identical (storage does not change
-//                             how the phone looks), so the view stays put
-//                             instead of jumping back to the first photo
-
+// Product image gallery with main preview and thumbnail navigation
 const SIZES = "(min-width: 1024px) 480px, (min-width: 640px) 60vw, 100vw";
 
 const GalleryImage = ({ item, alt, eager, className, sizes, boxSize }) => {
@@ -91,9 +79,7 @@ const ProductGallery = ({ media, alt, overlay, actions, selectionLabel }) => {
             className="h-full w-full object-contain transition-transform duration-300 hover:scale-105"
           />
         ) : (
-          // This configuration has no photo of its own yet. We deliberately do
-          // not borrow another colour's photo, so say so plainly instead of
-          // showing an empty box.
+          // Placeholder state when selected variant has no specific image
           <div className="flex flex-col items-center gap-3 px-6 text-center">
             <img
               src={PRODUCT_IMAGE_PLACEHOLDER}

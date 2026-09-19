@@ -4,16 +4,16 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/User.js";
 import Otp from "../models/Otp.js";
-import { sendOtpEmail, sendOtpEmailInBackground } from "../utils/email.js";
+import { sendOtpEmail, sendOtpEmailInBackground } from "../services/emailService.js";
 import { generateOtpCode, getOtpExpiryMin } from "../utils/otp.js";
 import {
   generateAccessToken,
   generateRefreshToken,
+  parseRefreshToken,
   hashToken,
-  verifyRefreshToken,
   getRefreshCookieOptions,
   REFRESH_COOKIE,
-} from "../utils/tokens.js";
+} from "../services/tokenService.js";
 import { logActivity } from "../utils/logger.js";
 
 // Return only the safe user fields (never the password) to send to the client.
@@ -53,8 +53,7 @@ const issueSession = async (user, res) => {
   const accessToken = generateAccessToken(user._id);
   const refreshToken = generateRefreshToken(user._id.toString());
 
-  // Save the refresh token (hashed) so we can verify it later.
-  const tokenHash = await hashToken(refreshToken);
+  const tokenHash = hashToken(refreshToken);
   user.refreshTokens.push({
     tokenHash,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -380,8 +379,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
     return res.status(200).json({ success: true, loggedIn: false, token: null, user: null });
   }
 
-  // The refresh token starts with the user id, so we can find the user quickly.
-  const { userId } = (await import("../utils/tokens.js")).parseRefreshToken(token);
+  const { userId } = parseRefreshToken(token);
   let user = null;
   if (userId) {
     user = await User.findById(userId);
@@ -391,26 +389,18 @@ export const refreshToken = asyncHandler(async (req, res) => {
     throw new Error("Invalid refresh token");
   }
 
-  // Look for a saved refresh token that is not expired and matches.
-  let matchedIndex = -1;
-  for (let i = 0; i < user.refreshTokens.length; i++) {
-    const rt = user.refreshTokens[i];
-    if (rt.expiresAt < new Date()) {
-      continue;
-    }
-    if (await verifyRefreshToken(token, rt.tokenHash)) {
-      matchedIndex = i;
-      break;
-    }
-  }
+  const hashed = hashToken(token);
+  const validToken = user.refreshTokens.find(
+    (rt) => rt.tokenHash === hashed && rt.expiresAt > new Date()
+  );
 
-  if (matchedIndex === -1) {
+  if (!validToken) {
     res.status(401);
     throw new Error("Invalid refresh token");
   }
 
-  // Remove the used token and issue a fresh session (token rotation).
-  user.refreshTokens.splice(matchedIndex, 1);
+  // Remove used token and issue new session (rotation)
+  user.refreshTokens = user.refreshTokens.filter((rt) => rt.tokenHash !== hashed);
   const accessToken = await issueSession(user, res);
   res.json({ token: accessToken });
 });
@@ -422,18 +412,10 @@ export const logoutUser = asyncHandler(async (req, res) => {
   if (token && req.user) {
     const user = await User.findById(req.user._id);
     if (user) {
-      // Keep every refresh token EXCEPT the one being logged out (and drop expired ones).
-      const valid = [];
-      for (const rt of user.refreshTokens) {
-        if (rt.expiresAt < new Date()) {
-          continue;
-        }
-        if (await verifyRefreshToken(token, rt.tokenHash)) {
-          continue;
-        }
-        valid.push(rt);
-      }
-      user.refreshTokens = valid;
+      const hashed = hashToken(token);
+      user.refreshTokens = user.refreshTokens.filter(
+        (rt) => rt.tokenHash !== hashed && rt.expiresAt > new Date()
+      );
       await user.save();
     }
   }

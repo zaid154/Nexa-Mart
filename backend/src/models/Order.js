@@ -1,8 +1,8 @@
-// This file describes how an Order is stored in the database.
+// Order schema and lifecycle subdocuments.
 
 import mongoose from "mongoose";
 
-// One product line inside an order.
+// Order item subdocument snapshotting product state at purchase time
 const orderItemSchema = new mongoose.Schema(
   {
     product: {
@@ -13,8 +13,7 @@ const orderItemSchema = new mongoose.Schema(
     name: { type: String, required: true },
     price: { type: Number, required: true },
     quantity: { type: Number, required: true, min: 1 },
-    // Which configuration was bought, kept as a snapshot so the order still
-    // reads correctly even if the product's variants change later.
+    // Snapshot of purchased variant configuration
     variant: { type: mongoose.Schema.Types.ObjectId, default: null },
     variantLabel: { type: String, default: "" },
     variantSku: { type: String, default: "" },
@@ -22,7 +21,7 @@ const orderItemSchema = new mongoose.Schema(
   { _id: false }
 );
 
-// One step in the order's tracking history (for example "shipped").
+// Order status progression event
 const trackingEventSchema = new mongoose.Schema(
   {
     status: { type: String, required: true },
@@ -32,7 +31,7 @@ const trackingEventSchema = new mongoose.Schema(
   { _id: false }
 );
 
-// An image the customer uploads when requesting a return.
+// Return request attachment
 const returnImageSchema = new mongoose.Schema(
   {
     data: { type: Buffer, required: true },
@@ -41,7 +40,7 @@ const returnImageSchema = new mongoose.Schema(
   { _id: true }
 );
 
-// A private note written by an admin about the order.
+// Admin order note
 const adminNoteSchema = new mongoose.Schema(
   {
     note: { type: String, required: true },
@@ -51,7 +50,7 @@ const adminNoteSchema = new mongoose.Schema(
   { _id: true }
 );
 
-// The main order schema.
+// Main order schema
 const orderSchema = new mongoose.Schema(
   {
     user: {
@@ -134,20 +133,17 @@ const orderSchema = new mongoose.Schema(
 
     adminNotes: [adminNoteSchema],
 
-    // A one-time key sent by the browser when placing an order. If the same
-    // request is sent twice (double-click, network retry), we return the
-    // first order instead of creating a duplicate.
+    // Client idempotency key to prevent duplicate orders on retry
     idempotencyKey: { type: String },
   },
   { timestamps: true }
 );
 
-// Indexes to make order lists load faster.
+// Query indexes
 orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.index({ status: 1, createdAt: -1 });
 
-// Make (user + idempotencyKey) unique, but only for orders that actually have
-// a key — so older orders without one are unaffected.
+// Unique idempotency key per user for non-null keys
 orderSchema.index(
   { user: 1, idempotencyKey: 1 },
   { unique: true, partialFilterExpression: { idempotencyKey: { $type: "string" } } }

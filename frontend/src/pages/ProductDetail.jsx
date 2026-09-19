@@ -47,8 +47,7 @@ const ProductDetail = () => {
   const [error, setError] = useState("");
   const [qty, setQty] = useState(1);
   const [showAllOffers, setShowAllOffers] = useState(false);
-  // _id of the chosen configuration. Tracking the id rather than a position
-  // means a reordered variants array cannot silently change the selection.
+  // Selected product variant ID
   const [variantId, setVariantId] = useState(null);
 
   const [activeTab, setActiveTab] = useState("specifications");
@@ -60,6 +59,7 @@ const ProductDetail = () => {
     }
   });
   const [pincodeStatus, setPincodeStatus] = useState(null);
+  const [checkingPincode, setCheckingPincode] = useState(false);
   const [form, setForm] = useState({ rating: 5, comment: "" });
   const [submitting, setSubmitting] = useState(false);
 
@@ -72,9 +72,7 @@ const ProductDetail = () => {
         setProduct(res.data.product);
         setReviews(res.data.reviews || []);
 
-        // Related products are a separate, lower-priority request. It used to
-        // be chained inside this .then(), so the page waited for two round
-        // trips in a row before anything below the fold appeared.
+        // Fetch related products in the same category
         if (res.data.product?.category) {
           api
             .get("/products", {
@@ -89,7 +87,7 @@ const ProductDetail = () => {
         }
       })
       .catch((err) => {
-        // Navigating away mid-flight is not an error worth reporting.
+        // Ignore aborted requests on component unmount
         if (err.code === "ERR_CANCELED") {
           return;
         }
@@ -115,12 +113,17 @@ const ProductDetail = () => {
     : product?.price ?? 0;
 
   useEffect(() => {
+    let active = true;
     if (pincode && pincode.length === 6) {
-      const res = calculatePincodeDelivery(pincode, { price: currentPrice, commerce });
-      if (res.valid) {
-        setPincodeStatus(res);
-      }
+      calculatePincodeDelivery(pincode, { price: currentPrice, commerce }).then((res) => {
+        if (active && res.valid) {
+          setPincodeStatus(res);
+        }
+      });
     }
+    return () => {
+      active = false;
+    };
   }, [pincode, currentPrice, commerce]);
 
   if (loading) {
@@ -242,25 +245,33 @@ const ProductDetail = () => {
     }
   };
 
-  const handleCheckPincode = (e) => {
+  const handleCheckPincode = async (e) => {
     e?.preventDefault();
     if (!pincode || pincode.length < 6) {
       toast.error("Enter a valid 6-digit Indian PIN code");
       setPincodeStatus(null);
       return;
     }
-    const res = calculatePincodeDelivery(pincode, { price, commerce });
-    if (!res.valid) {
-      toast.error(res.error || "Delivery not available for this pincode");
-      setPincodeStatus(null);
-      return;
-    }
-    setPincodeStatus(res);
+    setCheckingPincode(true);
     try {
-      localStorage.setItem("nexamart_pincode", pincode);
-      window.dispatchEvent(new Event("pincode-changed"));
-    } catch {}
-    toast.success(`Delivery available to ${res.city}, ${res.state}`);
+      const res = await calculatePincodeDelivery(pincode, { price, commerce });
+      if (!res.valid) {
+        toast.error(res.error || "Delivery not available for this pincode");
+        setPincodeStatus(null);
+        return;
+      }
+      setPincodeStatus(res);
+      try {
+        localStorage.setItem("nexamart_pincode", pincode);
+        if (res.city) {
+          localStorage.setItem("nexamart_city", res.city);
+        }
+        window.dispatchEvent(new Event("pincode-changed"));
+      } catch {}
+      toast.success(`Delivery available to ${res.city}, ${res.state}`);
+    } finally {
+      setCheckingPincode(false);
+    }
   };
 
   const submitReview = async (e) => {
@@ -372,10 +383,7 @@ const ProductDetail = () => {
               {inCart && (
                 <div className="flex items-center justify-center gap-3 rounded-sm border border-copper-100 bg-copper-50 px-3 py-2">
                   <span className="text-xs font-semibold text-copper-600">In your cart</span>
-                  {/* Bound to the real cart line, not the local counter above.
-                      That counter never changed after an add, which is what
-                      made a second Add look like it had done nothing while it
-                      quietly doubled the line. */}
+                  {/* Sync quantity directly with cart state */}
                   <CartQuantity
                     productId={product._id}
                     variantId={selectedVariantId}
@@ -507,9 +515,7 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Quantity — how many to add. Once the item is in the cart this
-                row steps aside for the cart-bound stepper under the buttons,
-                so there are never two numbers on screen disagreeing. */}
+            {/* Quantity selection */}
             {!inCart && (
               <div className="flex items-center gap-3 text-sm">
                 <span className="w-20 sm:w-24 shrink-0 text-ink-400">Quantity</span>
@@ -543,8 +549,12 @@ const ProductDetail = () => {
                     }}
                     className="w-32 sm:w-44 min-w-0 border-0 bg-transparent px-1 text-sm font-medium text-ink-900 placeholder:font-normal placeholder:text-ink-400 focus:outline-none"
                   />
-                  <button type="submit" className="shrink-0 text-sm font-semibold text-accent-500 hover:underline">
-                    Check
+                  <button
+                    type="submit"
+                    disabled={checkingPincode}
+                    className="shrink-0 text-sm font-semibold text-accent-500 hover:underline disabled:opacity-50"
+                  >
+                    {checkingPincode ? "Checking..." : "Check"}
                   </button>
                 </form>
                 {pincodeStatus?.valid ? (

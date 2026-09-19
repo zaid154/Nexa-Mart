@@ -510,14 +510,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
     product.benefits = parsed.benefits;
   }
 
-  // Update the variants, keeping the ones that already exist.
-  //
-  // This used to assign a brand new array, which made Mongoose mint a fresh
-  // _id for every variant on every save — even a save that changed nothing.
-  // Cart lines and order items store that _id (see cartController.findVariant
-  // and orderController), so a single admin edit quietly detached every open
-  // cart and every order from the configuration it referred to. Matching by
-  // _id, then by attributes, keeps those references intact.
+  // Update existing variants in-place to preserve subdocument _id references for active carts and orders.
   if (parsed.variants) {
     const keptIds = new Set();
 

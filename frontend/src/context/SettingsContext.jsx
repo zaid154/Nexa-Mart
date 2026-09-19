@@ -53,8 +53,7 @@ export const useCommerce = () => {
 
 const CACHE_KEY = "nexamart_settings";
 
-// Merge section by section so a section the API omits keeps its fallback rather
-// than becoming undefined.
+// Merge API settings with default fallback values
 const merge = (data) => ({
   site: { ...FALLBACK.site, ...(data.site || {}) },
   social: data.social || FALLBACK.social,
@@ -65,10 +64,7 @@ const merge = (data) => ({
   search: { ...FALLBACK.search, ...(data.search || {}) },
 });
 
-// What we managed to store last time. Settings change rarely, so starting from
-// the cached copy lets the first paint use the real storefront configuration
-// instead of the generic fallback, and lets pages that wait on `ready` start
-// their own requests immediately rather than after a round trip.
+// Initialize from session cache for instant initial render
 const cached = (() => {
   try {
     const raw = sessionStorage.getItem(CACHE_KEY);
@@ -78,7 +74,7 @@ const cached = (() => {
   }
 })();
 
-// Kick the request off at module scope, before React has mounted anything.
+// Pre-fetch settings early during module initialization
 const bootRequest = api.get("/admin/settings/public").catch(() => null);
 
 export const SettingsProvider = ({ children }) => {

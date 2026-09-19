@@ -1,9 +1,7 @@
 import { formatDate } from "../utils/format.js";
 import { IconCheckSmall, IconClose } from "./Icons.jsx";
 
-// The stages a shopper actually cares about. The old version folded
-// `processing` and `packed` into a node labelled "Shipped", so an order still
-// being packed claimed to be on its way.
+// Delivery milestones track configuration
 const DELIVERY_NODES = [
   { label: "Ordered", statuses: ["pending"] },
   { label: "Confirmed", statuses: ["confirmed", "processing"] },
@@ -13,8 +11,7 @@ const DELIVERY_NODES = [
   { label: "Delivered", statuses: ["delivered"] },
 ];
 
-// A return gets its own short track. It used to replace the delivery timeline
-// entirely with a bare badge, throwing away everything that had happened.
+// Return process milestones track configuration
 const RETURN_NODES = [
   { label: "Return requested", statuses: ["return_requested"] },
   { label: "Reviewed", statuses: ["return_approved", "return_rejected"] },
@@ -23,21 +20,14 @@ const RETURN_NODES = [
 
 const RETURN_STATUSES = ["return_requested", "return_approved", "return_rejected", "returned"];
 
-// Vertical rather than horizontal: six labels across a 360px phone leaves about
-// sixty pixels each and "Out for delivery" does not fit in that. Going down the
-// page also leaves room for the date and the note on every step.
+// Vertical timeline component rendering order lifecycle stages and timestamps
 const Track = ({ nodes, status, history, failedLabel }) => {
   const events = history || [];
-  // What actually happened, according to the order's own tracking events.
   const reached = new Set(events.map((e) => e.status));
   const currentIdx = nodes.findIndex((node) => node.statuses.includes(status));
 
   const eventFor = (node) => events.filter((e) => node.statuses.includes(e.status)).pop();
 
-  // Done means there is evidence for it, or the order has visibly moved past
-  // it. A cancelled order matches no node, so currentIdx is -1 and only real
-  // evidence counts — which is the fix for a cancelled order rendering its
-  // first step green and looking half-successful.
   const isDone = (node, idx) => {
     if (node.statuses.some((s) => reached.has(s))) {
       return true;
@@ -79,8 +69,6 @@ const Track = ({ nodes, status, history, failedLabel }) => {
               />
             )}
 
-            {/* Unreached steps show their number rather than a transparent
-                tick, so an empty circle never reads as a rendering fault. */}
             <span
               aria-hidden="true"
               className={`relative z-10 grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 text-2xs font-bold ${dot}`}

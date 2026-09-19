@@ -1,12 +1,11 @@
-// This middleware handles file uploads using multer.
-// Files are kept in memory (not on disk) and only images are allowed.
+// Multer upload middleware configuration with memory storage.
 
 import multer from "multer";
 
-// Keep the uploaded file in memory as a buffer.
+// Memory storage for buffer-based file processing
 const storage = multer.memoryStorage();
 
-// Only allow files whose type starts with "image/".
+// Restrict uploads to image MIME types
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
@@ -15,7 +14,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Export the configured uploader. Each file can be at most 5 MB.
+// Multer upload instance with 5MB file limit
 export const upload = multer({
   storage,
   fileFilter,

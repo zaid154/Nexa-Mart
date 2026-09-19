@@ -1,5 +1,4 @@
-// This file describes how an OTP (one-time password) is stored.
-// The code is saved as a hash so the real number is never kept in plain text.
+// One-time password (OTP) schema with bcrypt hashing and TTL expiration.
 
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
@@ -15,11 +14,11 @@ const otpSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// MongoDB will automatically delete an OTP once it expires.
+// TTL expiration and lookup indexes
 otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 otpSchema.index({ email: 1, purpose: 1 });
 
-// Create a new OTP. Any old OTPs for this email + purpose are removed first.
+// Hash code and replace any existing OTP for email and purpose
 otpSchema.statics.createOtp = async function (email, code, purpose, expiresMin) {
   const codeHash = await bcrypt.hash(code, 10);
   await this.deleteMany({ email, purpose });
@@ -32,23 +31,19 @@ otpSchema.statics.createOtp = async function (email, code, purpose, expiresMin) 
   });
 };
 
-// Check whether the typed code matches this OTP.
+// Verify submitted OTP code against hash and enforce attempt limits
 otpSchema.methods.verifyCode = async function (code) {
-  // The OTP must not be expired.
   if (this.expiresAt < new Date()) {
     return { ok: false, reason: "expired" };
   }
 
-  // Block after too many wrong tries.
   if (this.attempts >= 5) {
     return { ok: false, reason: "max_attempts" };
   }
 
-  // Count this attempt and save it.
   this.attempts += 1;
   await this.save();
 
-  // Compare the typed code with the stored hash.
   const match = await bcrypt.compare(code, this.codeHash);
   if (match) {
     return { ok: true };

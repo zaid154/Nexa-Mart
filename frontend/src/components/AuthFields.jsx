@@ -1,13 +1,9 @@
-// The form controls shared by the five auth screens (login, register, verify
-// OTP, forgot password, reset password). They were plain placeholder-only
-// inputs before, which meant the label vanished the moment you started typing.
+// Shared input controls for authentication flows (floating labels, password visibility, OTP input)
 
 import { useId, useRef, useState } from "react";
 import { IconCheckSmall, IconEye, IconEyeOff } from "./Icons.jsx";
 
-// A text field whose label floats up out of the box once something is typed.
-// The placeholder is still set (and made transparent) because the floating
-// trick reads :placeholder-shown to know whether the field is empty.
+// Reusable text input with animated floating label
 export const AuthField = ({ label, error, hint, id, className = "", ...rest }) => {
   const autoId = useId();
   const fieldId = id || autoId;
@@ -48,8 +44,7 @@ export const AuthField = ({ label, error, hint, id, className = "", ...rest }) =
   );
 };
 
-// How strong a password looks. Deliberately mirrors the server's rules so the
-// meter never says "Strong" for something the API will reject.
+// Evaluate password strength matching backend validation requirements
 const scorePassword = (value) => {
   let score = 0;
   if (value.length >= 8) {
@@ -149,8 +144,7 @@ export const PasswordField = ({ label, error, value = "", strength = false, ...r
   );
 };
 
-// Six separate boxes for an OTP / reset code. Typing walks forward on its own,
-// backspace walks back, and pasting the whole code from the email just works.
+// Multi-cell digit input for OTP and verification codes (auto-advance, backspace, paste support)
 export const CodeInput = ({ value = "", onChange, length = 6, error, autoFocus = false }) => {
   const boxes = useRef([]);
   const chars = Array.from({ length }, (_, i) => value[i] || "");
@@ -177,9 +171,7 @@ export const CodeInput = ({ value = "", onChange, length = 6, error, autoFocus =
       return;
     }
 
-    // More than one digit means a paste, or typing over a box that already had
-    // a value (the browser hands us old + new). Drop the old one and fill
-    // forward from here.
+    // Support pasted or multi-character input by filling consecutive cells
     if (digits.length > 1) {
       let incoming = digits;
       if (chars[i] && incoming[0] === chars[i]) {

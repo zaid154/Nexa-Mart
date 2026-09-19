@@ -1,17 +1,9 @@
-// A strip that explains the free-tier cold start instead of leaving the page
-// looking broken.
-//
-// api/client.js has always dispatched a "backend-waking" event when it notices
-// the server is asleep, and nothing in the app has ever listened to it — so the
-// entire cold-start experience was spinners followed by an error string. On a
-// free Render instance that is a 30-50 second wait the first time anyone opens
-// the site after a quiet spell, which is exactly when a demo gets opened.
+// Displays a non-intrusive status notification during backend cold-starts.
+// Listens for 'backend-waking' and 'backend-ready' window events dispatched by api/client.js.
 
 import { useEffect, useRef, useState } from "react";
 
-// Long enough to cover a slow boot, short enough that a stuck banner does not
-// stay on screen forever if the "ready" event never arrives.
-const GIVE_UP_MS = 90000;
+const TIMEOUT_LIMIT_MS = 90000;
 
 const BackendWakingBanner = () => {
   const [state, setState] = useState("idle"); // idle | waking | ready
@@ -25,8 +17,6 @@ const BackendWakingBanner = () => {
       setState("waking");
     };
 
-    // Show the good news briefly, so the strip does not just blink out and
-    // leave people wondering whether anything happened.
     const onReady = () => {
       setState((current) => (current === "waking" ? "ready" : current));
     };
@@ -44,7 +34,7 @@ const BackendWakingBanner = () => {
       const tick = setInterval(() => {
         const elapsed = Math.round((Date.now() - startedAt.current) / 1000);
         setSeconds(elapsed);
-        if (elapsed * 1000 > GIVE_UP_MS) {
+        if (elapsed * 1000 > TIMEOUT_LIMIT_MS) {
           setState("idle");
         }
       }, 1000);
@@ -66,10 +56,6 @@ const BackendWakingBanner = () => {
   const ready = state === "ready";
 
   return (
-    // Fixed rather than a static bar above the navbar: the navbar is sticky
-    // top-0, so inserting a bar above it mid-render would shift the whole page
-    // down at the worst possible moment. z-60 sits over the navbar (50) but
-    // under the confirm dialog (90) and the toasts (100).
     <div
       role="status"
       aria-live="polite"
@@ -78,11 +64,10 @@ const BackendWakingBanner = () => {
       }`}
     >
       {ready ? (
-        <span>Server is awake — thanks for waiting.</span>
+        <span>Server is ready. Resuming requests...</span>
       ) : (
         <span>
-          Waking the server up… free hosting sleeps after a quiet spell, so the first request
-          takes 30–50 seconds. <span className="opacity-80">({seconds}s)</span>
+          Connecting to server... Cold start in progress, please wait. <span className="opacity-80">({seconds}s)</span>
         </span>
       )}
       {!ready && (

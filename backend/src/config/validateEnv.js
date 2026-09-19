@@ -1,11 +1,7 @@
-// This file checks that the most important environment variables exist.
-// If any are missing, we stop the server with a clear message.
-
-// The variables that the app cannot run without.
-const required = ["MONGO_URI", "JWT_SECRET", "JWT_REFRESH_SECRET"];
+// Environment variable validation on startup
+const required = ["MONGO_URI", "JWT_SECRET"];
 
 export const validateEnv = () => {
-  // Build a list of the required variables that are missing or empty.
   const missing = [];
   for (const key of required) {
     const value = process.env[key];
@@ -14,7 +10,6 @@ export const validateEnv = () => {
     }
   }
 
-  // If anything is missing, throw an error so the server does not start.
   if (missing.length > 0) {
     throw new Error(
       `Missing required environment variables: ${missing.join(", ")}. ` +

@@ -1,11 +1,4 @@
-// The panel that slides in from the right after something is added to the cart.
-//
-// This is the real answer to "add to cart hone ke baad pata hi nahi lagta". The
-// only feedback before this was a toast in the bottom-right corner while the
-// thing that changed — the cart badge — sits in the top-right. The drawer puts
-// the confirmation on top of the item itself, with the quantity control right
-// there, so no one has to go looking for proof that the click worked.
-
+// Slide-over cart drawer that opens when an item is added
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext.jsx";
@@ -24,9 +17,7 @@ const CartDrawer = () => {
   const commerce = useCommerce();
   const closeRef = useRef(null);
 
-  // Escape closes, and the page behind must not scroll while the panel is up.
-  // Same handling as the confirm dialog, including restoring whatever overflow
-  // was there before rather than blindly clearing it.
+  // Close on Escape key and prevent background body scrolling while open
   useEffect(() => {
     if (!isOpen) {
       return undefined;

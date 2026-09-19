@@ -2,17 +2,8 @@ import { useMemo } from "react";
 import { formatINR } from "../utils/format.js";
 import { swatchFor, isColourKey } from "../utils/colorSwatch.js";
 
-// One row of options per attribute — Storage, Colour, Case Size and so on —
-// rather than one button per whole combination.
-//
-// The variants a product ships are a sparse grid: the iPhone 13 Pro sells
-// 128 GB Sierra Blue and 256 GB Graphite but no 128 GB Graphite. So picking
-// "Graphite" while on 128 GB cannot simply keep the storage. Instead of
-// disabling the option and dead-ending the shopper, we move to the closest real
-// variant that is Graphite and let the Storage row visibly follow along.
-
-// Attribute keys in the order the catalogue author wrote them, so phones read
-// "Storage then Colour" and laptops read "RAM then Storage".
+// Attribute-based variant selector (Color, Storage, Size, etc.)
+// Extract unique attribute keys preserving original product definition order
 const keysOf = (variants) => {
   const keys = [];
   for (const variant of variants) {
@@ -25,8 +16,7 @@ const keysOf = (variants) => {
   return keys;
 };
 
-// Values per key, also in first-seen order, so "128 GB, 256 GB, 512 GB" keeps
-// its natural order instead of being sorted alphabetically into nonsense.
+// Extract unique attribute values in insertion order
 const valuesOf = (variants, key) => {
   const values = [];
   for (const variant of variants) {

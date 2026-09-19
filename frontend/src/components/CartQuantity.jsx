@@ -1,9 +1,5 @@
-// A QuantityStepper wired straight to the cart. Drop it anywhere a product is
-// shown and it edits that product's line: the tile, the product page, the cart
-// drawer. It reads the quantity from the cart itself, so the number on screen
-// is always the number the server has — the product page used to show a local
-// counter that never matched, which is why adding twice looked like nothing
-// happened.
+// Reusable cart quantity stepper controller.
+// Reads real-time quantity directly from CartContext and syncs updates to backend.
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -36,11 +32,7 @@ const CartQuantity = ({ productId, variantId = null, max, size = "sm", onEmpty }
   const line = findCartLine(cart, productId, variantId);
   const quantity = line ? line.quantity : 0;
 
-  // The three cart endpoints do not agree on what a quantity means, so the
-  // direction of the click decides which one to call:
-  //   POST /cart      adds to what is already there (a delta)
-  //   PUT  /cart/:id  sets an absolute value, and rejects anything below 1
-  //   DELETE          is therefore the only way to reach zero
+  // Dispatches add, update, or remove based on target quantity
   const apply = async (next) => {
     if (!user) {
       navigate("/login");
