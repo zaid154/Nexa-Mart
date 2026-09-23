@@ -44,19 +44,19 @@ export const AuthField = ({ label, error, hint, id, className = "", ...rest }) =
   );
 };
 
-// Evaluate password strength matching backend validation requirements
+// Evaluate password strength
 const scorePassword = (value) => {
   let score = 0;
+  if (value.length >= 6) {
+    score += 1;
+  }
   if (value.length >= 8) {
     score += 1;
   }
   if (/[A-Z]/.test(value) && /[a-z]/.test(value)) {
     score += 1;
   }
-  if (/[0-9]/.test(value)) {
-    score += 1;
-  }
-  if (/[^A-Za-z0-9]/.test(value) || value.length >= 12) {
+  if (/[0-9]/.test(value) || /[^A-Za-z0-9]/.test(value)) {
     score += 1;
   }
   return score;
@@ -134,7 +134,7 @@ export const PasswordField = ({ label, error, value = "", strength = false, ...r
           </div>
 
           <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-2xs">
-            <Rule ok={value.length >= 8}>8+ characters</Rule>
+            <Rule ok={value.length >= 6}>6+ characters</Rule>
             <Rule ok={/[A-Z]/.test(value) && /[a-z]/.test(value)}>Upper &amp; lower</Rule>
             <Rule ok={/[0-9]/.test(value)}>A number</Rule>
           </div>
