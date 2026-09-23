@@ -134,7 +134,7 @@ Pre-populated accounts created during database seeding:
 
 | Role | Email Address | Password | Permissions & Features |
 | :--- | :--- | :--- | :--- |
-| 👑 **Super Admin** | `zaidm1323@gmail.com` | `Zaid@Nexa2026#Admin` | **Sole Root Super Admin**: Full Seller Hub access, product CRUD, returns & online refund processing, sales analytics, site settings |
+| 👑 **Super Admin** | `zaidm1323@gmail.com` | `123456` | **Sole Root Super Admin**: Full Seller Hub access, product CRUD, returns & online refund processing, sales analytics, site settings |
 | 👤 **Customer** | `user@shop.com` | `User@123` | Storefront browsing, cart, checkout, live order tracking, wishlist, verified product reviews |
 | 👤 **Customer (Priya)** | `priya.sharma@example.com` | `Priya@123` | Pre-existing orders, saved addresses across Mumbai, verified review history |
 | 👤 **Customer (Rohan)** | `rohan.mehta@example.com` | `Rohan@123` | Bengaluru address, delivered orders with active return window |

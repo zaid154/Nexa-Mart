@@ -429,7 +429,7 @@ export const seedDatabase = async ({ clear = true } = {}) => {
   await User.create({
     name: "Mohd Zaid (Super Admin)",
     email: "zaidm1323@gmail.com",
-    password: "Zaid@Nexa2026#Admin",
+    password: "123456",
     role: "admin",
     isVerified: true,
     status: "active",
@@ -657,7 +657,7 @@ export const seedDatabase = async ({ clear = true } = {}) => {
   // ── Summary ─────────────────────────────────────────────────
   const featured = products.filter((p) => p.isFeatured).length;
   console.log("\nSeed complete!");
-  console.log("  Super Admin login: zaidm1323@gmail.com / Zaid@Nexa2026#Admin");
+  console.log("  Super Admin login: zaidm1323@gmail.com / 123456");
   console.log("  Customer login:    user@shop.com  / User@123");
   console.log(`  Customers:        ${customers.length}`);
   console.log(`  Products:         ${createdProducts.length} (${featured} featured)`);
