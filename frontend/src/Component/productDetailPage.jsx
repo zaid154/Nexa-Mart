@@ -32,7 +32,6 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedSwatchIndex, setSelectedSwatchIndex] = useState(0);
-  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -97,8 +96,9 @@ export default function ProductDetailPage() {
     );
   }
 
-  const basePrice = product.price ?? 0;
-  const baseMrp = product.mrp && product.mrp > basePrice ? product.mrp : Math.round(basePrice * 1.35);
+  const price = product.price ?? 0;
+  const mrp = product.mrp && product.mrp > price ? product.mrp : Math.round(price * 1.35);
+  const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
   const inStock = (product.countInStock ?? 0) > 0;
   const maxStock = product.countInStock ?? 99;
   const isWished = inWishlist(product._id);
@@ -126,29 +126,8 @@ export default function ProductDetailPage() {
 
   const activeColor = colorSwatches[selectedSwatchIndex]?.name || baseColor;
 
-  // Flipkart Variant cards
-  const variantOptions = [
-    {
-      title: product.specs?.["Maximum Length"] ? `${product.specs["Maximum Length"]} + Tripod` : "Standard Edition",
-      price: basePrice,
-      mrp: baseMrp,
-      discount: baseMrp > basePrice ? Math.round(((baseMrp - basePrice) / baseMrp) * 100) : 0,
-    },
-    {
-      title: product.specs?.["Folded Length"] ? `${product.specs["Folded Length"]} Compact` : "Pro Edition",
-      price: Math.max(199, Math.round(basePrice * 0.85)),
-      mrp: Math.round(baseMrp * 0.85),
-      discount: Math.round(((Math.round(baseMrp * 0.85) - Math.round(basePrice * 0.85)) / Math.round(baseMrp * 0.85)) * 100),
-    },
-  ];
-
-  const selectedVariant = variantOptions[selectedVariantIndex] || variantOptions[0];
-  const activePrice = selectedVariant.price;
-  const activeMrp = selectedVariant.mrp;
-  const activeDiscount = selectedVariant.discount;
-
   // Monthly EMI estimation
-  const emiAmount = Math.max(199, Math.round(activePrice / 3));
+  const emiAmount = Math.max(199, Math.round(price / 3));
 
   // Dual images for the side-by-side showcase
   const primaryDisplayImage = selectedImage || images[0] || PRODUCT_IMAGE_PLACEHOLDER;
@@ -312,7 +291,7 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             
             {/* Card 1: Front / Primary Showcase Panel */}
-            <div className="h-[430px] sm:h-[480px] lg:h-[510px] rounded-2xl bg-[#f0f2f5] p-5 flex items-center justify-center overflow-hidden relative">
+            <div className="h-[380px] sm:h-[420px] lg:h-[440px] rounded-2xl bg-[#f0f2f5] p-5 flex items-center justify-center overflow-hidden relative">
               <img
                 src={primaryDisplayImage}
                 alt={product.name}
@@ -322,7 +301,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Card 2: Back / Secondary Showcase Panel with Wishlist & Share */}
-            <div className="h-[430px] sm:h-[480px] lg:h-[510px] rounded-2xl bg-[#f0f2f5] p-5 flex items-center justify-center overflow-hidden relative">
+            <div className="h-[380px] sm:h-[420px] lg:h-[440px] rounded-2xl bg-[#f0f2f5] p-5 flex items-center justify-center overflow-hidden relative">
               <img
                 src={secondaryDisplayImage}
                 alt={product.name}
@@ -363,7 +342,7 @@ export default function ProductDetailPage() {
         </div>
 
         {/* RIGHT COLUMN (42% width): The 4 Flipkart Stacked Blocks */}
-        <div className="lg:col-span-5 flex flex-col gap-3.5 justify-between">
+        <div className="lg:col-span-5 flex flex-col gap-3 justify-between">
           
           {/* BLOCK 1: Top Brand Sponsored Ad Strip */}
           <div className="rounded-xl border border-slate-200 bg-white p-3 flex items-center justify-between shadow-2xs">
@@ -374,7 +353,7 @@ export default function ProductDetailPage() {
               <span className="text-slate-300">|</span>
               <div className="text-xs text-slate-900 truncate">
                 <span className="font-semibold">{product.name}</span>
-                <span className="text-slate-500 block text-2xs">Starting From {formatINR(activePrice)}</span>
+                <span className="text-slate-500 block text-2xs">Starting From {formatINR(price)}</span>
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -385,6 +364,36 @@ export default function ProductDetailPage() {
                 className="w-9 h-9 object-contain"
               />
               <span className="text-3xs text-slate-400 border border-slate-200 rounded px-1 font-medium">Ad</span>
+            </div>
+          </div>
+
+          {/* Title, Rating & Price Section */}
+          <div className="py-0.5">
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+              {product.name}
+            </h1>
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span className="inline-flex items-center gap-1 bg-[#388e3c] text-white text-2xs font-bold px-1.5 py-0.5 rounded-xs">
+                {product.rating || "4.5"} ★
+              </span>
+              <span className="text-xs text-slate-500 font-medium">
+                ({reviews.length} Ratings & Reviews)
+              </span>
+              <span className="text-2xs font-bold text-[#2874f0] bg-blue-50 px-2 py-0.5 rounded-xs">
+                F-Assured
+              </span>
+              <span className={`text-2xs font-bold px-2 py-0.5 rounded-xs ${inStock ? "bg-green-50 text-[#388e3c]" : "bg-red-50 text-red-600"}`}>
+                {inStock ? "In Stock" : "Currently Out of Stock"}
+              </span>
+            </div>
+            <div className="flex items-baseline gap-2.5 mt-2">
+              <span className="text-2xl sm:text-3xl font-bold text-slate-900">{formatINR(price)}</span>
+              {mrp > price && (
+                <>
+                  <span className="text-xs sm:text-sm text-slate-400 line-through font-normal">{formatINR(mrp)}</span>
+                  <span className="text-xs sm:text-sm font-bold text-[#388e3c]">{discount}% off</span>
+                </>
+              )}
             </div>
           </div>
 
@@ -424,39 +433,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* BLOCK 3: Variant Cards */}
-          <div>
-            <div className="text-sm text-slate-900 mb-2 font-medium">
-              <span className="text-slate-800">Variant: </span>
-              <span className="font-bold text-slate-900">{selectedVariant.title}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              {variantOptions.map((v, idx) => {
-                const isSelected = selectedVariantIndex === idx;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setSelectedVariantIndex(idx)}
-                    className={`flex-1 rounded-xl p-3 bg-white text-left transition-all ${
-                      isSelected
-                        ? "border-2 border-black shadow-xs"
-                        : "border border-slate-200 hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="text-xs font-bold text-slate-900 mb-1">{v.title}</div>
-                    <div className="flex items-center gap-1.5 text-xs mb-0.5">
-                      <span className="font-bold text-[#388e3c]">↓{v.discount}%</span>
-                      <span className="text-slate-400 line-through text-2xs">{formatINR(v.mrp)}</span>
-                    </div>
-                    <div className="text-sm font-bold text-slate-900">{formatINR(v.price)}</div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* BLOCK 4: The Bottom Action Box (Flipkart 1:1) */}
+          {/* BLOCK 3: The Bottom Action Box (Flipkart 1:1) */}
           <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs">
             {/* Top row: Product Title + In-line Quantity Stepper */}
             <div className="flex items-center justify-between gap-2 mb-3">
@@ -536,7 +513,7 @@ export default function ProductDetailPage() {
                 className="flex-1 h-12 rounded-xl bg-[#ffc200] hover:bg-[#f5b800] disabled:opacity-50 text-slate-900 px-4 flex flex-col items-center justify-center shrink-0 shadow-2xs transition-colors"
               >
                 <span className="text-xs sm:text-sm font-bold">Buy now</span>
-                <span className="text-2xs font-bold">at {formatINR(activePrice)}</span>
+                <span className="text-2xs font-bold">at {formatINR(price)}</span>
               </button>
             </div>
           </div>
@@ -547,7 +524,7 @@ export default function ProductDetailPage() {
       <div className="mt-8 border-t border-slate-200 pt-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
-          {/* Left Column: Description & Highlights */}
+          {/* Left Column: Description & Specifications */}
           <div className="lg:col-span-7 space-y-5">
             <div>
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-2">Product Description</h3>
@@ -646,7 +623,7 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* 4. Similar Products Carousel/Grid */}
+      {/* 4. Similar Products Section */}
       {related.length > 0 && (
         <div className="mt-8 border-t border-slate-200 pt-6">
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Similar Products</h3>
