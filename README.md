@@ -1,6 +1,6 @@
-# NexaMart — Electronics E-Commerce Marketplace
+# NexaMart - Electronics E-Commerce Marketplace
 
-NexaMart is a high-performance full-stack MERN e-commerce web application inspired by modern Indian marketplaces. It features multi-attribute product variants, dynamic SKU pricing, cart & wishlist persistence, Cash on Delivery (COD) and Razorpay payment flows, live order milestone tracking, and a dedicated **Seller Hub (Admin Dashboard)**.
+NexaMart is a full-stack MERN e-commerce web application inspired by modern Indian electronics marketplaces. It features multi-attribute product variants, dynamic SKU pricing, cart and wishlist persistence, Cash on Delivery (COD) and Razorpay payment flows, live order milestone tracking, and a dedicated **Seller Hub (Admin Dashboard)**.
 
 ---
 
@@ -22,7 +22,7 @@ NexaMart is a high-performance full-stack MERN e-commerce web application inspir
 - **Dual Payment Modes:**
   - **Online Payment:** Integrated Razorpay checkout modal supporting UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, and Net Banking.
   - **Cash on Delivery (COD):** Direct order placement for doorstep cash collection.
-- **Live Order Milestone Tracking:** Step-by-step progress tracking (`Placed` ➔ `Confirmed` ➔ `Shipped` ➔ `Delivered`) and self-serve order cancellation.
+- **Live Order Milestone Tracking:** Step-by-step progress tracking (`Placed` -> `Confirmed` -> `Shipped` -> `Delivered`) and self-serve order cancellation.
 - **Printable Tax Invoices:** Dedicated invoice view (`/orders/:id/invoice`) with itemized HSN breakdowns and order totals.
 
 ### Seller Hub (Admin Console)
@@ -49,25 +49,52 @@ NexaMart is a high-performance full-stack MERN e-commerce web application inspir
 ```
 Nexa-Mart/
 ├── backend/
-│   ├── src/
-│   │   ├── config/             # MongoDB connection, env loader, Razorpay init
-│   │   ├── controllers/        # Product, Order, Cart, Auth, and Admin logic
-│   │   ├── middleware/         # Auth verification, error handling, file upload
-│   │   ├── models/             # Mongoose schemas (Product, Order, User, Review)
-│   │   ├── routes/             # REST API routes (/products, /orders, /cart, /auth)
-│   │   └── server.js           # Express app entry point
+│   ├── config/              # MongoDB connection, env loader, Razorpay init
+│   ├── controllers/         # Product, Order, Cart, Auth, and Admin controllers
+│   ├── middleware/          # Auth verification, error handling, file upload
+│   ├── models/              # Mongoose schemas (Product, Order, User, Review, Coupon)
+│   ├── routes/              # REST API routes (/products, /orders, /cart, /auth)
+│   ├── seed/                # Seed catalogue data and helpers
+│   ├── seedData.js          # Database seeding script (npm run seed)
+│   ├── server.js            # Express application entry point (npm start)
 │   ├── .env.example
 │   └── package.json
 ├── frontend/
 │   ├── src/
-│   │   ├── api/                # Axios instance & token interceptors
-│   │   ├── components/         # Navbar, Footer, ProductCard, CartDrawer
-│   │   ├── context/            # AuthContext, CartContext, ConfirmContext, ToastContext
-│   │   ├── pages/              # Home, Catalog, ProductDetail, Cart, Checkout, OrderDetail
-│   │   │   └── admin/          # Admin Dashboard, Products, Orders, Coupons
-│   │   ├── utils/              # format.js, payment.js
-│   │   ├── App.jsx             # Clean routing switch
-│   │   └── main.jsx            # Application mount point
+│   │   ├── api/             # Axios instance & token interceptors
+│   │   ├── Component/       # All pages & UI components (one file per page)
+│   │   │   ├── HomePage.jsx
+│   │   │   ├── CatalogPage.jsx
+│   │   │   ├── ProductDetailPage.jsx
+│   │   │   ├── CartPage.jsx
+│   │   │   ├── CheckoutPage.jsx
+│   │   │   ├── OrdersPage.jsx
+│   │   │   ├── OrderDetailsPage.jsx
+│   │   │   ├── WishlistPage.jsx
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── RegisterPage.jsx
+│   │   │   ├── ProfilePage.jsx
+│   │   │   ├── InvoicePage.jsx
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   ├── ProductCard.jsx
+│   │   │   ├── CartDrawer.jsx
+│   │   │   └── admin/       # Dedicated Seller Hub pages
+│   │   │       ├── AdminLayout.jsx
+│   │   │       ├── AdminDashboardPage.jsx
+│   │   │       ├── AdminProductsPage.jsx
+│   │   │       ├── AdminProductFormPage.jsx
+│   │   │       ├── AdminOrdersPage.jsx
+│   │   │       ├── AdminOrderDetailPage.jsx
+│   │   │       ├── AdminCouponsPage.jsx
+│   │   │       ├── AdminReturnsPage.jsx
+│   │   │       ├── AdminUsersPage.jsx
+│   │   │       ├── AdminSettingsPage.jsx
+│   │   │       └── AdminLogsPage.jsx
+│   │   ├── context/         # AuthContext, CartContext, ConfirmContext, ToastContext
+│   │   ├── utils/           # format.js, payment.js, pricing.js
+│   │   ├── App.jsx          # Declarative React Router routing switch
+│   │   └── main.jsx         # Application root mount point
 │   ├── index.html
 │   └── package.json
 └── README.md
@@ -79,31 +106,25 @@ Nexa-Mart/
 
 ### Prerequisites
 - Node.js (v18 or higher)
-- MongoDB instance (local or MongoDB Atlas URI)
+- MongoDB Atlas cluster or local MongoDB instance
 
 ### 1. Backend Setup
 ```bash
 cd backend
 npm install
-```
+cp .env.example .env
+# Edit .env and supply your MONGO_URI and JWT_SECRET
 
-Create a `.env` file inside `backend/`:
-```env
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
-RAZORPAY_KEY_ID=your_razorpay_key_id        # Optional for test checkout
-RAZORPAY_KEY_SECRET=your_razorpay_key_secret  # Optional for test checkout
-```
+# Seed sample electronics catalogue
+npm run seed
 
-Start the backend server:
-```bash
+# Start development server
 npm run dev
 # Server running at http://localhost:5000
 ```
 
 ### 2. Frontend Setup
-In a separate terminal window:
+In a separate terminal:
 ```bash
 cd frontend
 npm install

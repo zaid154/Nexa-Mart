@@ -1,67 +1,57 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
-import Navbar from "./components/Navbar.jsx";
-import Footer from "./components/Footer.jsx";
-import PageShell from "./components/PageShell.jsx";
-import Loader from "./components/Loader.jsx";
-import CartDrawer from "./components/CartDrawer.jsx";
-import { ProtectedRoute, AdminRoute } from "./components/ProtectedRoute.jsx";
-import BackendWakingBanner from "./components/BackendWakingBanner.jsx";
+import Navbar from "./Component/Navbar.jsx";
+import Footer from "./Component/Footer.jsx";
+import PageShell from "./Component/PageShell.jsx";
+import Loader from "./Component/Loader.jsx";
+import CartDrawer from "./Component/CartDrawer.jsx";
+import { ProtectedRoute, AdminRoute } from "./Component/ProtectedRoute.jsx";
+import BackendWakingBanner from "./Component/BackendWakingBanner.jsx";
+import MobileBottomNav from "./Component/MobileBottomNav.jsx";
 
-import MobileBottomNav from "./components/MobileBottomNav.jsx";
+// Lazy-loaded pages
+const HomePage = lazy(() => import("./Component/HomePage.jsx"));
+const CatalogPage = lazy(() => import("./Component/CatalogPage.jsx"));
+const ProductDetailPage = lazy(() => import("./Component/ProductDetailPage.jsx"));
+const CartPage = lazy(() => import("./Component/CartPage.jsx"));
+const WishlistPage = lazy(() => import("./Component/WishlistPage.jsx"));
+const LoginPage = lazy(() => import("./Component/LoginPage.jsx"));
+const RegisterPage = lazy(() => import("./Component/RegisterPage.jsx"));
+const VerifyOtpPage = lazy(() => import("./Component/VerifyOtpPage.jsx"));
+const ForgotPasswordPage = lazy(() => import("./Component/ForgotPasswordPage.jsx"));
+const ResetPasswordPage = lazy(() => import("./Component/ResetPasswordPage.jsx"));
+const ProfilePage = lazy(() => import("./Component/ProfilePage.jsx"));
+const CheckoutPage = lazy(() => import("./Component/CheckoutPage.jsx"));
+const OrdersPage = lazy(() => import("./Component/OrdersPage.jsx"));
+const OrderDetailsPage = lazy(() => import("./Component/OrderDetailsPage.jsx"));
+const InvoicePage = lazy(() => import("./Component/InvoicePage.jsx"));
+const NotFoundPage = lazy(() => import("./Component/NotFoundPage.jsx"));
+const StaticPage = lazy(() => import("./Component/StaticPage.jsx"));
 
-// Lazy load pages so they load only when user visits them (faster first load)
-const Home = lazy(() => import("./pages/Home.jsx"));
-const Catalog = lazy(() => import("./pages/Catalog.jsx"));
-const ProductDetail = lazy(() => import("./pages/ProductDetail.jsx"));
-const Cart = lazy(() => import("./pages/Cart.jsx"));
-const Wishlist = lazy(() => import("./pages/Wishlist.jsx"));
-const Login = lazy(() => import("./pages/Login.jsx"));
-const Register = lazy(() => import("./pages/Register.jsx"));
-const VerifyOtp = lazy(() => import("./pages/VerifyOtp.jsx"));
-const ForgotPassword = lazy(() => import("./pages/ForgotPassword.jsx"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
-const Profile = lazy(() => import("./pages/Profile.jsx"));
-const Checkout = lazy(() => import("./pages/Checkout.jsx"));
-const Orders = lazy(() => import("./pages/Orders.jsx"));
-const OrderDetail = lazy(() => import("./pages/OrderDetail.jsx"));
-const Invoice = lazy(() => import("./pages/Invoice.jsx"));
-const NotFound = lazy(() => import("./pages/NotFound.jsx"));
-const StaticPage = lazy(() => import("./pages/StaticPage.jsx"));
+// Lazy-loaded admin pages
+const AdminLayout = lazy(() => import("./Component/admin/AdminLayout.jsx"));
+const AdminDashboardPage = lazy(() => import("./Component/admin/AdminDashboardPage.jsx"));
+const AdminProductsPage = lazy(() => import("./Component/admin/AdminProductsPage.jsx"));
+const AdminProductFormPage = lazy(() => import("./Component/admin/AdminProductFormPage.jsx"));
+const AdminOrdersPage = lazy(() => import("./Component/admin/AdminOrdersPage.jsx"));
+const AdminOrderDetailPage = lazy(() => import("./Component/admin/AdminOrderDetailPage.jsx"));
+const AdminReturnsPage = lazy(() => import("./Component/admin/AdminReturnsPage.jsx"));
+const AdminUsersPage = lazy(() => import("./Component/admin/AdminUsersPage.jsx"));
+const AdminCouponsPage = lazy(() => import("./Component/admin/AdminCouponsPage.jsx"));
+const AdminSettingsPage = lazy(() => import("./Component/admin/AdminSettingsPage.jsx"));
+const AdminLogsPage = lazy(() => import("./Component/admin/AdminLogsPage.jsx"));
+const AdminPagesPage = lazy(() => import("./Component/admin/AdminPagesPage.jsx"));
 
-const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.jsx"));
-const Dashboard = lazy(() => import("./pages/admin/Dashboard.jsx"));
-const AdminProducts = lazy(() => import("./pages/admin/AdminProducts.jsx"));
-const ProductForm = lazy(() => import("./pages/admin/ProductForm.jsx"));
-const AdminOrders = lazy(() => import("./pages/admin/AdminOrders.jsx"));
-const AdminOrderDetail = lazy(() => import("./pages/admin/AdminOrderDetail.jsx"));
-const AdminReturns = lazy(() => import("./pages/admin/AdminReturns.jsx"));
-const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.jsx"));
-const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons.jsx"));
-const Settings = lazy(() => import("./pages/admin/Settings.jsx"));
-const Logs = lazy(() => import("./pages/admin/Logs.jsx"));
-const AdminPages = lazy(() => import("./pages/admin/Pages.jsx"));
-
-// Show loader while a lazy page is loading
 function PageLoader() {
   return <Loader full />;
 }
 
 export default function App() {
   const location = useLocation();
-  const currentPath = location.pathname;
-
-  // The admin panel is its own console: it brings its own header and hides the
-  // storefront navbar and footer.
-  let isAdminPage = false;
-  if (currentPath.startsWith("/admin")) {
-    isAdminPage = true;
-  }
+  const isAdminPage = location.pathname.startsWith("/admin");
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Outside the admin guard: a sleeping server is just as confusing in
-          the admin console as it is on the storefront. */}
       <BackendWakingBanner />
       {!isAdminPage && <Navbar />}
       {!isAdminPage && <CartDrawer />}
@@ -71,24 +61,24 @@ export default function App() {
         <PageShell>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* Public pages */}
-              <Route path="/" element={<Home />} />
-              <Route path="/products" element={<Catalog />} />
-              <Route path="/products/:id" element={<ProductDetail />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/verify-otp" element={<VerifyOtp />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
+              {/* Public storefront routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/products" element={<CatalogPage />} />
+              <Route path="/products/:id" element={<ProductDetailPage />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/verify-otp" element={<VerifyOtpPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/page/:slug" element={<StaticPage />} />
 
-              {/* Pages that need login */}
+              {/* Protected user routes */}
               <Route
                 path="/wishlist"
                 element={
                   <ProtectedRoute>
-                    <Wishlist />
+                    <WishlistPage />
                   </ProtectedRoute>
                 }
               />
@@ -96,7 +86,7 @@ export default function App() {
                 path="/profile"
                 element={
                   <ProtectedRoute>
-                    <Profile />
+                    <ProfilePage />
                   </ProtectedRoute>
                 }
               />
@@ -104,7 +94,7 @@ export default function App() {
                 path="/checkout"
                 element={
                   <ProtectedRoute>
-                    <Checkout />
+                    <CheckoutPage />
                   </ProtectedRoute>
                 }
               />
@@ -112,7 +102,7 @@ export default function App() {
                 path="/orders"
                 element={
                   <ProtectedRoute>
-                    <Orders />
+                    <OrdersPage />
                   </ProtectedRoute>
                 }
               />
@@ -120,7 +110,7 @@ export default function App() {
                 path="/orders/:id"
                 element={
                   <ProtectedRoute>
-                    <OrderDetail />
+                    <OrderDetailsPage />
                   </ProtectedRoute>
                 }
               />
@@ -128,12 +118,12 @@ export default function App() {
                 path="/orders/:id/invoice"
                 element={
                   <ProtectedRoute>
-                    <Invoice />
+                    <InvoicePage />
                   </ProtectedRoute>
                 }
               />
 
-              {/* Admin panel routes */}
+              {/* Protected admin routes */}
               <Route
                 path="/admin"
                 element={
@@ -142,21 +132,21 @@ export default function App() {
                   </AdminRoute>
                 }
               >
-                <Route index element={<Dashboard />} />
-                <Route path="products" element={<AdminProducts />} />
-                <Route path="products/new" element={<ProductForm />} />
-                <Route path="products/:id/edit" element={<ProductForm />} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="orders/:id" element={<AdminOrderDetail />} />
-                <Route path="returns" element={<AdminReturns />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="pages" element={<AdminPages />} />
-                <Route path="coupons" element={<AdminCoupons />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="logs" element={<Logs />} />
+                <Route index element={<AdminDashboardPage />} />
+                <Route path="products" element={<AdminProductsPage />} />
+                <Route path="products/new" element={<AdminProductFormPage />} />
+                <Route path="products/:id/edit" element={<AdminProductFormPage />} />
+                <Route path="orders" element={<AdminOrdersPage />} />
+                <Route path="orders/:id" element={<AdminOrderDetailPage />} />
+                <Route path="returns" element={<AdminReturnsPage />} />
+                <Route path="users" element={<AdminUsersPage />} />
+                <Route path="pages" element={<AdminPagesPage />} />
+                <Route path="coupons" element={<AdminCouponsPage />} />
+                <Route path="settings" element={<AdminSettingsPage />} />
+                <Route path="logs" element={<AdminLogsPage />} />
               </Route>
 
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
         </PageShell>
