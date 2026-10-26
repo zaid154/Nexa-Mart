@@ -229,7 +229,7 @@ const Orders = () => {
                       </div>
 
                       <span className="shrink-0 text-sm font-bold text-ink-900">
-                        {formatINR(order.totalPrice)}
+                        {formatINR(order.totalPrice || order.totalAmount || 0)}
                       </span>
                     </div>
                   </div>

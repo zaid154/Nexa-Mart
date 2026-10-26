@@ -1,3 +1,4 @@
+import { createReview } from "../controllers/reviewController.js";
 // These are the routes for everything under /api/products.
 
 import express from "express";
@@ -33,6 +34,9 @@ router.get("/admin/list", protect, admin, getAdminProducts);
 // Single product. optionalAuth lets admins also see draft products.
 router.get("/:id", optionalAuth, getProductById);
 router.get("/:id/image/:imageId", getProductImage);
+
+// Submit review for single product
+router.post("/:id/reviews", protect, createReview);
 
 // Admin product management routes (supports up to 24 images per product)
 router.post("/", protect, admin, upload.array("images", 24), createProduct);

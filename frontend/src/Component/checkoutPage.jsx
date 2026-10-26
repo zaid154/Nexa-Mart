@@ -13,13 +13,16 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const toast = useToast();
 
+  const savedAddr = user?.address || user?.addresses?.[0] || {};
   const [address, setAddress] = useState({
-    name: user?.name || "",
-    phone: user?.phone || "",
-    line1: user?.address?.line1 || "",
-    city: user?.address?.city || "",
-    state: user?.address?.state || "",
-    postalCode: user?.address?.postalCode || "",
+    fullName: savedAddr.fullName || user?.name || "",
+    phone: savedAddr.phone || user?.phone || "",
+    line1: savedAddr.line1 || "",
+    line2: savedAddr.line2 || "",
+    city: savedAddr.city || "",
+    state: savedAddr.state || "",
+    postalCode: savedAddr.postalCode || "",
+    country: savedAddr.country || "India",
   });
 
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
@@ -36,12 +39,43 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
 
-    if (!address.name || !address.phone || !address.line1 || !address.city || !address.postalCode) {
-      toast.error("Please fill in all required delivery address fields.");
+    const targetAddress = {
+      fullName: (address.fullName || address.name || user?.name || "").trim(),
+      phone: (address.phone || "").trim(),
+      line1: (address.line1 || "").trim(),
+      line2: (address.line2 || "").trim(),
+      city: (address.city || "").trim(),
+      state: (address.state || "").trim(),
+      postalCode: (address.postalCode || "").trim(),
+      country: address.country || "India",
+    };
+
+    if (!targetAddress.fullName || targetAddress.fullName.length < 2) {
+      toast.error("Please provide a valid full recipient name.");
+      return;
+    }
+    if (!/^[6-9]\d{9}$/.test(targetAddress.phone)) {
+      toast.error("Mobile number must be 10 digits starting with 6, 7, 8 or 9.");
+      return;
+    }
+    if (!targetAddress.line1 || targetAddress.line1.length < 5) {
+      toast.error("Address must include house or street details (min 5 chars).");
+      return;
+    }
+    if (!targetAddress.city || targetAddress.city.length < 2) {
+      toast.error("Please enter a valid city name.");
+      return;
+    }
+    if (!targetAddress.state || targetAddress.state.length < 2) {
+      toast.error("Please enter your state.");
+      return;
+    }
+    if (!/^[1-9]\d{5}$/.test(targetAddress.postalCode)) {
+      toast.error("Pincode must be 6 digits and cannot start with 0.");
       return;
     }
 
-    if (cart.items.length === 0) {
+    if (!cart || !cart.items || cart.items.length === 0) {
       toast.error("Your cart is empty.");
       navigate("/products");
       return;
@@ -51,8 +85,9 @@ export default function CheckoutPage() {
     try {
       // 1. Create order on backend
       const { data } = await api.post("/orders", {
-        shippingAddress: address,
+        shippingAddress: targetAddress,
         paymentMethod,
+        couponCode: cart?.couponCode || undefined,
       });
 
       const createdOrder = data.order || data;
@@ -69,7 +104,7 @@ export default function CheckoutPage() {
       await payForOrder({
         order: createdOrder,
         user,
-        address,
+        address: targetAddress,
         onSuccess: async () => {
           await refresh();
           toast.success("Payment completed successfully!");
@@ -130,8 +165,8 @@ export default function CheckoutPage() {
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
                 <input
                   type="text"
-                  name="name"
-                  value={address.name}
+                  name="fullName"
+                  value={address.fullName}
                   onChange={handleChange}
                   required
                   placeholder="Enter full recipient name"
@@ -165,6 +200,18 @@ export default function CheckoutPage() {
                 />
               </div>
 
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Landmark / Area (Optional)</label>
+                <input
+                  type="text"
+                  name="line2"
+                  value={address.line2 || ""}
+                  onChange={handleChange}
+                  placeholder="Near landmark or apartment"
+                  className="w-full text-xs p-2.5 rounded border border-slate-300 focus:border-blue-600 focus:outline-none"
+                />
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">City / Town *</label>
                 <input
@@ -180,12 +227,13 @@ export default function CheckoutPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">State</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">State *</label>
                   <input
                     type="text"
                     name="state"
                     value={address.state}
                     onChange={handleChange}
+                    required
                     placeholder="State"
                     className="w-full text-xs p-2.5 rounded border border-slate-300 focus:border-blue-600 focus:outline-none"
                   />

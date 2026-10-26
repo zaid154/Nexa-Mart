@@ -35,9 +35,22 @@ const orderToView = (req, order) => {
     returnInfo = { ...returnInfo, imageUrls: returnImages };
   }
 
+  const totalPrice = obj.totalPrice ?? obj.totalAmount ?? 0;
+  const itemsPrice = obj.itemsPrice ?? obj.subtotal ?? 0;
+  const shippingPrice = obj.shippingPrice ?? obj.shippingFee ?? 0;
+  const discountPrice = obj.discountPrice ?? obj.discount ?? 0;
+
   return {
     ...obj,
     returnInfo,
+    totalPrice,
+    totalAmount: totalPrice,
+    itemsPrice,
+    subtotal: itemsPrice,
+    shippingPrice,
+    shippingFee: shippingPrice,
+    discountPrice,
+    discount: discountPrice,
   };
 };
 

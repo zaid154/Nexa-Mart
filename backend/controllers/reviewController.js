@@ -14,7 +14,7 @@ export const getProductReviews = asyncHandler(async (req, res) => {
 // POST /api/reviews/product/:productId  - add or update a review.
 export const createReview = asyncHandler(async (req, res) => {
   const { rating, comment } = req.body;
-  const { productId } = req.params;
+  const productId = req.params.productId || req.params.id;
 
   // Rating must be a number from 1 to 5.
   if (!rating || rating < 1 || rating > 5) {
@@ -32,7 +32,7 @@ export const createReview = asyncHandler(async (req, res) => {
   const hasPurchased = await Order.exists({
     user: req.user._id,
     "items.product": productId,
-    isPaid: true,
+    $or: [{ isPaid: true }, { status: "delivered" }],
   });
   if (!hasPurchased) {
     res.status(403);

@@ -20,7 +20,7 @@ const getPricingRules = async () => {
   };
 };
 
-// Shape order object for client response
+// Shape order object for client response with robust price aliases
 const orderToView = (req, order) => {
   const obj = order.toObject ? order.toObject() : order;
   const returnImages = buildReturnImageUrls(req, order);
@@ -40,7 +40,24 @@ const orderToView = (req, order) => {
     };
   });
 
-  return { ...obj, items, returnInfo };
+  const totalPrice = obj.totalPrice ?? obj.totalAmount ?? 0;
+  const itemsPrice = obj.itemsPrice ?? obj.subtotal ?? 0;
+  const shippingPrice = obj.shippingPrice ?? obj.shippingFee ?? 0;
+  const discountPrice = obj.discountPrice ?? obj.discount ?? 0;
+
+  return {
+    ...obj,
+    items,
+    returnInfo,
+    totalPrice,
+    totalAmount: totalPrice,
+    itemsPrice,
+    subtotal: itemsPrice,
+    shippingPrice,
+    shippingFee: shippingPrice,
+    discountPrice,
+    discount: discountPrice,
+  };
 };
 
 // POST /api/orders - Create new order from user's cart
@@ -91,8 +108,8 @@ export const createOrder = asyncHandler(async (req, res) => {
     orderItems.push({
       product: prod._id,
       variant: variant ? variant._id : undefined,
-      variantName: variant?.name || Object.entries(variant?.attributes || {}).map(([k, v]) => `${k}: ${v}`).join(", "),
-      sku: variant?.sku || prod.sku,
+      variantLabel: variant?.sku || prod.name,
+      variantSku: variant?.sku || prod.sku,
       name: prod.name,
       price,
       quantity: item.quantity,
@@ -105,50 +122,61 @@ export const createOrder = asyncHandler(async (req, res) => {
   let discount = 0;
   let appliedCoupon = null;
   if (couponCode) {
-    const result = await validateCoupon(couponCode, subtotal, req.user._id);
-    if (result.valid) {
+    try {
+      const result = await validateCoupon({
+        code: couponCode,
+        itemsPrice: subtotal,
+        userId: req.user._id,
+      });
       discount = result.discount;
       appliedCoupon = result.coupon;
+    } catch (err) {
+      res.status(400);
+      throw err;
     }
   }
 
   const discountedSubtotal = Math.max(0, subtotal - discount);
   const shippingFee = discountedSubtotal >= pricing.freeShippingThreshold ? 0 : pricing.shippingFee;
-  const totalAmount = discountedSubtotal + shippingFee;
+  const totalPrice = discountedSubtotal + shippingFee;
+  const initialStatus = paymentMethod === "cod" ? "confirmed" : "pending";
+
+  const order = new Order({
+    user: req.user._id,
+    items: orderItems,
+    shippingAddress,
+    paymentMethod,
+    isPaid: false,
+    status: initialStatus,
+    itemsPrice: subtotal,
+    discountPrice: discount,
+    shippingPrice: shippingFee,
+    taxPrice: 0,
+    couponCode: appliedCoupon?.code || couponCode || "",
+    totalPrice,
+    idempotencyKey,
+    trackingHistory: [{ status: initialStatus, note: "Order placed" }],
+  });
 
   // Atomically adjust product stock
-  await adjustStock(orderItems, "decrement");
+  await adjustStock(order, "reduce");
 
-  let order;
   try {
-    order = await Order.create({
-      user: req.user._id,
-      items: orderItems,
-      shippingAddress,
-      paymentMethod,
-      isPaid: false,
-      status: "placed",
-      subtotal,
-      discount,
-      shippingFee,
-      totalAmount,
-      coupon: appliedCoupon?._id,
-      idempotencyKey,
-    });
+    await order.save();
   } catch (err) {
-    await adjustStock(orderItems, "increment");
+    await adjustStock(order, "restore");
     throw err;
   }
 
   if (appliedCoupon) {
-    await recordCouponUse(appliedCoupon, req.user._id, order._id);
+    await recordCouponUse(appliedCoupon, req.user._id);
   }
 
   // Clear user cart upon successful order creation
   user.cart = [];
   await user.save();
 
-  logActivity(req, "order_created", { orderId: order._id, totalAmount, paymentMethod });
+  logActivity(req, "order_created", { orderId: order._id, totalPrice, paymentMethod });
   res.status(201).json({ order: orderToView(req, order) });
 });
 
@@ -196,19 +224,19 @@ export const cancelOrder = asyncHandler(async (req, res) => {
     throw new Error("Access denied");
   }
 
-  if (!canCancel(order)) {
+  if (!canCancel(order.status)) {
     res.status(400);
     throw new Error(`Cannot cancel order in "${order.status}" status`);
   }
 
   // Restore inventory
-  await adjustStock(order.items, "increment");
-  if (order.coupon) {
-    await releaseCouponUse(order.coupon, order.user, order._id);
+  await adjustStock(order, "restore");
+  if (order.couponCode) {
+    await releaseCouponUse(order.couponCode, order.user);
   }
 
   order.status = "cancelled";
-  order.statusHistory.push({ status: "cancelled", note: "Cancelled by user" });
+  order.trackingHistory.push({ status: "cancelled", note: "Cancelled by user" });
   await order.save();
 
   logActivity(req, "order_cancelled", { orderId: order._id });
@@ -234,7 +262,7 @@ export const requestReturn = asyncHandler(async (req, res) => {
     throw new Error("Access denied");
   }
 
-  if (!canReturn(order)) {
+  if (!canReturn(order.status)) {
     res.status(400);
     throw new Error("Return can only be requested for delivered orders");
   }
@@ -251,7 +279,7 @@ export const requestReturn = asyncHandler(async (req, res) => {
     images,
     requestedAt: new Date(),
   };
-  order.statusHistory.push({
+  order.trackingHistory.push({
     status: "return_requested",
     note: `Return requested: ${reason}`,
   });

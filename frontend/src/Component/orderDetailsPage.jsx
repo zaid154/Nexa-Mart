@@ -84,6 +84,7 @@ export default function OrderDetailsPage() {
   const currentStatus = (order.status || "placed").toLowerCase();
   const currentStepIdx = STEPS.indexOf(currentStatus);
   const isCancelled = currentStatus === "cancelled";
+  const isCancellable = ["pending", "confirmed", "processing", "packed", "placed"].includes(currentStatus);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -105,7 +106,7 @@ export default function OrderDetailsPage() {
             Download Invoice
           </Link>
 
-          {!isCancelled && currentStatus === "placed" && (
+          {!isCancelled && isCancellable && (
             <button
               type="button"
               onClick={handleCancel}
@@ -206,9 +207,25 @@ export default function OrderDetailsPage() {
                 {order.isPaid ? "Paid" : "Pending"}
               </span>
             </div>
+            <div className="flex justify-between text-slate-600">
+              <span>Items Subtotal</span>
+              <span className="font-medium">{formatINR(order.itemsPrice || order.subtotal || 0)}</span>
+            </div>
+            {(order.discountPrice > 0 || order.discount > 0) && (
+              <div className="flex justify-between text-green-600">
+                <span>Discount Applied</span>
+                <span className="font-semibold">−{formatINR(order.discountPrice || order.discount || 0)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-slate-600">
+              <span>Shipping Fee</span>
+              <span className="font-medium">
+                {(order.shippingPrice === 0 || order.shippingFee === 0) ? "FREE" : formatINR(order.shippingPrice || order.shippingFee || 0)}
+              </span>
+            </div>
             <div className="flex justify-between text-base font-bold text-slate-900 pt-3 border-t border-slate-100">
               <span>Total Amount</span>
-              <span className="text-blue-600">{formatINR(order.totalAmount || order.total || 0)}</span>
+              <span className="text-blue-600">{formatINR(order.totalPrice || order.totalAmount || order.total || 0)}</span>
             </div>
           </div>
         </div>
