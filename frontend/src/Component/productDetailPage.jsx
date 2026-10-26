@@ -643,23 +643,20 @@ export default function ProductDetailPage() {
 
             {/* Eligibility Notice: Shown when user has NOT received delivery of this product */}
             {!reviewEligibility.eligible && reviewEligibility.checked && (
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-2xs text-slate-600 leading-relaxed flex items-center gap-2">
-                <span className="text-base shrink-0">🛡️</span>
-                <div className="flex-1">
-                  {user ? (
-                    <span>
-                      Only verified customers whose orders have been <strong>Delivered</strong> can rate and review this product.
-                    </span>
-                  ) : (
-                    <span>
-                      Please{" "}
-                      <Link to="/login" className="text-[#2874f0] font-bold hover:underline">
-                        sign in
-                      </Link>{" "}
-                      with an account whose orders have been Delivered to rate and review this product.
-                    </span>
-                  )}
-                </div>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-2xs text-slate-600 leading-relaxed">
+                {user ? (
+                  <span>
+                    Only verified customers whose orders have been <strong>Delivered</strong> can rate and review this product.
+                  </span>
+                ) : (
+                  <span>
+                    Please{" "}
+                    <Link to="/login" className="text-[#2874f0] font-bold hover:underline">
+                      sign in
+                    </Link>{" "}
+                    with an account whose orders have been Delivered to rate and review this product.
+                  </span>
+                )}
               </div>
             )}
 
