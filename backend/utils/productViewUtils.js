@@ -1,7 +1,7 @@
 // Helpers that turn a Product document into a clean object for the frontend.
 // They build image URLs and convert Map fields into plain objects.
 
-import { toPlainAttributes } from "./variantMedia.js";
+import { toPlainAttributes } from "./variantMediaUtils.js";
 
 // Work out the public URL for one image subdocument. Returns null when the
 // image has neither a URL nor anything we can stream.

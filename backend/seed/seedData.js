@@ -20,7 +20,7 @@ import Product from "../models/productModel.js";
 import Review from "../models/reviewModel.js";
 import Order from "../models/orderModel.js";
 import Coupon from "../models/couponModel.js";
-import { catalogue, variantsByProduct } from "./catalogue.js";
+import { catalogue, variantsByProduct } from "./catalogueData.js";
 import { generateVariantSku } from "../utils/skuUtils.js";
 
 

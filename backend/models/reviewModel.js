@@ -1,7 +1,7 @@
 // Product review schema and aggregated rating calculation.
 
 import mongoose from "mongoose";
-import Product from "./Product.js";
+import Product from "./productModel.js";
 
 const reviewSchema = new mongoose.Schema(
   {
