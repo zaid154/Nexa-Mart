@@ -148,17 +148,33 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      {/* Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-xs text-slate-500 mb-6">
-        <Link to="/" className="hover:text-blue-600">Home</Link>
-        <span>/</span>
-        <Link to="/products" className="hover:text-blue-600">Products</Link>
-        <span>/</span>
-        <Link to={`/products?category=${product.category}`} className="hover:text-blue-600">{product.category}</Link>
-        <span>/</span>
-        <span className="text-slate-800 font-medium truncate max-w-xs">{product.name}</span>
-      </nav>
+    <div className="w-full pb-8">
+      {/* Breadcrumbs & Professional Back Navigation */}
+      <div className="flex items-center justify-between gap-3 text-xs text-slate-500 mb-3 py-1 border-b border-slate-100">
+        <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-1 font-semibold text-slate-700 hover:text-blue-600 transition-colors pr-2.5 border-r border-slate-200"
+          >
+            <span className="text-sm leading-none">&larr;</span> Back
+          </button>
+          <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
+          <span className="text-slate-300">/</span>
+          {product.category && (
+            <>
+              <Link to={`/products?category=${encodeURIComponent(product.category)}`} className="hover:text-blue-600 transition-colors">
+                {product.category}
+              </Link>
+              <span className="text-slate-300">/</span>
+            </>
+          )}
+          <span className="text-slate-800 font-medium truncate max-w-[220px] sm:max-w-md">{product.name}</span>
+        </div>
+        <span className="hidden sm:inline-block text-[11px] text-slate-400">
+          SKU: {product._id?.slice(-8).toUpperCase()}
+        </span>
+      </div>
 
       {/* Main product showcase */}
       <div className="bg-white rounded-lg border border-slate-200 p-6 grid grid-cols-1 md:grid-cols-12 gap-8 shadow-xs">

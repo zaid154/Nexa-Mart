@@ -26,14 +26,14 @@ const PageShell = ({ children }) => {
 
   if (isAuthPage) {
     return (
-      <div className="flex w-full flex-1 flex-col items-center justify-center px-4 py-14">
+      <div className="flex w-full flex-1 flex-col items-center justify-center px-4 py-10">
         {children}
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1280px] flex-1 px-3 sm:px-6 pb-24 sm:pb-20 pt-4 sm:pt-8">
+    <div className="mx-auto w-full max-w-[1280px] flex-1 px-3 sm:px-6 pb-16 sm:pb-12 pt-2 sm:pt-3">
       {children}
     </div>
   );
