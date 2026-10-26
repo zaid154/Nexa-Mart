@@ -18,7 +18,7 @@ import {
   IconTag,
   IconStar,
 } from "./icons.jsx";
-import { lookupPincode, isValidIndianPincode } from "../utils/pincodeUtils.js";
+import { lookupPincode, isValidIndianPincode } from "../utils/addressUtils.js";
 
 const Navbar = () => {
   const { user, logout, isAdmin } = useAuth();
