@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import api from "../api/apiClient.js";
 import { useToast } from "../context/toastContext.jsx";
 import { useConfirm } from "../context/confirmContext.jsx";
-import { formatINR, formatDate, formatDateTime } from "../utils/formatUtils.js";
+import { formatINR, formatDateTime } from "../utils/formatUtils.js";
+import { onProductImageError, PRODUCT_IMAGE_PLACEHOLDER } from "../utils/productImageUtils.js";
 
 const STEPS = ["placed", "confirmed", "shipped", "delivered"];
 
 export default function OrderDetailsPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const justPlaced = searchParams.get("placed") === "1";
+
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -62,7 +66,7 @@ export default function OrderDetailsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-16 flex justify-center items-center">
+      <div className="w-full py-16 flex justify-center items-center">
         <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -87,9 +91,42 @@ export default function OrderDetailsPage() {
   const isCancellable = ["pending", "confirmed", "processing", "packed", "placed"].includes(currentStatus);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="w-full pb-8">
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center gap-2 text-xs text-slate-500 mb-3">
+        <Link to="/orders" className="hover:text-blue-600 flex items-center gap-1 font-medium transition-colors">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Orders
+        </Link>
+        <span>/</span>
+        <span className="text-slate-700 font-semibold">Order #{order._id?.slice(-8).toUpperCase()}</span>
+      </div>
+
+      {/* Just Placed Success Banner */}
+      {justPlaced && (
+        <div className="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg p-4 flex items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
+              ✓
+            </div>
+            <div>
+              <p className="text-sm font-bold text-emerald-900">Order Placed Successfully!</p>
+              <p className="text-xs text-emerald-700">Thank you for your purchase. We have received your order and are preparing it for shipment.</p>
+            </div>
+          </div>
+          <Link
+            to="/products"
+            className="hidden sm:inline-block px-3 py-1.5 bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-800 rounded text-xs font-semibold transition-colors"
+          >
+            Continue Shopping
+          </Link>
+        </div>
+      )}
+
       {/* Top Header Card */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-xs flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-xs flex flex-wrap items-center justify-between gap-4 mb-4">
         <div>
           <span className="text-xs font-bold text-blue-600 uppercase tracking-wide">
             Order #{order._id?.slice(-8).toUpperCase()}
@@ -98,7 +135,7 @@ export default function OrderDetailsPage() {
           <p className="text-xs text-slate-500 mt-1">Placed on {formatDateTime(order.createdAt)}</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <Link
             to={`/orders/${order._id}/invoice`}
             className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded text-xs font-semibold transition-colors"
@@ -120,11 +157,11 @@ export default function OrderDetailsPage() {
       </div>
 
       {/* Visual Status Timeline */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-xs mb-6">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-5">Order Tracking</h2>
+      <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-xs mb-4">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-4">Order Tracking</h2>
 
         {isCancelled ? (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-md text-xs font-semibold text-red-700">
+          <div className="p-3.5 bg-red-50 border border-red-200 rounded-md text-xs font-semibold text-red-700">
             This order was cancelled.
           </div>
         ) : (
@@ -135,15 +172,15 @@ export default function OrderDetailsPage() {
               return (
                 <div key={step} className="flex flex-col items-center text-center">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mb-2 transition-colors ${
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold mb-1.5 transition-colors ${
                       isDone
-                        ? "bg-green-600 text-white"
+                        ? "bg-green-600 text-white shadow-xs"
                         : "bg-slate-100 text-slate-400 border border-slate-200"
                     }`}
                   >
                     {isDone ? "✓" : idx + 1}
                   </div>
-                  <span className={`text-xs font-semibold capitalize ${isCurrent ? "text-blue-600" : isDone ? "text-slate-800" : "text-slate-400"}`}>
+                  <span className={`text-xs font-semibold capitalize ${isCurrent ? "text-blue-600 font-bold" : isDone ? "text-slate-800" : "text-slate-400"}`}>
                     {step}
                   </span>
                 </div>
@@ -154,33 +191,61 @@ export default function OrderDetailsPage() {
       </div>
 
       {/* Items & Summary Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Items List (7 cols) */}
-        <div className="md:col-span-7 bg-white rounded-lg border border-slate-200 divide-y divide-slate-100 shadow-xs">
-          <div className="p-4 bg-slate-50 border-b border-slate-100">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Ordered Items</h3>
+        <div className="lg:col-span-7 bg-white rounded-lg border border-slate-200 divide-y divide-slate-100 shadow-xs">
+          <div className="p-3.5 sm:p-4 bg-slate-50 border-b border-slate-100">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+              Ordered Items ({(order.items || []).length})
+            </h3>
           </div>
 
           {(order.items || []).map((item, idx) => {
-            const p = item.product || {};
-            const img = p.images?.[0] || p.image || "https://placehold.co/100x100?text=Product";
+            const prodObj = item.product && typeof item.product === "object" ? item.product : null;
+            const productId = item.productId || (prodObj ? (prodObj._id || prodObj.id) : item.product);
+            const img =
+              item.image ||
+              prodObj?.images?.[0]?.url ||
+              prodObj?.images?.[0] ||
+              prodObj?.image ||
+              PRODUCT_IMAGE_PLACEHOLDER;
+            const name = item.name || prodObj?.name || "Product";
+            const productHref = productId ? `/products/${productId}` : "#";
+
             return (
-              <div key={idx} className="p-4 flex items-center gap-4">
-                <img src={img} alt="" className="w-16 h-16 rounded border p-1 bg-white object-contain" />
+              <div key={idx} className="p-4 flex items-center gap-3.5 sm:gap-4 hover:bg-slate-50/50 transition-colors">
+                <Link to={productHref} className="shrink-0 group">
+                  <img
+                    src={img}
+                    alt={name}
+                    onError={onProductImageError}
+                    className="w-16 h-16 rounded border border-slate-200 p-1 bg-white object-contain group-hover:border-blue-400 transition-colors"
+                  />
+                </Link>
                 <div className="flex-1 min-w-0">
-                  <Link to={`/products/${p._id}`} className="text-xs font-bold text-slate-900 hover:text-blue-600 line-clamp-1">
-                    {item.name || p.name || "Product"}
+                  <Link
+                    to={productHref}
+                    className="text-xs sm:text-sm font-semibold text-slate-900 hover:text-blue-600 line-clamp-2 transition-colors"
+                  >
+                    {name}
                   </Link>
-                  <p className="text-2xs text-slate-500 mt-1">Qty: {item.quantity} × {formatINR(item.price)}</p>
+                  {item.variantLabel && (
+                    <p className="text-2xs text-slate-500 mt-0.5">Variant: {item.variantLabel}</p>
+                  )}
+                  <p className="text-2xs text-slate-500 mt-1">
+                    Qty: <span className="font-medium text-slate-700">{item.quantity}</span> × {formatINR(item.price)}
+                  </p>
                 </div>
-                <span className="text-xs font-bold text-slate-900">{formatINR(item.price * item.quantity)}</span>
+                <span className="text-xs sm:text-sm font-bold text-slate-900 shrink-0">
+                  {formatINR(item.price * item.quantity)}
+                </span>
               </div>
             );
           })}
         </div>
 
         {/* Address & Payment Info (5 cols) */}
-        <div className="md:col-span-5 flex flex-col gap-6">
+        <div className="lg:col-span-5 flex flex-col gap-4">
           {/* Delivery Address */}
           <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600 pb-2.5 border-b border-slate-100 mb-3">
@@ -188,6 +253,7 @@ export default function OrderDetailsPage() {
             </h3>
             <p className="text-xs font-bold text-slate-800">{addr.name || order.user?.name || "Recipient"}</p>
             <p className="text-xs text-slate-600 mt-1">{addr.line1}</p>
+            {addr.line2 && <p className="text-xs text-slate-600">{addr.line2}</p>}
             <p className="text-xs text-slate-600">{addr.city}, {addr.state} - {addr.postalCode}</p>
             <p className="text-xs text-slate-500 mt-2">Phone: {addr.phone || "N/A"}</p>
           </div>

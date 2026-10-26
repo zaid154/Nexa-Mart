@@ -32,11 +32,15 @@ const orderToView = (req, order) => {
 
   const items = (obj.items || []).map((item) => {
     const isPopulated = item.product && typeof item.product === "object" && item.product._id;
-    if (!isPopulated) return item;
+    const prodId = isPopulated ? item.product._id : item.product;
+    const prodImages = isPopulated ? buildImageUrls(req, item.product) : [];
+    const directUrl = isPopulated && (item.product.images?.[0]?.url || (typeof item.product.images?.[0] === "string" ? item.product.images[0] : null));
+    const imgUrl = item.image || prodImages[0] || directUrl || null;
     return {
       ...item,
-      product: item.product._id,
-      image: buildImageUrls(req, item.product)[0] || null,
+      product: prodId,
+      productId: prodId,
+      image: imgUrl,
     };
   });
 
@@ -107,6 +111,7 @@ export const createOrder = asyncHandler(async (req, res) => {
 
     orderItems.push({
       product: prod._id,
+      image: prod.images?.[0]?.url || (typeof prod.images?.[0] === "string" ? prod.images[0] : "") || prod.image || "",
       variant: variant ? variant._id : undefined,
       variantLabel: variant?.sku || prod.name,
       variantSku: variant?.sku || prod.sku,

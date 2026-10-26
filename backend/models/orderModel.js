@@ -1,3 +1,4 @@
+import "./productModel.js";
 // Order schema and lifecycle subdocuments.
 
 import mongoose from "mongoose";
@@ -12,6 +13,7 @@ const orderItemSchema = new mongoose.Schema(
     },
     name: { type: String, required: true },
     price: { type: Number, required: true },
+    image: { type: String, default: "" },
     quantity: { type: Number, required: true, min: 1 },
     // Snapshot of purchased variant configuration
     variant: { type: mongoose.Schema.Types.ObjectId, default: null },
