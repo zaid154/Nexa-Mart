@@ -1,6 +1,20 @@
 import { useMemo } from "react";
 import { formatINR } from "../utils/formatUtils.js";
-import { swatchFor, isColourKey } from "../utils/colorSwatchUtils.js";
+// Common color map for variant swatches
+const COLOR_MAP = {
+  black: "#111827", white: "#ffffff", silver: "#e5e7eb", grey: "#6b7280", gray: "#6b7280",
+  blue: "#2563eb", red: "#dc2626", green: "#16a34a", gold: "#d97706", yellow: "#eab308",
+  navy: "#1e3a8a", purple: "#9333ea", pink: "#ec4899", graphite: "#374151"
+};
+const swatchFor = (val) => {
+  if (!val) return null;
+  const s = String(val).toLowerCase();
+  for (const [k, hex] of Object.entries(COLOR_MAP)) {
+    if (s.includes(k)) return hex;
+  }
+  return null;
+};
+const isColourKey = (k) => ["color", "colour", "dial"].includes(String(k || "").trim().toLowerCase());
 
 // Attribute-based variant selector (Color, Storage, Size, etc.)
 // Extract unique attribute keys preserving original product definition order

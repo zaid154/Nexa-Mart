@@ -1,8 +1,7 @@
 // Slide-over cart drawer that opens when an item is added
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { useCart } from "../context/cartContext.jsx";
-import { useCartDrawer, useCartDrawerOpen } from "../context/cartDrawerContext.jsx";
+import { useCart, useCartDrawer, useCartDrawerOpen } from "../context/cartContext.jsx";
 import { useCommerce } from "../context/settingsContext.jsx";
 import { formatINR } from "../utils/formatUtils.js";
 import { lineImage, variantLabel } from "../utils/variantMediaUtils.js";

@@ -8,7 +8,7 @@ import { useAuth } from "../context/authContext.jsx";
 import { useToast } from "../context/toastContext.jsx";
 import { IconCart, IconHeart } from "./icons.jsx";
 import CartQuantity, { findCartLine } from "./cartQuantity.jsx";
-import { useCartDrawer } from "../context/cartDrawerContext.jsx";
+import { useCartDrawer } from "../context/cartContext.jsx";
 import { variantLabel } from "../utils/variantMediaUtils.js";
 
 // One product box shown in the product grid. The whole tile is a link to the
