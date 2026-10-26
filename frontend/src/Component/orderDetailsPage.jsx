@@ -20,6 +20,14 @@ export default function OrderDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
 
+  // 5-second countdown timer for success banner
+  const [showBanner, setShowBanner] = useState(justPlaced);
+  const [bannerCountdown, setBannerCountdown] = useState(5);
+
+  // 5-second countdown timer for live order tracking progression
+  const [trackingCountdown, setTrackingCountdown] = useState(5);
+  const [isAutoTracking, setIsAutoTracking] = useState(true);
+
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
@@ -41,6 +49,82 @@ export default function OrderDetailsPage() {
       isMounted = false;
     };
   }, [id]);
+
+  // 5-Second Banner Auto-Dismiss Timer
+  useEffect(() => {
+    if (!showBanner) return;
+    const interval = setInterval(() => {
+      setBannerCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setShowBanner(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [showBanner]);
+
+  // 5-Second Order Tracking Progressive Timer (Placed -> Confirmed -> Shipped -> Delivered)
+  useEffect(() => {
+    if (!order) return;
+    const currentStatus = (order.status || "placed").toLowerCase();
+    const currentStepIdx = STEPS.indexOf(currentStatus);
+    const isCancelled = currentStatus === "cancelled";
+
+    // If order is cancelled or already delivered or auto-tracking paused, don't run
+    if (isCancelled || currentStepIdx >= 3 || !isAutoTracking) return;
+
+    const interval = setInterval(() => {
+      setTrackingCountdown((prev) => {
+        if (prev <= 1) {
+          const nextStepIdx = Math.min(3, currentStepIdx + 1);
+          const nextStatus = STEPS[nextStepIdx];
+
+          // Advance status locally
+          setOrder((prevOrder) => ({
+            ...prevOrder,
+            status: nextStatus,
+            isDelivered: nextStatus === "delivered",
+            deliveredAt: nextStatus === "delivered" ? new Date().toISOString() : prevOrder?.deliveredAt,
+          }));
+
+          // Sync with backend API
+          api
+            .patch(`/orders/${order._id}/progress`, { status: nextStatus })
+            .catch((err) => console.error("Auto tracking sync error:", err));
+
+          if (nextStatus === "delivered") {
+            setIsAutoTracking(false);
+            toast.success("Order Delivered! You can now rate and review this product.");
+          }
+
+          return 5; // Reset countdown for next stage if any
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [order, isAutoTracking]);
+
+  const handleFastForward = async () => {
+    if (!order) return;
+    setOrder((prev) => ({
+      ...prev,
+      status: "delivered",
+      isDelivered: true,
+      deliveredAt: new Date().toISOString(),
+    }));
+    setIsAutoTracking(false);
+    try {
+      await api.patch(`/orders/${order._id}/progress`, { status: "delivered" });
+      toast.success("Order marked Delivered! You can now rate and review this product.");
+    } catch (err) {
+      console.error("Fast forward error:", err);
+    }
+  };
 
   const handleCancel = async () => {
     const ok = await confirm({
@@ -86,30 +170,51 @@ export default function OrderDetailsPage() {
 
   const addr = order.shippingAddress || {};
   const currentStatus = (order.status || "placed").toLowerCase();
-  const currentStepIdx = STEPS.indexOf(currentStatus);
+  const currentStepIdx = Math.max(0, STEPS.indexOf(currentStatus));
   const isCancelled = currentStatus === "cancelled";
   const isCancellable = ["pending", "confirmed", "processing", "packed", "placed"].includes(currentStatus);
 
+  const firstItem = (order.items || [])[0];
+  const prodObj = firstItem?.product && typeof firstItem.product === "object" ? firstItem.product : null;
+  const firstProductId = firstItem?.productId || (prodObj ? (prodObj._id || prodObj.id) : firstItem?.product);
+
   return (
     <div className="w-full pb-8">
-      {/* Just Placed Success Banner */}
-      {justPlaced && (
-        <div className="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg p-4 flex items-center justify-between gap-3 shadow-xs">
+      {/* Just Placed Success Banner with 5s countdown timer */}
+      {showBanner && (
+        <div className="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg p-4 flex items-center justify-between gap-3 shadow-xs transition-opacity duration-300">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
               ✓
             </div>
             <div>
-              <p className="text-sm font-bold text-emerald-900">Order Placed Successfully!</p>
-              <p className="text-xs text-emerald-700">Thank you for your purchase. We have received your order and are preparing it for shipment.</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm font-bold text-emerald-900">Order Placed Successfully!</p>
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center gap-1">
+                  Closing in {bannerCountdown}s
+                </span>
+              </div>
+              <p className="text-xs text-emerald-700 mt-0.5">
+                Thank you for your purchase. We have received your order and are preparing it for shipment.
+              </p>
             </div>
           </div>
-          <Link
-            to="/products"
-            className="hidden sm:inline-block px-3 py-1.5 bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-800 rounded text-xs font-semibold transition-colors"
-          >
-            Continue Shopping
-          </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              to="/products"
+              className="hidden sm:inline-block px-3 py-1.5 bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-800 rounded text-xs font-semibold transition-colors"
+            >
+              Continue Shopping
+            </Link>
+            <button
+              type="button"
+              onClick={() => setShowBanner(false)}
+              className="p-1 hover:bg-emerald-100 text-emerald-700 rounded text-xs font-bold cursor-pointer"
+              title="Dismiss banner"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
 
@@ -144,36 +249,127 @@ export default function OrderDetailsPage() {
         </div>
       </div>
 
-      {/* Visual Status Timeline */}
+      {/* Visual Status Timeline with 5s progressive auto-tracker & connected stepper line */}
       <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-xs mb-4">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-4">Order Tracking</h2>
+        <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Order Tracking</h2>
+            {currentStepIdx < 3 && !isCancelled && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-2xs font-semibold border border-blue-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping" />
+                Next step in {trackingCountdown}s
+              </span>
+            )}
+            {currentStepIdx === 3 && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-2xs font-bold border border-emerald-200">
+                ✓ Delivered
+              </span>
+            )}
+          </div>
+
+          {!isCancelled && currentStepIdx < 3 && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleFastForward}
+                className="text-2xs font-bold uppercase tracking-wider text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-xs transition-colors cursor-pointer"
+              >
+                ⚡ Fast-Forward to Delivered
+              </button>
+            </div>
+          )}
+        </div>
 
         {isCancelled ? (
           <div className="p-3.5 bg-red-50 border border-red-200 rounded-md text-xs font-semibold text-red-700">
             This order was cancelled.
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-2 relative">
-            {STEPS.map((step, idx) => {
-              const isDone = currentStepIdx >= idx;
-              const isCurrent = currentStepIdx === idx;
-              return (
-                <div key={step} className="flex flex-col items-center text-center">
-                  <div
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold mb-1.5 transition-colors ${
-                      isDone
-                        ? "bg-green-600 text-white shadow-xs"
-                        : "bg-slate-100 text-slate-400 border border-slate-200"
-                    }`}
-                  >
-                    {isDone ? "✓" : idx + 1}
+          <div className="relative pt-2 pb-2">
+            {/* Background Line Connecting Circles */}
+            <div className="absolute top-5 sm:top-6 left-[12.5%] right-[12.5%] h-1 bg-slate-200 z-0">
+              {/* Active Green Progress Line */}
+              <div
+                className="h-full bg-emerald-600 transition-all duration-700 ease-out"
+                style={{
+                  width: `${Math.min(100, (currentStepIdx / 3) * 100)}%`,
+                }}
+              />
+            </div>
+
+            {/* 4 Step Nodes */}
+            <div className="grid grid-cols-4 relative z-10">
+              {STEPS.map((step, idx) => {
+                const isDone = currentStepIdx >= idx;
+                const isCurrent = currentStepIdx === idx;
+                return (
+                  <div key={step} className="flex flex-col items-center text-center">
+                    <div
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs font-bold mb-2 transition-all duration-500 bg-white ${
+                        isDone
+                          ? "bg-emerald-600 text-white shadow-xs border-2 border-emerald-600"
+                          : isCurrent
+                          ? "border-2 border-blue-600 text-blue-600 ring-4 ring-blue-100"
+                          : "border-2 border-slate-300 text-slate-400"
+                      }`}
+                    >
+                      {isDone ? (
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span>{idx + 1}</span>
+                      )}
+                    </div>
+                    <span
+                      className={`text-xs font-semibold capitalize transition-colors ${
+                        isDone
+                          ? "text-slate-900 font-bold"
+                          : isCurrent
+                          ? "text-blue-600 font-bold"
+                          : "text-slate-400"
+                      }`}
+                    >
+                      {step}
+                    </span>
+                    <span className="text-[10px] text-slate-500 mt-0.5">
+                      {isDone
+                        ? idx === 3
+                          ? "Delivered"
+                          : "Completed"
+                        : isCurrent
+                        ? "In Progress"
+                        : "Upcoming"}
+                    </span>
                   </div>
-                  <span className={`text-xs font-semibold capitalize ${isCurrent ? "text-blue-600 font-bold" : isDone ? "text-slate-800" : "text-slate-400"}`}>
-                    {step}
-                  </span>
+                );
+              })}
+            </div>
+
+            {/* Delivered Success / Review Callout */}
+            {currentStepIdx === 3 && (
+              <div className="mt-5 pt-3.5 border-t border-slate-100 bg-emerald-50/60 p-3.5 rounded-xs flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                    ★
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-emerald-950">Order Delivered Successfully!</p>
+                    <p className="text-2xs text-emerald-800">
+                      You are now eligible to rate and write a verified review for this product.
+                    </p>
+                  </div>
                 </div>
-              );
-            })}
+                {firstProductId && (
+                  <Link
+                    to={`/products/${firstProductId}#reviews`}
+                    className="px-4 py-2 bg-[#ff9f00] hover:bg-[#f39700] text-slate-900 text-xs font-bold uppercase tracking-wider rounded-xs shadow-xs transition-colors shrink-0"
+                  >
+                    Rate & Review Product
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

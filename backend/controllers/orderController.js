@@ -319,3 +319,43 @@ export const getReturnImage = asyncHandler(async (req, res) => {
 export const getReturnReasons = (req, res) => {
   res.json({ reasons: RETURN_REASONS });
 };
+
+// PATCH /api/orders/:id/progress - Advance order lifecycle tracking stage (placed -> confirmed -> shipped -> delivered)
+export const progressOrderStatus = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    res.status(404);
+    throw new Error("Order not found");
+  }
+
+  const isOwner = String(order.user) === String(req.user._id);
+  if (!isOwner && req.user.role !== "admin") {
+    res.status(403);
+    throw new Error("Not authorized to update this order");
+  }
+
+  const { status } = req.body;
+  const validStatuses = ["placed", "confirmed", "shipped", "delivered"];
+  if (!validStatuses.includes(status)) {
+    res.status(400);
+    throw new Error("Invalid order status: " + status);
+  }
+
+  order.status = status;
+  if (!order.trackingHistory) {
+    order.trackingHistory = [];
+  }
+  order.trackingHistory.push({
+    status,
+    note: `Order ${status} at ${new Date().toLocaleTimeString()}`,
+    timestamp: new Date(),
+  });
+
+  if (status === "delivered") {
+    order.isDelivered = true;
+    order.deliveredAt = new Date();
+  }
+
+  await order.save();
+  res.json({ success: true, order: orderToView(req, order) });
+});

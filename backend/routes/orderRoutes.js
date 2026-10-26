@@ -1,7 +1,7 @@
 import express from "express";
 import {
   createOrder, getMyOrders, getOrderById, cancelOrder,
-  requestReturn, getReturnImage, getReturnReasons
+  requestReturn, getReturnImage, getReturnReasons, progressOrderStatus
 } from "../controllers/orderController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { upload } from "../middleware/uploadMiddleware.js";
@@ -15,6 +15,7 @@ router.get("/return-reasons", getReturnReasons);
 router.post("/", validate(createOrderSchema), createOrder);
 router.get("/my", getMyOrders);
 router.get("/:id", getOrderById);
+router.patch("/:id/progress", progressOrderStatus);
 router.put("/:id/cancel", cancelOrder);
 router.post("/:id/return", upload.array("images", 3), requestReturn);
 router.get("/:id/return-image/:imageId", getReturnImage);
