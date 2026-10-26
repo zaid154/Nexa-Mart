@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/apiClient.js";
 import ProductCard from "./productCard.jsx";
+import { IconTruck, IconShield, IconRefresh, IconCreditCard } from "./icons.jsx";
 
 const CATEGORIES = [
   {
@@ -36,12 +37,51 @@ const CATEGORIES = [
   },
 ];
 
+const HERO_SLIDES = [
+  {
+    tag: "MEGA SALE",
+    title: "Flagship Smartphones",
+    subtitle: "Up to 40% off on iPhone 13 Pro, Galaxy & 5G devices",
+    cta: "Explore Mobiles",
+    link: "/products?category=Smartphones",
+    image: "/images/banners/phone.jpg",
+    bg: "from-[#0d1b2a] via-[#1b263b] to-[#2874f0]",
+  },
+  {
+    tag: "POWER & WORK",
+    title: "Performance Laptops",
+    subtitle: "Apple MacBook Pro, Dell XPS 13 & ZenBook with warranty",
+    cta: "Shop Laptops",
+    link: "/products?category=Laptops",
+    image: "/images/banners/laptop.jpg",
+    bg: "from-[#111827] via-[#1f2937] to-[#374151]",
+  },
+  {
+    tag: "PREMIUM SOUND",
+    title: "Audio & Wearables",
+    subtitle: "AirPods Max, Studio Headphones & Apple Watch Series",
+    cta: "Discover Audio",
+    link: "/products?category=Audio",
+    image: "/images/banners/headphones.jpg",
+    bg: "from-[#0c4a6e] via-[#075985] to-[#0284c7]",
+  },
+];
+
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeSlide, setActiveSlide] = useState(0);
 
-  // Fetch top rated electronics and newest additions for home storefront
+  // Auto-advance hero slides every 5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Fetch top rated electronics and newest additions for storefront
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
@@ -66,7 +106,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-8">
+    <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-6">
       {/* Category quick-nav strip with authentic product photos */}
       <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs">
         <div className="flex items-center justify-around gap-4 overflow-x-auto pb-1">
@@ -92,93 +132,101 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Hero promo banner */}
-      <div className="relative rounded-xl overflow-hidden bg-gradient-to-r from-[#172337] via-[#1a4fa8] to-[#2874f0] text-white p-8 sm:p-12 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="max-w-lg flex flex-col gap-3">
-          <span className="inline-block self-start text-xs font-bold tracking-wider uppercase bg-white/20 backdrop-blur-xs px-3 py-1 rounded-full text-white">
-            Grand Electronics Sale
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">
-            Next-Gen Tech, Unbeatable Prices.
-          </h1>
-          <p className="text-sm text-blue-100 leading-relaxed">
-            Upgrade your setup with authentic smartphones, laptops, audio gear, and wearables with verified warranty.
-          </p>
-          <div className="pt-2 flex items-center gap-3">
-            <Link
-              to="/products"
-              className="px-6 py-3 bg-[#fb641b] hover:bg-[#e85a14] text-white font-bold text-xs uppercase tracking-wider rounded-md shadow-md transition-colors"
-            >
-              Explore Deals &rarr;
-            </Link>
-            <Link
-              to="/products?category=Smartphones"
-              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider rounded-md border border-white/20 transition-colors"
-            >
-              Smartphones
-            </Link>
-          </div>
-        </div>
+      {/* Hero Promo Carousel with real photography */}
+      <div className="relative rounded-xl overflow-hidden shadow-sm bg-slate-900 min-h-[220px] sm:min-h-[280px]">
+        {HERO_SLIDES.map((slide, idx) => (
+          <div
+            key={idx}
+            className={`absolute inset-0 bg-gradient-to-r ${slide.bg} p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 transition-opacity duration-700 ${
+              idx === activeSlide ? "opacity-100 z-10" : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <div className="max-w-lg flex flex-col gap-3 text-white">
+              <span className="inline-block self-start text-[11px] font-bold tracking-wider uppercase bg-white/15 px-3 py-1 rounded-full border border-white/10">
+                {slide.tag}
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-extrabold leading-tight">
+                {slide.title}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                {slide.subtitle}
+              </p>
+              <div className="pt-2">
+                <Link
+                  to={slide.link}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#fb641b] hover:bg-[#e85a14] text-white font-bold text-xs uppercase tracking-wider rounded-md shadow-md transition-colors"
+                >
+                  {slide.cta} &rarr;
+                </Link>
+              </div>
+            </div>
 
-        <div className="hidden md:flex items-center justify-center shrink-0">
-          <img
-            src="/images/banners/deals.jpg"
-            alt="Hot Electronics Deals"
-            className="w-72 h-44 object-cover rounded-xl shadow-2xl border-2 border-white/20 transform hover:scale-102 transition-transform duration-300"
-          />
-        </div>
-      </div>
-
-      {/* Value props strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          {
-            title: "Free Fast Delivery",
-            desc: "On all orders above ₹15,000",
-            icon: (
-              <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-              </svg>
-            ),
-          },
-          {
-            title: "100% Genuine Tech",
-            desc: "Direct manufacturer warranty",
-            icon: (
-              <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            ),
-          },
-          {
-            title: "7-Day Easy Return",
-            desc: "Hassle-free replacement policy",
-            icon: (
-              <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            ),
-          },
-          {
-            title: "Flexible Payments",
-            desc: "Razorpay UPI, Cards & COD",
-            icon: (
-              <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-              </svg>
-            ),
-          },
-        ].map((prop, i) => (
-          <div key={i} className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs flex items-center gap-3">
-            <span className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-              {prop.icon}
-            </span>
-            <div>
-              <p className="text-xs font-bold text-slate-800">{prop.title}</p>
-              <p className="text-xs text-slate-500 mt-0.5">{prop.desc}</p>
+            <div className="hidden md:flex items-center justify-end shrink-0">
+              <img
+                src={slide.image}
+                alt={slide.title}
+                className="w-72 h-44 sm:w-80 sm:h-52 object-cover rounded-xl shadow-2xl border-2 border-white/20 transform hover:scale-102 transition-transform duration-300"
+              />
             </div>
           </div>
         ))}
+
+        {/* Carousel indicator dots */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+          {HERO_SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveSlide(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                i === activeSlide ? "w-6 bg-white" : "w-2 bg-white/40 hover:bg-white/70"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Unified E-Commerce Trust Bar */}
+      <div className="bg-white rounded-lg border border-slate-200 py-3.5 px-6 shadow-xs grid grid-cols-2 lg:grid-cols-4 gap-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <IconTruck size={20} />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-800">Free Fast Delivery</h4>
+            <p className="text-[11px] text-slate-500">Orders above ₹15,000</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 pt-3 lg:pt-0 lg:pl-6">
+          <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <IconShield size={20} />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-800">100% Genuine Tech</h4>
+            <p className="text-[11px] text-slate-500">Official brand warranty</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 pt-3 lg:pt-0 lg:pl-6">
+          <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <IconRefresh size={20} />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-800">7-Day Easy Returns</h4>
+            <p className="text-[11px] text-slate-500">Hassle-free replacement</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 pt-3 lg:pt-0 lg:pl-6">
+          <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <IconCreditCard size={20} />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-800">Secure Payments</h4>
+            <p className="text-[11px] text-slate-500">Razorpay, UPI & COD</p>
+          </div>
+        </div>
       </div>
 
       {/* Featured electronics section */}
