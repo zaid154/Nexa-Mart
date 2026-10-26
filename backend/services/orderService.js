@@ -37,7 +37,32 @@ export const canTransition = (from, to) => (ALLOWED_TRANSITIONS[from] || []).inc
 export const canCancel = (status) => CANCELLABLE_STATUSES.includes(status);
 export const canReturn = (status) => status === "delivered";
 
-// Adjust product and variant stock: direction is "reduce" or "restore"
+// Validate shipping address has required fields
+export const validateShippingAddress = (address) => {
+  if (!address) throw new Error("Shipping address is required");
+  const required = ["fullName", "phone", "line1", "city", "state", "postalCode"];
+  for (const field of required) {
+    if (!address[field] || !String(address[field]).trim()) {
+      throw new Error(`Address field "${field}" is required`);
+    }
+  }
+};
+
+// Calculate order item subtotal, tax, and total
+export const calculateOrderTotals = ({ itemsPrice, shippingPrice = 0, taxRate = 0, discount = 0 }) => {
+  const tax = Math.round(itemsPrice * taxRate * 100) / 100;
+  const net = Math.max(0, itemsPrice - discount);
+  const total = Math.max(0, net + shippingPrice + tax);
+  return {
+    itemsPrice: Math.round(itemsPrice * 100) / 100,
+    shippingPrice: Math.round(shippingPrice * 100) / 100,
+    taxPrice: tax,
+    discountPrice: Math.round(discount * 100) / 100,
+    totalPrice: Math.round(total * 100) / 100,
+  };
+};
+
+// Adjust product stock: direction is "reduce" or "restore"
 export const adjustStock = async (order, direction, session = null) => {
   const isReduce = direction === "reduce";
   if (isReduce ? order.stockReduced : !order.stockReduced) return;
@@ -47,26 +72,19 @@ export const adjustStock = async (order, direction, session = null) => {
 
   for (const item of order.items) {
     const product = await Product.findById(item.product).session(session || null);
-    const variant = item.variant && product ? product.variants.id(item.variant) : null;
 
     if (isReduce) {
-      const stock = variant ? variant.countInStock : product?.countInStock;
+      const stock = product ? product.countInStock : 0;
       if (!product || stock < item.quantity) {
         throw new Error(`Insufficient stock for ${item.name}`);
       }
     }
 
-    if (variant) {
-      variant.countInStock += multiplier * item.quantity;
-      product.countInStock += multiplier * item.quantity;
-      await product.save(opts);
-    } else {
-      await Product.findByIdAndUpdate(
-        item.product,
-        { $inc: { countInStock: multiplier * item.quantity } },
-        opts
-      );
-    }
+    await Product.findByIdAndUpdate(
+      item.product,
+      { $inc: { countInStock: multiplier * item.quantity } },
+      opts
+    );
   }
 
   order.stockReduced = isReduce;
