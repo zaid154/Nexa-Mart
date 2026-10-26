@@ -427,7 +427,7 @@ export const seedDatabase = async ({ clear = true } = {}) => {
   // ── 1. Users ────────────────────────────────────────────────
   console.log("Creating users...");
   await User.create({
-    name: "Mohd Zaid (Super Admin)",
+    name: "Mohd Zaid",
     email: "zaidm1323@gmail.com",
     password: "123456",
     role: "admin",

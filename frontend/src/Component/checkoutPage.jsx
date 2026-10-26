@@ -205,28 +205,7 @@ export default function CheckoutPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
         {/* Left Column: Flipkart Sequential Steps (8 cols) */}
         <div className="lg:col-span-8 flex flex-col gap-3.5">
-          {/* STEP 1: LOGIN (Confirmed) */}
-          <div className="bg-white rounded-xs border border-slate-200 p-3.5 sm:p-4 flex items-center justify-between shadow-2xs">
-            <div className="flex items-center gap-3">
-              <span className="w-5 h-5 rounded-xs bg-slate-100 text-blue-600 text-xs font-bold flex items-center justify-center shrink-0">
-                1
-              </span>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Login</span>
-                  <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <p className="text-xs font-semibold text-slate-800 mt-0.5">
-                  {user?.name || "Customer"}{" "}
-                  <span className="text-slate-500 font-normal">({user?.email || user?.phone || "Verified"})</span>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* STEP 2: DELIVERY ADDRESS (Flipkart Card / Form) */}
+          {/* STEP 1: DELIVERY ADDRESS (Flipkart Card / Form) */}
           <div className="bg-white rounded-xs border border-slate-200 overflow-hidden shadow-2xs">
             {/* Step Header */}
             <div
@@ -242,7 +221,7 @@ export default function CheckoutPage() {
                     isEditingAddress ? "bg-white text-[#2874f0]" : "bg-[#2874f0] text-white"
                   }`}
                 >
-                  2
+                  1
                 </span>
                 <h2
                   className={`text-xs font-bold uppercase tracking-wider ${
@@ -471,12 +450,12 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* STEP 3: ORDER SUMMARY */}
+          {/* STEP 2: ORDER SUMMARY */}
           <div className="bg-white rounded-xs border border-slate-200 overflow-hidden shadow-2xs">
             <div className="px-4 py-3 bg-white border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <span className="w-5 h-5 rounded-xs bg-[#2874f0] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                  3
+                  2
                 </span>
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
                   Order Summary ({cart.items.length} {cart.items.length === 1 ? "Item" : "Items"})
@@ -540,11 +519,11 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* STEP 4: PAYMENT OPTIONS */}
+          {/* STEP 3: PAYMENT OPTIONS */}
           <div id="checkout-payment-step" className="bg-white rounded-xs border border-slate-200 overflow-hidden shadow-2xs">
             <div className="px-4 py-3 bg-white border-b border-slate-100 flex items-center gap-2.5">
               <span className="w-5 h-5 rounded-xs bg-[#2874f0] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                4
+                3
               </span>
               <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
                 Payment Options
