@@ -101,6 +101,7 @@ export const logTypeBadgeClass = (type) => {
 // Order status labels shown to user
 const STATUS_LABELS = {
   pending: "Pending",
+  placed: "Confirmed",
   confirmed: "Confirmed",
   processing: "Processing",
   packed: "Packed",
@@ -141,9 +142,11 @@ export const refundStatusLabel = (status) => {
 };
 
 // Color theme mapping for order and return statuses
+// Confirmed & Placed are positive/successful customer milestones -> green (success)
 const STATUS_TONES = {
   pending: "warning",
-  confirmed: "info",
+  placed: "success",
+  confirmed: "success",
   processing: "info",
   packed: "info",
   shipped: "transit",
@@ -173,11 +176,11 @@ const TONE_BADGE = {
 };
 
 const TONE_DOT = {
-  warning: "bg-warning",
-  info: "bg-accent-500",
+  warning: "bg-amber-500",
+  info: "bg-blue-600",
   transit: "bg-copper-500",
-  success: "bg-success",
-  danger: "bg-danger",
+  success: "bg-green-600",
+  danger: "bg-red-600",
 };
 
 // CSS class for order status badge color
@@ -216,7 +219,7 @@ export const paymentMethodLabel = (method) => {
 };
 
 // Statuses where user can cancel order
-const CANCELLABLE = ["pending", "confirmed", "processing", "packed"];
+const CANCELLABLE = ["pending", "placed", "confirmed", "processing", "packed"];
 
 // Check what actions user can do on an order
 export const orderActions = (order) => {

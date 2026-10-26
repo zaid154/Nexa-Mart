@@ -17,7 +17,7 @@ import { onProductImageError, PRODUCT_IMAGE_PLACEHOLDER } from "../utils/product
 const FILTERS = [
   { key: "", label: "All orders", statuses: null },
   { key: "pending", label: "Pending", statuses: ["pending"] },
-  { key: "progress", label: "In progress", statuses: ["confirmed", "processing", "packed"] },
+  { key: "progress", label: "In progress", statuses: ["placed", "confirmed", "processing", "packed"] },
   { key: "transit", label: "In transit", statuses: ["shipped", "out_for_delivery"] },
   { key: "delivered", label: "Delivered", statuses: ["delivered"] },
   { key: "cancelled", label: "Cancelled", statuses: ["cancelled"] },
@@ -224,7 +224,9 @@ const Orders = () => {
                             ? `Delivered on ${formatDate(order.deliveredAt || order.updatedAt)}`
                             : order.isPaid
                               ? "Payment received"
-                              : "Payment pending"}
+                              : order.paymentMethod === "cod"
+                                ? "Cash on Delivery"
+                                : "Payment pending"}
                         </p>
                       </div>
 

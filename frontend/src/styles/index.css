@@ -145,12 +145,24 @@
   .price-off {
     @apply text-sm font-semibold text-success;
   }
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold;
+  }
+  .badge-success {
+    @apply border border-emerald-200 bg-emerald-50 text-emerald-700;
+  }
   .badge-info {
-    @apply border-accent-100 bg-accent-50 text-accent-700;
+    @apply border border-accent-100 bg-accent-50 text-accent-700;
+  }
+  .badge-warning {
+    @apply border border-amber-200 bg-amber-50 text-amber-700;
+  }
+  .badge-danger {
+    @apply border border-red-200 bg-red-50 text-red-700;
   }
   /* In-transit delivery status badge */
   .badge-transit {
-    @apply border-copper-400 bg-copper-50 text-copper-600;
+    @apply border border-copper-400 bg-copper-50 text-copper-600;
   }
 
   .chip {
