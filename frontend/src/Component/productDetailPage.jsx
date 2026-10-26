@@ -13,13 +13,14 @@ export default function ProductDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const toast = useToast();
-  const { cart, addToCart, addToWishlist, removeFromWishlist, inWishlist } = useCart();
+  const { cart, addToCart, updateCartItem, removeFromCart, addToWishlist, removeFromWishlist, inWishlist } = useCart();
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [updatingCartQty, setUpdatingCartQty] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedVariantId, setSelectedVariantId] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -91,22 +92,62 @@ export default function ProductDetailPage() {
   const mrp = activeVariant?.mrp ?? product.mrp ?? 0;
   const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
   const inStock = (activeVariant?.countInStock ?? product.countInStock ?? 0) > 0;
+  const maxStock = activeVariant?.countInStock ?? product.countInStock ?? 99;
   const isWished = inWishlist(product._id);
 
   // Check if currently selected variant is in the cart
-  const isCurrentVariantInCart = Boolean(
-    (cart?.items || []).find((item) => {
-      const matchProduct = String(item.product?._id || item.product?.id || item.product) === String(product._id);
-      const itemVarId = item.variant?._id || item.variant?.id || item.variant || null;
-      const matchVariant = String(itemVarId || "") === String(selectedVariantId || "");
-      return matchProduct && matchVariant;
-    })
-  );
+  const cartItem = (cart?.items || []).find((item) => {
+    const matchProduct = String(item.product?._id || item.product?.id || item.product) === String(product._id);
+    const itemVarId = item.variant?._id || item.variant?.id || item.variant || null;
+    const matchVariant = String(itemVarId || "") === String(selectedVariantId || "");
+    return matchProduct && matchVariant;
+  });
+
+  const isCurrentVariantInCart = Boolean(cartItem);
+  const currentCartQty = cartItem ? cartItem.quantity : 0;
 
   const images = [
     ...(product.images || []),
     ...(product.image ? [product.image] : []),
   ].filter((img, i, arr) => img && arr.indexOf(img) === i);
+
+  // Directly increment quantity in cart
+  const handleIncrementCartQty = async () => {
+    if (!user) return navigate("/login");
+    if (updatingCartQty) return;
+    if (currentCartQty >= maxStock) {
+      toast.error(`Only ${maxStock} items available in stock`);
+      return;
+    }
+    setUpdatingCartQty(true);
+    try {
+      await updateCartItem(product._id, currentCartQty + 1, selectedVariantId);
+    } catch (err) {
+      toast.error(err.message || "Could not update quantity");
+    } finally {
+      setUpdatingCartQty(false);
+    }
+  };
+
+  // Directly decrement quantity in cart (removes item if quantity reaches 0)
+  const handleDecrementCartQty = async () => {
+    if (!user) return navigate("/login");
+    if (updatingCartQty) return;
+    setUpdatingCartQty(true);
+    try {
+      if (currentCartQty > 1) {
+        await updateCartItem(product._id, currentCartQty - 1, selectedVariantId);
+      } else {
+        await removeFromCart(product._id, selectedVariantId);
+        toast.success("Removed from cart");
+        setQuantity(1);
+      }
+    } catch (err) {
+      toast.error(err.message || "Could not update quantity");
+    } finally {
+      setUpdatingCartQty(false);
+    }
+  };
 
   const handleAddToCart = async () => {
     if (!user) return navigate("/login");
@@ -169,7 +210,7 @@ export default function ProductDetailPage() {
       {/* Main product showcase */}
       <div className="bg-white rounded-lg border border-slate-200 p-5 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 shadow-xs">
         {/* Left: Image gallery */}
-        <div className="md:col-span-5 flex flex-col gap-4">
+        <div className="md:col-span-5 flex flex-col gap-3">
           <div className="relative aspect-square w-full rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden">
             <img
               src={selectedImage || images[0] || PRODUCT_IMAGE_PLACEHOLDER}
@@ -207,41 +248,10 @@ export default function ProductDetailPage() {
               ))}
             </div>
           )}
-
-          {/* Action buttons */}
-          <div className="grid grid-cols-2 gap-3 mt-2">
-            {isCurrentVariantInCart ? (
-              <button
-                type="button"
-                onClick={() => navigate("/cart")}
-                className="w-full py-3.5 px-4 rounded-md font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-xs text-sm"
-              >
-                Go to Cart
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                disabled={!inStock || addingToCart}
-                className="w-full py-3.5 px-4 rounded-md font-semibold text-white bg-[#ff9f00] hover:bg-[#f39700] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-xs text-sm"
-              >
-                {addingToCart ? "Adding..." : "Add to Cart"}
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={handleBuyNow}
-              disabled={!inStock}
-              className="w-full py-3.5 px-4 rounded-md font-semibold text-white bg-[#fb641b] hover:bg-[#e85a14] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-xs text-sm"
-            >
-              Buy Now
-            </button>
-          </div>
         </div>
 
         {/* Right: Details & options */}
-        <div className="md:col-span-7 flex flex-col gap-4">
+        <div className="md:col-span-7 flex flex-col gap-3.5">
           <div>
             <span className="text-xs uppercase font-bold tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
               {product.brand || product.category}
@@ -303,26 +313,98 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          {/* Quantity Selector */}
+          {/* Quantity Selector: Updates live cart quantity when in cart, or selects quantity to add */}
           <div className="flex items-center gap-3 pt-2">
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Quantity:</span>
-            <div className="flex items-center border border-slate-300 rounded-md">
+            {isCurrentVariantInCart ? (
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center border border-slate-300 rounded-md bg-white shadow-2xs">
+                  <button
+                    type="button"
+                    disabled={updatingCartQty}
+                    onClick={handleDecrementCartQty}
+                    className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 disabled:opacity-50 text-sm font-bold transition-colors"
+                    title={currentCartQty === 1 ? "Remove from cart" : "Decrease quantity"}
+                  >
+                    -
+                  </button>
+                  <span className="px-3 py-1.5 text-sm font-bold text-slate-900 min-w-[32px] text-center">
+                    {updatingCartQty ? "..." : currentCartQty}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={updatingCartQty || currentCartQty >= maxStock}
+                    onClick={handleIncrementCartQty}
+                    className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 disabled:opacity-50 text-sm font-bold transition-colors"
+                    title={currentCartQty >= maxStock ? "Maximum stock reached" : "Increase quantity"}
+                  >
+                    +
+                  </button>
+                </div>
+                <span className="text-2xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  Item in Cart
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center border border-slate-300 rounded-md bg-white shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 text-sm font-bold transition-colors"
+                >
+                  -
+                </button>
+                <span className="px-3 py-1.5 text-sm font-bold text-slate-900 min-w-[32px] text-center">{quantity}</span>
+                <button
+                  type="button"
+                  disabled={quantity >= maxStock}
+                  onClick={() => setQuantity((q) => Math.min(maxStock, q + 1))}
+                  className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 disabled:opacity-50 text-sm font-bold transition-colors"
+                >
+                  +
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Action buttons (placed directly below Quantity) */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            {isCurrentVariantInCart ? (
               <button
                 type="button"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="px-3 py-1 text-slate-600 hover:bg-slate-100 text-sm font-bold"
+                onClick={() => navigate("/cart")}
+                className="w-full py-3.5 px-4 rounded-md font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-xs text-sm"
               >
-                -
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                Go to Cart
               </button>
-              <span className="px-3 py-1 text-sm font-semibold text-slate-800">{quantity}</span>
+            ) : (
               <button
                 type="button"
-                onClick={() => setQuantity((q) => q + 1)}
-                className="px-3 py-1 text-slate-600 hover:bg-slate-100 text-sm font-bold"
+                onClick={handleAddToCart}
+                disabled={!inStock || addingToCart}
+                className="w-full py-3.5 px-4 rounded-md font-semibold text-white bg-[#ff9f00] hover:bg-[#f39700] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-xs text-sm"
               >
-                +
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                {addingToCart ? "Adding..." : "Add to Cart"}
               </button>
-            </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleBuyNow}
+              disabled={!inStock}
+              className="w-full py-3.5 px-4 rounded-md font-semibold text-white bg-[#fb641b] hover:bg-[#e85a14] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-xs text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Buy Now
+            </button>
           </div>
 
           {/* Description */}
