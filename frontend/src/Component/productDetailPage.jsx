@@ -94,7 +94,7 @@ export default function ProductDetailPage() {
   const maxStock = activeVariant?.countInStock ?? product.countInStock ?? 99;
   const isWished = inWishlist(product._id);
 
-  // Active variant label (e.g. "Sky Blue, 64 GB")
+  // Active variant label (e.g. "Black")
   const activeVariantLabel = activeVariant
     ? Object.entries(activeVariant.attributes || {}).map(([, v]) => String(v)).join(", ") || activeVariant.name || activeVariant.sku || ""
     : "";
@@ -255,93 +255,47 @@ export default function ProductDetailPage() {
         </span>
       </nav>
 
-      {/* Main Flipkart-Style 2-Section Split Container */}
+      {/* Main Flipkart-Style 2-Column Split Container (Tight & Compact, 0 Empty Space) */}
       <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 grid grid-cols-1 md:grid-cols-12 gap-5 lg:gap-6 shadow-xs">
-        {/* SECTION 1 (LEFT RED BOX): Product Showcase (Dual Images with Wishlist & Share) */}
-        <div className="md:col-span-7 flex flex-col justify-between gap-3">
-          {images.length >= 2 ? (
-            <div className="grid grid-cols-2 gap-2.5 relative">
-              <div className="aspect-[3/4] sm:aspect-[4/5] rounded-2xl border border-slate-200 bg-[#f8f9fa] sm:bg-white p-3 flex items-center justify-center overflow-hidden">
-                <img
-                  src={selectedImage || images[0] || PRODUCT_IMAGE_PLACEHOLDER}
-                  alt={product.name}
-                  onError={onProductImageError}
-                  className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-              <div className="aspect-[3/4] sm:aspect-[4/5] rounded-2xl border border-slate-200 bg-[#f8f9fa] sm:bg-white p-3 flex items-center justify-center overflow-hidden relative">
-                <img
-                  src={images[1] || images[0] || PRODUCT_IMAGE_PLACEHOLDER}
-                  alt={product.name}
-                  onError={onProductImageError}
-                  className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
-                />
-
-                {/* Floating Wishlist Heart & Share Buttons */}
-                <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
-                  <button
-                    type="button"
-                    onClick={handleToggleWishlist}
-                    className={`p-2 rounded-full shadow-md bg-white border border-slate-200 transition-colors ${
-                      isWished ? "text-red-500 hover:bg-red-50" : "text-slate-400 hover:text-slate-600"
-                    }`}
-                    title={isWished ? "Remove from wishlist" : "Add to wishlist"}
-                  >
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    className="p-2 rounded-full shadow-md bg-white border border-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
-                    title="Share product"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+        {/* Left Column: Product Image Gallery */}
+        <div className="md:col-span-6 flex flex-col gap-2.5">
+          <div className="relative w-full h-[320px] sm:h-[370px] rounded-xl border border-slate-200 bg-[#f8f9fa] sm:bg-white p-4 flex items-center justify-center overflow-hidden">
+            <img
+              src={selectedImage || images[0] || PRODUCT_IMAGE_PLACEHOLDER}
+              alt={product.name}
+              onError={onProductImageError}
+              className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
+            />
+            {/* Wishlist & Share icons in top-right */}
+            <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
+              <button
+                type="button"
+                onClick={handleToggleWishlist}
+                className={`p-2 rounded-full shadow-md bg-white border border-slate-200 transition-colors ${
+                  isWished ? "text-red-500 hover:bg-red-50" : "text-slate-400 hover:text-slate-600"
+                }`}
+                title={isWished ? "Remove from wishlist" : "Add to wishlist"}
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="p-2 rounded-full shadow-md bg-white border border-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                title="Share product"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+              </button>
             </div>
-          ) : (
-            <div className="relative aspect-square w-full rounded-2xl border border-slate-200 bg-[#f8f9fa] sm:bg-white p-4 flex items-center justify-center overflow-hidden">
-              <img
-                src={selectedImage || images[0] || PRODUCT_IMAGE_PLACEHOLDER}
-                alt={product.name}
-                onError={onProductImageError}
-                className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
-              />
-              <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
-                <button
-                  type="button"
-                  onClick={handleToggleWishlist}
-                  className={`p-2 rounded-full shadow-md bg-white border border-slate-200 transition-colors ${
-                    isWished ? "text-red-500 hover:bg-red-50" : "text-slate-400 hover:text-slate-600"
-                  }`}
-                  title={isWished ? "Remove from wishlist" : "Add to wishlist"}
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  className="p-2 rounded-full shadow-md bg-white border border-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
-                  title="Share product"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
 
-          {/* Thumbnail preview slider */}
-          {images.length > 2 && (
-            <div className="flex gap-2 overflow-x-auto pb-0.5 pt-1">
+          {/* Thumbnails below main image */}
+          {images.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-0.5">
               {images.map((img, idx) => (
                 <button
                   key={idx}
@@ -358,11 +312,11 @@ export default function ProductDetailPage() {
           )}
         </div>
 
-        {/* SECTION 2 (RIGHT RED BOX): Flipkart-Identical 4-Block Configuration */}
-        <div className="md:col-span-5 flex flex-col justify-between space-y-3">
+        {/* Right Column: Tightly Packed 4-Block Configuration (No vertical gaps, no horizontal holes) */}
+        <div className="md:col-span-6 flex flex-col gap-3">
           {/* Block 1: Top Brand / Product Ad Strip with Thumbnail */}
-          <div className="rounded-xl border border-slate-200 bg-white p-3 flex items-center justify-between shadow-2xs relative overflow-hidden">
-            <div className="flex items-center gap-2.5">
+          <div className="rounded-xl border border-slate-200 bg-white p-2.5 sm:p-3 flex items-center justify-between shadow-2xs">
+            <div className="flex items-center gap-2">
               <span className="text-xs font-black text-[#212121] tracking-wider uppercase">
                 {product.brand || "BOLTT"}
               </span>
@@ -377,7 +331,7 @@ export default function ProductDetailPage() {
                 src={selectedImage || images[0] || PRODUCT_IMAGE_PLACEHOLDER}
                 alt=""
                 onError={onProductImageError}
-                className="w-8 h-10 object-contain"
+                className="w-8 h-9 object-contain"
               />
               <span className="text-3xs text-slate-400 border border-slate-200 rounded px-1 self-start font-medium">Ad</span>
             </div>
@@ -404,7 +358,7 @@ export default function ProductDetailPage() {
                         setSelectedVariantId(v._id);
                         if (v.image || images[idx]) setSelectedImage(v.image || images[idx]);
                       }}
-                      className={`w-12 h-16 sm:w-14 sm:h-18 rounded-lg p-1 bg-white flex flex-col items-center justify-center transition-all ${
+                      className={`w-14 h-18 rounded-lg p-1 bg-white flex flex-col items-center justify-center transition-all ${
                         isSelected
                           ? "border-2 border-[#212121] shadow-xs ring-1 ring-[#212121]/15"
                           : "border border-[#e0e0e0] hover:border-slate-400"
@@ -419,14 +373,14 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          {/* Block 3: Variant (Flipkart-style Compact Spec + Discount + Price Cards) */}
+          {/* Block 3: Variant (Fills row evenly via grid-cols-2, no empty gap on the right) */}
           {variants.length > 1 && (
             <div className="flex flex-col gap-1.5">
               <div className="text-xs font-normal text-[#878787]">
                 Variant: <span className="font-bold text-[#212121]">{activeVariantLabel}</span>
               </div>
 
-              <div className="flex items-center gap-2.5 flex-wrap">
+              <div className={`grid ${variants.length > 2 ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-2"} gap-2.5`}>
                 {variants.map((v) => {
                   const isSelected = String(v._id) === String(selectedVariantId);
                   const vLabel = Object.entries(v.attributes || {}).map(([, val]) => String(val)).join(" + ") || v.name || v.sku;
@@ -442,7 +396,7 @@ export default function ProductDetailPage() {
                         setSelectedVariantId(v._id);
                         if (v.image) setSelectedImage(v.image);
                       }}
-                      className={`w-32 sm:w-36 rounded-lg p-2.5 text-left transition-all flex flex-col justify-between shrink-0 ${
+                      className={`w-full rounded-lg p-2.5 sm:p-3 text-left transition-all flex flex-col justify-between ${
                         isSelected
                           ? "border-2 border-[#212121] bg-white shadow-2xs"
                           : "border border-[#e0e0e0] hover:border-slate-400 bg-white"
@@ -463,7 +417,7 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          {/* Block 4: Bottom Action Box with Title, In-line Quantity, Cart Icon, EMI Button, and Yellow Buy Now */}
+          {/* Block 4: Bottom Action Box */}
           <div className="border border-[#e0e0e0] rounded-xl p-3 bg-white shadow-2xs">
             <div className="flex items-center justify-between gap-2 mb-2.5">
               <h4 className="text-xs sm:text-sm font-bold text-[#212121] truncate">
