@@ -146,14 +146,80 @@ const Navbar = () => {
 
           {/* Right Desktop Nav Links */}
           <nav className="ml-auto hidden items-center gap-5 lg:flex" aria-label="Main navigation">
-            {/* Login / User Dropdown */}
+            {/* Cart Link */}
+            <Link
+              to="/cart"
+              className="flex items-center gap-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 px-3 py-1.5 rounded-md hover:bg-white/10"
+            >
+              <div className="relative">
+                <IconCart size={20} />
+                {cart.count > 0 && (
+                  <span
+                    key={cart.count}
+                    className="absolute -right-2 -top-2 grid h-4 w-4 animate-scale-in place-items-center rounded-full bg-yellow-400 text-[10px] font-bold text-ink-900"
+                  >
+                    {cart.count}
+                  </span>
+                )}
+              </div>
+              <span>Cart</span>
+            </Link>
+
+            {/* Become a Seller / More Menu */}
+            <div className="relative" ref={moreRef}>
+              <button
+                type="button"
+                onClick={() => setMoreDropdownOpen((open) => !open)}
+                className="flex items-center gap-1 text-sm font-semibold text-white hover:opacity-90 px-3 py-1.5 rounded-md hover:bg-white/10"
+              >
+                <span>More</span>
+                <IconChevron size={14} />
+              </button>
+
+              {moreDropdownOpen && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-52 animate-scale-in rounded-md border border-ink-100 bg-white p-1.5 shadow-deep z-50 text-ink-800"
+                  onClick={() => setMoreDropdownOpen(false)}
+                >
+                  <Link
+                    to="/products"
+                    className="block rounded-md px-3 py-2 text-sm hover:bg-ink-50 hover:text-accent-500"
+                  >
+                    All Products
+                  </Link>
+                  <Link
+                    to="/page/about"
+                    className="block rounded-md px-3 py-2 text-sm hover:bg-ink-50 hover:text-accent-500"
+                  >
+                    About NexaMart
+                  </Link>
+                  <Link
+                    to="/page/contact"
+                    className="block rounded-md px-3 py-2 text-sm hover:bg-ink-50 hover:text-accent-500"
+                  >
+                    24x7 Customer Care
+                  </Link>
+                  <Link
+                    to="/page/sell"
+                    className="block rounded-md px-3 py-2 text-sm font-semibold text-accent-500 hover:bg-accent-50"
+                  >
+                    Become a Seller
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* User Profile / Login (Positioned on the side) */}
             <div className="relative" ref={loginRef}>
               {user ? (
                 <button
                   type="button"
                   onClick={() => setLoginDropdownOpen((open) => !open)}
-                  className="flex items-center gap-1.5 rounded bg-white px-4 py-1.5 text-sm font-bold text-accent-500 shadow-sm transition-colors hover:bg-yellow-300 hover:text-ink-900"
+                  className="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 text-sm font-semibold text-white transition-colors hover:bg-white/15"
                 >
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-bold text-accent-500 uppercase shadow-xs">
+                    {user.name.charAt(0)}
+                  </div>
                   <span>{user.name.split(" ")[0]}</span>
                   <IconChevron size={14} />
                 </button>
@@ -161,10 +227,9 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   onMouseEnter={() => setLoginDropdownOpen(true)}
-                  className="flex items-center gap-1.5 rounded bg-white px-6 py-1.5 text-sm font-bold text-accent-500 shadow-sm transition-colors hover:bg-yellow-300 hover:text-ink-900"
+                  className="flex items-center gap-1.5 rounded bg-white px-5 py-1.5 text-sm font-bold text-accent-500 shadow-sm transition-colors hover:bg-yellow-300 hover:text-ink-900"
                 >
                   Login
-                  <IconChevron size={14} />
                 </Link>
               )}
 
@@ -229,70 +294,6 @@ const Navbar = () => {
                       <IconLogout size={16} /> Logout
                     </button>
                   )}
-                </div>
-              )}
-            </div>
-
-            {/* Cart Link */}
-            <Link
-              to="/cart"
-              className="flex items-center gap-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            >
-              <div className="relative">
-                <IconCart size={20} />
-                {cart.count > 0 && (
-                  // Keyed by count to trigger CSS animation on quantity change
-                  <span
-                    key={cart.count}
-                    className="absolute -right-2 -top-2 grid h-4 w-4 animate-scale-in place-items-center rounded-full bg-yellow-400 text-[10px] font-bold text-ink-900"
-                  >
-                    {cart.count}
-                  </span>
-                )}
-              </div>
-              <span>Cart</span>
-            </Link>
-
-            {/* Become a Seller / More Menu */}
-            <div className="relative" ref={moreRef}>
-              <button
-                type="button"
-                onClick={() => setMoreDropdownOpen((open) => !open)}
-                className="flex items-center gap-1 text-sm font-semibold text-white hover:opacity-90"
-              >
-                <span>More</span>
-                <IconChevron size={14} />
-              </button>
-
-              {moreDropdownOpen && (
-                <div
-                  className="absolute right-0 top-full mt-2 w-52 animate-scale-in rounded-md border border-ink-100 bg-white p-1.5 shadow-deep z-50 text-ink-800"
-                  onClick={() => setMoreDropdownOpen(false)}
-                >
-                  <Link
-                    to="/products"
-                    className="block rounded-md px-3 py-2 text-sm hover:bg-ink-50 hover:text-accent-500"
-                  >
-                    All Products
-                  </Link>
-                  <Link
-                    to="/page/about"
-                    className="block rounded-md px-3 py-2 text-sm hover:bg-ink-50 hover:text-accent-500"
-                  >
-                    About NexaMart
-                  </Link>
-                  <Link
-                    to="/page/contact"
-                    className="block rounded-md px-3 py-2 text-sm hover:bg-ink-50 hover:text-accent-500"
-                  >
-                    24x7 Customer Care
-                  </Link>
-                  <Link
-                    to="/page/sell"
-                    className="block rounded-md px-3 py-2 text-sm font-semibold text-accent-500 hover:bg-accent-50"
-                  >
-                    Become a Seller
-                  </Link>
                 </div>
               )}
             </div>
