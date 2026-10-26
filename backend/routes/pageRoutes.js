@@ -1,25 +1,16 @@
-// Routes for CMS content pages.
-//   /api/pages         -> public (footer pages)
-//   /api/admin/pages   -> admin editor (login + admin required)
-
 import express from "express";
+import { listPages, getPage, adminListPages, savePage, createPage, deletePage } from "../controllers/pageController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
-import {
-  listPages,
-  getPage,
-  adminListPages,
-  savePage,
-  createPage,
-  deletePage,
-} from "../controllers/pageController.js";
 
-// ── Public router (mounted at /api/pages) ──────────────────────────
 const router = express.Router();
+
+// Public footer pages
 router.get("/", listPages);
 router.get("/:slug", getPage);
+
 export default router;
 
-// ── Admin router (mounted at /api/admin/pages) ─────────────────────
+// Admin CMS page management
 export const adminPageRouter = express.Router();
 adminPageRouter.use(protect, admin);
 adminPageRouter.get("/", adminListPages);
