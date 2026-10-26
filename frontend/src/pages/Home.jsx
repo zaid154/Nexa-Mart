@@ -1,452 +1,171 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/client.js";
-import { SkeletonHome } from "../components/Skeleton.jsx";
-import ErrorState from "../components/ErrorState.jsx";
-import { formatINR } from "../utils/format.js";
-import { onProductImageError } from "../utils/productImage.js";
-import { useSettings, useCommerce } from "../context/SettingsContext.jsx";
-import { IconBox, IconChevron, IconTag, iconByName } from "../components/Icons.jsx";
+import ProductCard from "../components/ProductCard.jsx";
 
-// Named gradients a hero slide can use. The admin picks one by name; anything
-// unknown falls back to the brand blue.
-const SLIDE_THEMES = {
-  blue: "from-[#1a4fa8] via-[#2874f0] to-[#1e5fd0]",
-  dark: "from-[#0f1c2e] via-[#172337] to-[#1a4fa8]",
-  orange: "from-[#e2560f] via-[#fb641b] to-[#ff9f00]",
-  green: "from-[#123524] via-[#1a4fa8] to-[#2874f0]",
-};
-const themeOf = (name) => SLIDE_THEMES[name] || SLIDE_THEMES.blue;
+const CATEGORIES = [
+  { name: "Smartphones", icon: "📱", path: "/products?category=Smartphones" },
+  { name: "Laptops", icon: "💻", path: "/products?category=Laptops" },
+  { name: "Audio", icon: "🎧", path: "/products?category=Audio" },
+  { name: "Smartwatches", icon: "⌚", path: "/products?category=Smartwatches" },
+  { name: "Accessories", icon: "🔌", path: "/products?category=Accessories" },
+  { name: "Tablets", icon: "📟", path: "/products?category=Tablets" },
+];
 
-// ── 1. Top category icon strip ───────────────────────────────────────────
-const CategoryStrip = ({ tiles }) => {
-  if (tiles.length === 0) {
-    return null;
-  }
+export default function Home() {
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [newArrivals, setNewArrivals] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+
+    Promise.all([
+      api.get("/products", { params: { limit: 8, sort: "rating" } }),
+      api.get("/products", { params: { limit: 4, sort: "newest" } }),
+    ])
+      .then(([featRes, newRes]) => {
+        if (!isMounted) return;
+        setFeaturedProducts(featRes.data?.products || []);
+        setNewArrivals(newRes.data?.products || []);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
-    <div className="rounded-md sm:rounded-lg bg-white p-2.5 sm:p-3 shadow-card">
-      <div className="rail-scroll flex items-center justify-start sm:justify-between gap-3 sm:gap-4 overflow-x-auto px-1 py-1">
-        {tiles.map((cat, idx) => (
-          <Link
-            key={cat.name}
-            to={cat.link || "/products"}
-            className="group flex min-w-[76px] sm:min-w-[88px] shrink-0 flex-col items-center gap-2 rounded-lg p-1.5 transition-all duration-200 active:scale-95"
-          >
-            <span className="grid h-14 w-14 sm:h-16 sm:w-16 place-items-center overflow-hidden rounded-full sm:rounded-2xl border border-ink-100/90 bg-ink-50/50 p-1.5 shadow-2xs transition-all duration-300 group-hover:border-accent-500 group-hover:bg-white group-hover:shadow-md group-hover:scale-105">
-              <img
-                src={cat.image}
-                alt={cat.name}
-                loading={idx < 4 ? "eager" : "lazy"}
-                decoding="async"
-                fetchpriority={idx < 4 ? "high" : "low"}
-                onError={onProductImageError}
-                className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
-              />
-            </span>
-            <span className="whitespace-nowrap text-[11px] sm:text-xs font-semibold text-ink-800 transition-colors group-hover:text-accent-500">
-              {cat.name}
-            </span>
-          </Link>
+    <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-8">
+      {/* 1. Category Quick Strip */}
+      <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs">
+        <div className="flex items-center justify-around gap-4 overflow-x-auto pb-1">
+          {CATEGORIES.map((cat) => (
+            <Link
+              key={cat.name}
+              to={cat.path}
+              className="flex flex-col items-center gap-2 group min-w-[70px] text-center"
+            >
+              <span className="w-14 h-14 rounded-full bg-slate-50 border border-slate-200 group-hover:border-blue-600 group-hover:bg-blue-50 flex items-center justify-center text-2xl transition-all group-hover:scale-105 shadow-2xs">
+                {cat.icon}
+              </span>
+              <span className="text-xs font-semibold text-slate-700 group-hover:text-blue-600 transition-colors">
+                {cat.name}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* 2. Hero Deals Banner */}
+      <div className="relative rounded-xl overflow-hidden bg-gradient-to-r from-[#172337] via-[#1a4fa8] to-[#2874f0] text-white p-8 sm:p-12 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="max-w-lg flex flex-col gap-3">
+          <span className="inline-block self-start text-xs font-bold tracking-wider uppercase bg-white/20 backdrop-blur-xs px-3 py-1 rounded-full text-white">
+            Grand Electronics Sale
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight">
+            Next-Gen Tech, Unbeatable Prices.
+          </h1>
+          <p className="text-sm text-blue-100 leading-relaxed">
+            Upgrade your setup with authentic smartphones, laptops, audio gear, and wearables with verified warranty.
+          </p>
+          <div className="pt-2 flex items-center gap-3">
+            <Link
+              to="/products"
+              className="px-6 py-3 bg-[#fb641b] hover:bg-[#e85a14] text-white font-bold text-xs uppercase tracking-wider rounded-md shadow-md transition-colors"
+            >
+              Explore Deals →
+            </Link>
+            <Link
+              to="/products?category=Smartphones"
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider rounded-md border border-white/20 transition-colors"
+            >
+              Smartphones
+            </Link>
+          </div>
+        </div>
+
+        <div className="text-8xl select-none hidden md:block opacity-90 animate-pulse">
+          ⚡
+        </div>
+      </div>
+
+      {/* 3. Value Props Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {[
+          { icon: "🚀", title: "Free Fast Delivery", desc: "On all orders above ₹5,000" },
+          { icon: "🛡️", title: "100% Genuine Tech", desc: "Direct manufacturer warranty" },
+          { icon: "🔄", title: "7-Day Easy Return", desc: "Hassle-free replacement policy" },
+          { icon: "💳", title: "Flexible Payments", desc: "Razorpay UPI, Cards & COD" },
+        ].map((prop, i) => (
+          <div key={i} className="bg-white rounded-lg border border-slate-200 p-4 shadow-xs flex items-center gap-3">
+            <span className="text-2xl">{prop.icon}</span>
+            <div>
+              <p className="text-xs font-bold text-slate-800">{prop.title}</p>
+              <p className="text-2xs text-slate-500 mt-0.5">{prop.desc}</p>
+            </div>
+          </div>
         ))}
       </div>
-    </div>
-  );
-};
 
-// ── 2. Full-width hero carousel ──────────────────────────────────────────
-const HeroCarousel = ({ slides }) => {
-  const [active, setActive] = useState(0);
-  const total = slides.length;
-
-  useEffect(() => {
-    if (total < 2) {
-      return undefined;
-    }
-    const timer = setInterval(() => setActive((prev) => (prev + 1) % total), 5000);
-    return () => clearInterval(timer);
-  }, [total]);
-
-  // Keep the index valid if the admin removes slides while the page is open.
-  useEffect(() => {
-    if (active >= total) {
-      setActive(0);
-    }
-  }, [active, total]);
-
-  if (total === 0) {
-    return null;
-  }
-
-  const go = (step) => setActive((prev) => (prev + step + total) % total);
-
-  return (
-    <div className="group relative overflow-hidden rounded-sm bg-white shadow-card">
-      <div className="relative h-[190px] sm:h-[240px] lg:h-[280px]">
-        {slides.map((slide, idx) => {
-          const gradient = themeOf(slide.theme);
-          return (
-            <Link
-              key={`${slide.title}-${idx}`}
-              to={slide.link || "/products"}
-              aria-hidden={idx !== active}
-              tabIndex={idx === active ? 0 : -1}
-              className={`absolute inset-0 flex items-center bg-gradient-to-r ${gradient} transition-opacity duration-700 ${
-                idx === active ? "opacity-100" : "pointer-events-none opacity-0"
-              }`}
-            >
-              {slide.image && (
-                <span className="absolute inset-y-0 right-0 w-[55%] sm:w-[46%]">
-                  <img
-                    src={slide.image}
-                    alt=""
-                    loading={idx === 0 ? "eager" : "lazy"}
-                    decoding="async"
-                    fetchpriority={idx === 0 ? "high" : "low"}
-                    className="h-full w-full object-cover opacity-70 mix-blend-luminosity"
-                  />
-                  <span
-                    className={`absolute inset-0 bg-gradient-to-r ${gradient} opacity-70`}
-                    style={{
-                      maskImage: "linear-gradient(to right, black 0%, transparent 70%)",
-                      WebkitMaskImage: "linear-gradient(to right, black 0%, transparent 70%)",
-                    }}
-                  />
-                </span>
-              )}
-
-              <div className="relative z-10 max-w-[75%] sm:max-w-[62%] px-4 text-white sm:px-10">
-                {slide.badge && (
-                  <span className="inline-block rounded-sm bg-yellow-400 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-ink-900 sm:text-[11px]">
-                    {slide.badge}
-                  </span>
-                )}
-                <h2 className="mt-1.5 sm:mt-2.5 text-base font-bold leading-tight line-clamp-2 sm:text-3xl sm:line-clamp-none lg:text-4xl">
-                  {slide.title}
-                </h2>
-                {slide.price && (
-                  <p className="mt-0.5 sm:mt-1 text-sm font-bold text-yellow-300 sm:text-2xl">{slide.price}</p>
-                )}
-                {slide.note && (
-                  <p className="mt-1 hidden text-xs text-white/85 sm:block">{slide.note}</p>
-                )}
-                <span className="mt-2 sm:mt-3.5 inline-flex items-center gap-1 rounded-sm bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-ink-900 shadow-sm sm:px-4 sm:py-2 sm:text-sm">
-                  Shop Now
-                </span>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-
-      {total > 1 && (
-        <>
-          <button
-            type="button"
-            onClick={() => go(-1)}
-            aria-label="Previous banner"
-            className="absolute left-0 top-1/2 z-20 hidden h-20 w-9 -translate-y-1/2 place-items-center bg-white/90 text-ink-700 shadow-pop transition-opacity group-hover:grid"
+      {/* 4. Featured Deals Grid */}
+      <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-xs flex flex-col gap-5">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Top Rated Electronics</h2>
+            <p className="text-xs text-slate-500">Hand-picked bestsellers with top customer ratings</p>
+          </div>
+          <Link
+            to="/products?sort=rating"
+            className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
           >
-            <IconChevron size={20} className="rotate-90" />
-          </button>
-          <button
-            type="button"
-            onClick={() => go(1)}
-            aria-label="Next banner"
-            className="absolute right-0 top-1/2 z-20 hidden h-20 w-9 -translate-y-1/2 place-items-center bg-white/90 text-ink-700 shadow-pop transition-opacity group-hover:grid"
-          >
-            <IconChevron size={20} className="-rotate-90" />
-          </button>
+            View All →
+          </Link>
+        </div>
 
-          <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-1.5">
-            {slides.map((slide, idx) => (
-              <button
-                key={`dot-${slide.title}-${idx}`}
-                type="button"
-                onClick={() => setActive(idx)}
-                aria-label={`Go to banner ${idx + 1}`}
-                className={`h-1.5 rounded-full transition-all ${
-                  idx === active ? "w-6 bg-white" : "w-1.5 bg-white/50"
-                }`}
-              />
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-64 bg-slate-50 rounded-lg animate-pulse border border-slate-100" />
             ))}
           </div>
-        </>
-      )}
-    </div>
-  );
-};
-
-// ── 3. Small promo tiles under the hero ──────────────────────────────────
-const PromoTiles = ({ tiles }) => {
-  if (tiles.length === 0) {
-    return null;
-  }
-  return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      {tiles.map((tile) => (
-        <Link
-          key={tile.title}
-          to={tile.link || "/products"}
-          className="relative flex h-[130px] items-center overflow-hidden rounded-sm bg-footer text-white shadow-card transition-shadow hover:shadow-pop"
-        >
-          {tile.image && (
-            <img
-              src={tile.image}
-              alt=""
-              loading="lazy"
-              onError={onProductImageError}
-              className="absolute inset-y-0 right-0 h-full w-1/2 object-cover opacity-60"
-            />
-          )}
-          <div className="relative z-10 px-5">
-            <h3 className="text-base font-bold sm:text-lg">{tile.title}</h3>
-            {tile.subtitle && (
-              <p className="mt-0.5 text-sm font-semibold text-yellow-300">{tile.subtitle}</p>
-            )}
-            <span className="mt-2 inline-block text-xs font-semibold uppercase tracking-wide text-white/80">
-              Explore &rsaquo;
-            </span>
-          </div>
-        </Link>
-      ))}
-    </div>
-  );
-};
-
-// ── 4. Coupon strip ──────────────────────────────────────────────────────
-const CouponBanner = ({ strip }) => {
-  if (!strip?.enabled) {
-    return null;
-  }
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm bg-promo-band px-5 py-3.5 text-white shadow-card">
-      <div className="flex items-center gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-full bg-yellow-400 text-ink-900">
-          <IconTag size={19} />
-        </span>
-        <div>
-          <p className="text-sm font-bold sm:text-base">{strip.text}</p>
-          {strip.code && (
-            <p className="text-xs text-white/80">
-              Apply code <span className="font-bold text-yellow-300">{strip.code}</span> at checkout
-            </p>
-          )}
-        </div>
-      </div>
-      {strip.ctaLabel && (
-        <Link
-          to={strip.ctaLink || "/products"}
-          className="rounded-sm bg-yellow-400 px-4 py-1.5 text-xs font-bold text-ink-900 shadow hover:bg-yellow-300"
-        >
-          {strip.ctaLabel}
-        </Link>
-      )}
-    </div>
-  );
-};
-
-// ── 5. Deal card used inside the horizontal rails ────────────────────────
-const DealCard = ({ product, assuredMinRating }) => {
-  const discount =
-    product.mrp > product.price
-      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
-      : 0;
-
-  return (
-    <Link
-      to={`/products/${product._id}`}
-      className="group flex w-[165px] shrink-0 flex-col rounded-sm bg-white p-3 transition-shadow hover:shadow-pop sm:w-[185px]"
-    >
-      <div className="grid aspect-square place-items-center overflow-hidden bg-white">
-        {product.images?.[0] ? (
-          <img
-            src={product.media?.[0]?.url || product.images[0]}
-            srcSet={product.media?.[0]?.srcset || undefined}
-            sizes={product.media?.[0]?.srcset ? "185px" : undefined}
-            alt={product.name}
-            width={product.media?.[0]?.width || 400}
-            height={product.media?.[0]?.height || 400}
-            loading="lazy"
-            decoding="async"
-            onError={onProductImageError}
-            className="h-full w-full object-contain p-1 transition-transform duration-300 group-hover:scale-105"
-          />
         ) : (
-          <IconBox size={40} className="text-ink-200" />
-        )}
-      </div>
-      <div className="mt-2.5">
-        <span className="block text-[10px] font-bold uppercase tracking-wide text-ink-400">
-          {product.brand}
-        </span>
-        <h4 className="line-clamp-2 min-h-[36px] text-xs font-semibold leading-snug text-ink-800 group-hover:text-accent-500">
-          {product.name}
-        </h4>
-        {product.rating > 0 && (
-          <div className="mt-1 flex items-center gap-1">
-            <span className="rating-pill">{product.rating.toFixed(1)} ★</span>
-            <span className="text-[10px] text-ink-400">({product.numReviews})</span>
-            {product.rating >= assuredMinRating && (
-              <span className="text-[10px] font-bold uppercase text-accent-500">Assured</span>
-            )}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {featuredProducts.map((p) => (
+              <ProductCard key={p._id} product={p} />
+            ))}
           </div>
         )}
-        <div className="price-row mt-1.5 gap-1">
-          <span className="text-sm font-bold text-ink-900">{formatINR(product.price)}</span>
-          {discount > 0 && (
-            <>
-              <span className="price-mrp text-[11px]">{formatINR(product.mrp)}</span>
-              <span className="price-off text-[11px]">{discount}% off</span>
-            </>
-          )}
-        </div>
       </div>
-    </Link>
-  );
-};
 
-// ── 6. White card section with a horizontal product rail ─────────────────
-const DealRowSkeleton = ({ title }) => (
-  <section className="overflow-hidden rounded-sm bg-white shadow-card" aria-label="Loading collection">
-    <div className="flex items-center justify-between border-b border-ink-100 px-4 py-3 sm:px-5">
-      <h3 className="text-base font-bold text-ink-900 sm:text-lg">{title}</h3>
-      <div className="skeleton h-6 w-16 rounded-sm" />
-    </div>
-    <div className="rail-scroll flex gap-2.5 overflow-x-auto p-3 sm:p-4">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="flex w-[165px] sm:w-[185px] shrink-0 flex-col gap-2 rounded-sm bg-white p-2">
-          <div className="skeleton aspect-square w-full rounded-sm" />
-          <div className="skeleton h-3 w-1/3" />
-          <div className="skeleton h-3.5 w-full" />
-          <div className="skeleton h-3.5 w-2/3" />
-          <div className="skeleton mt-1 h-4 w-1/2" />
-        </div>
-      ))}
-    </div>
-  </section>
-);
+      {/* 5. New Arrivals Showcase */}
+      {newArrivals.length > 0 && (
+        <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-xs flex flex-col gap-5">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">New Arrivals</h2>
+              <p className="text-xs text-slate-500">Fresh additions to our electronics catalogue</p>
+            </div>
+            <Link
+              to="/products?sort=newest"
+              className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+            >
+              Browse New →
+            </Link>
+          </div>
 
-const DealRow = ({ title, to, products, assuredMinRating }) => {
-  if (!products || products.length === 0) {
-    return null;
-  }
-  return (
-    <section className="overflow-hidden rounded-sm bg-white shadow-card">
-      <div className="flex items-center justify-between border-b border-ink-100 px-4 py-3 sm:px-5">
-        <h3 className="text-base font-bold text-ink-900 sm:text-lg">{title}</h3>
-        {to && (
-          <Link
-            to={to}
-            className="rounded-sm bg-accent-500 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-colors hover:bg-accent-600"
-          >
-            View All
-          </Link>
-        )}
-      </div>
-      <div className="rail-scroll flex gap-2.5 overflow-x-auto p-3 sm:p-4">
-        {products.map((p) => (
-          <DealCard key={p._id} product={p} assuredMinRating={assuredMinRating} />
-        ))}
-      </div>
-    </section>
-  );
-};
-
-// Build the catalog link a rail's "View All" button points at.
-const collectionLink = (collection) => {
-  if (collection.featured) {
-    return "/products?featured=true";
-  }
-  if (collection.category) {
-    return `/products?category=${encodeURIComponent(collection.category)}`;
-  }
-  return `/products?sort=${collection.sort || "newest"}`;
-};
-
-const Home = () => {
-  const { settings } = useSettings();
-  const commerce = useCommerce();
-  const homepage = settings.homepage;
-
-  // Products keyed by collection title, so a rail renders as soon as its own
-  // request comes back.
-  const [collections, setCollections] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [reloadKey, setReloadKey] = useState(0);
-
-  const configuredCollections = homepage.collections || [];
-
-  useEffect(() => {
-    // Fetch all configured product collections in a single request
-    const controller = new AbortController();
-
-    setLoading(true);
-    setError("");
-
-    api
-      .get("/products/collections", { signal: controller.signal })
-      .then((res) => setCollections(res.data?.collections || {}))
-      .catch((err) => {
-        if (err.code !== "ERR_CANCELED") {
-          setError(err.message || "Failed to load products");
-        }
-      })
-      .finally(() => setLoading(false));
-
-    return () => controller.abort();
-  }, [reloadKey]);
-
-  return (
-    <div className="flex animate-fade-in flex-col gap-3">
-      <CategoryStrip tiles={homepage.categoryTiles || []} />
-      <HeroCarousel slides={homepage.heroSlides || []} />
-      <PromoTiles tiles={homepage.promoTiles || []} />
-      <CouponBanner strip={homepage.couponStrip} />
-
-      {error && (
-        <ErrorState
-          title="Error Loading Products"
-          message={error}
-          onRetry={() => setReloadKey((k) => k + 1)}
-        />
-      )}
-
-      {configuredCollections.map((col) => {
-        if (loading) {
-          return <DealRowSkeleton key={col.title} title={col.title} />;
-        }
-        return (
-          <DealRow
-            key={col.title}
-            title={col.title}
-            to={collectionLink(col)}
-            products={collections[col.title]}
-            assuredMinRating={commerce.assuredMinRating}
-          />
-        );
-      })}
-
-      {(homepage.trustBadges || []).length > 0 && (
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-ink-100 bg-ink-100 lg:grid-cols-4">
-          {homepage.trustBadges.map((item) => {
-            const Icon = iconByName(item.icon);
-            return (
-              <div key={item.title} className="flex items-center gap-3 bg-white px-4 py-3">
-                <span className="shrink-0 text-accent-500">
-                  <Icon size={24} />
-                </span>
-                <div>
-                  <strong className="block text-xs font-bold text-ink-900">{item.title}</strong>
-                  <span className="block text-[11px] text-ink-400">{item.subtitle}</span>
-                </div>
-              </div>
-            );
-          })}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {newArrivals.map((p) => (
+              <ProductCard key={p._id} product={p} />
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
-};
-
-export default Home;
+}

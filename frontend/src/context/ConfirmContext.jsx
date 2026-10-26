@@ -1,154 +1,55 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useState, useCallback, useRef } from "react";
 
-// Modal confirmation dialog provider exposing a Promise-based confirm API
-const ConfirmContext = createContext(null);
-
+const ConfirmContext = createContext(() => Promise.resolve(true));
 export const useConfirm = () => useContext(ConfirmContext);
 
-const defaultOptions = {
-  title: "Are you sure?",
-  message: "",
-  confirmLabel: "Confirm",
-  cancelLabel: "Cancel",
-  tone: "danger",
-};
-
-const FOCUSABLE = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
 export const ConfirmProvider = ({ children }) => {
-  const [popup, setPopup] = useState(null);
+  const [modal, setModal] = useState(null);
   const resolveRef = useRef(null);
-  const dialogRef = useRef(null);
-  const confirmBtnRef = useRef(null);
-  const cancelBtnRef = useRef(null);
-  const lastFocusedRef = useRef(null);
 
   const confirm = useCallback((options) => {
-    if (!options) {
-      options = {};
-    }
-    const chosenOptions = typeof options === "string" ? { message: options } : options;
-
-    if (resolveRef.current) {
-      resolveRef.current(false);
-      resolveRef.current = null;
-    }
-
-    lastFocusedRef.current = document.activeElement;
-    setPopup({ ...defaultOptions, ...chosenOptions });
+    const opts = typeof options === "string" ? { message: options } : options || {};
+    setModal({
+      title: opts.title || "Confirm Action",
+      message: opts.message || "Are you sure you want to proceed?",
+      confirmLabel: opts.confirmLabel || "Confirm",
+      cancelLabel: opts.cancelLabel || "Cancel",
+    });
     return new Promise((resolve) => {
       resolveRef.current = resolve;
     });
   }, []);
 
-  const close = useCallback((result) => {
-    setPopup(null);
+  const handleClose = (result) => {
+    setModal(null);
     if (resolveRef.current) {
       resolveRef.current(result);
       resolveRef.current = null;
     }
-    const last = lastFocusedRef.current;
-    lastFocusedRef.current = null;
-    if (last && typeof last.focus === "function") {
-      last.focus();
-    }
-  }, []);
-
-  // Set initial focus on open
-  useEffect(() => {
-    if (!popup) {
-      return;
-    }
-    if (popup.tone === "danger") {
-      cancelBtnRef.current?.focus();
-    } else {
-      confirmBtnRef.current?.focus();
-    }
-  }, [popup]);
-
-  // Trap keyboard focus and handle Escape to dismiss
-  useEffect(() => {
-    if (!popup) {
-      return;
-    }
-    const handleKey = (event) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        close(false);
-        return;
-      }
-      if (event.key !== "Tab") {
-        return;
-      }
-      const focusables = dialogRef.current?.querySelectorAll(FOCUSABLE);
-      if (!focusables || focusables.length === 0) {
-        return;
-      }
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [popup, close]);
-
-  // Stop the page behind the popup from scrolling.
-  useEffect(() => {
-    if (!popup) {
-      return;
-    }
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [popup]);
+  };
 
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
-      {popup && (
-        <div
-          className="fixed inset-0 z-[90] grid animate-fade-in place-items-center bg-ink-950/45 p-4 backdrop-blur-[2px]"
-          onClick={() => close(false)}
-        >
-          <div
-            ref={dialogRef}
-            className="w-full max-w-sm animate-scale-in rounded-2xl bg-white p-6 shadow-deep"
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="confirm-title"
-            aria-describedby={popup.message ? "confirm-message" : undefined}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h3 className="text-lg font-bold text-ink-900" id="confirm-title">{popup.title}</h3>
-            {popup.message && (
-              <p className="mt-2 text-sm leading-relaxed text-ink-500" id="confirm-message">
-                {popup.message}
-              </p>
-            )}
-            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      {modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-lg bg-white p-5 shadow-xl border border-slate-200">
+            <h3 className="text-base font-semibold text-slate-900">{modal.title}</h3>
+            <p className="mt-2 text-sm text-slate-600">{modal.message}</p>
+            <div className="mt-5 flex justify-end gap-3">
               <button
                 type="button"
-                ref={cancelBtnRef}
-                className="btn btn-ghost w-full sm:w-auto"
-                onClick={() => close(false)}
+                onClick={() => handleClose(false)}
+                className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors"
               >
-                {popup.cancelLabel}
+                {modal.cancelLabel}
               </button>
               <button
                 type="button"
-                ref={confirmBtnRef}
-                className={`btn w-full sm:w-auto ${popup.tone === "danger" ? "btn-danger" : ""}`}
-                onClick={() => close(true)}
+                onClick={() => handleClose(true)}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
               >
-                {popup.confirmLabel}
+                {modal.confirmLabel}
               </button>
             </div>
           </div>

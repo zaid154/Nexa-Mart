@@ -7,13 +7,9 @@ import { CartProvider } from "./context/CartContext.jsx";
 import { ToastProvider } from "./context/ToastContext.jsx";
 import { ConfirmProvider } from "./context/ConfirmContext.jsx";
 import { SettingsProvider } from "./context/SettingsContext.jsx";
-import { CartDrawerProvider } from "./context/CartDrawerContext.jsx";
 import "./styles/index.css";
 
-// Find the root div in index.html and render our React app inside it
-const rootElement = document.getElementById("root");
-
-ReactDOM.createRoot(rootElement).render(
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <SettingsProvider>
@@ -21,9 +17,7 @@ ReactDOM.createRoot(rootElement).render(
           <ConfirmProvider>
             <AuthProvider>
               <CartProvider>
-                <CartDrawerProvider>
-                  <App />
-                </CartDrawerProvider>
+                <App />
               </CartProvider>
             </AuthProvider>
           </ConfirmProvider>

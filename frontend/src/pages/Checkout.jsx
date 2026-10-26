@@ -1,575 +1,319 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/client.js";
 import { useCart } from "../context/CartContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
-import PriceDetails from "../components/PriceDetails.jsx";
-import AddressForm from "../components/AddressForm.jsx";
-import CartQuantity from "../components/CartQuantity.jsx";
 import { formatINR } from "../utils/format.js";
-import { SkeletonCart } from "../components/Skeleton.jsx";
-import EmptyState from "../components/EmptyState.jsx";
-import { onProductImageError } from "../utils/productImage.js";
-import { useCommerce } from "../context/SettingsContext.jsx";
-import { calculateTotals, calculateSavings, deliveryWindowLabel } from "../utils/pricing.js";
-import { lineImage, variantLabel } from "../utils/variantMedia.js";
 import { payForOrder } from "../utils/payment.js";
-import {
-  EMPTY_ADDRESS,
-  formatAddressLine,
-  isAddressValid,
-  validateAddress,
-} from "../utils/address.js";
 
-// Reusable checkout section panel card
-const Panel = ({ title, subtitle, children, action }) => (
-  <section className="card">
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-3.5">
-      <div>
-        <h2 className="text-sm font-bold uppercase tracking-wide text-ink-900">{title}</h2>
-        {subtitle && <p className="mt-0.5 text-xs text-ink-400">{subtitle}</p>}
-      </div>
-      {action}
-    </header>
-    <div className="px-5 py-5">{children}</div>
-  </section>
-);
-
-// Checkout page: collects the address, payment method, and places the order.
-const Checkout = () => {
-  const { cart, loading, refresh } = useCart();
-  const { user, updateUser } = useAuth();
+export default function Checkout() {
+  const { cart, refresh } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const toast = useToast();
-  const commerce = useCommerce();
 
-  // A coupon the user already applied on the cart page, if they came from there.
-  const couponFromCart = location.state?.coupon || "";
+  const [address, setAddress] = useState({
+    name: user?.name || "",
+    phone: user?.phone || "",
+    line1: user?.address?.line1 || "",
+    city: user?.address?.city || "",
+    state: user?.address?.state || "",
+    postalCode: user?.address?.postalCode || "",
+  });
 
-  // The user's saved addresses (fall back to the single default one).
-  const savedAddresses = useMemo(() => {
-    if (user?.addresses?.length) {
-      return user.addresses;
-    }
-    return [user?.address].filter((a) => a && a.line1);
-  }, [user]);
-
-  // Default to saved default address or first available address
-  const defaultIdx = Math.max(
-    0,
-    savedAddresses.findIndex((a) => a.isDefault)
-  );
-
-  const [selectedIdx, setSelectedIdx] = useState(defaultIdx);
-  const [addingNew, setAddingNew] = useState(savedAddresses.length === 0);
-  const [newAddress, setNewAddress] = useState(EMPTY_ADDRESS);
-  const [saveToAccount, setSaveToAccount] = useState(true);
-  const [errors, setErrors] = useState({});
-
-  const [placing, setPlacing] = useState(false);
-  const [coupon, setCoupon] = useState(couponFromCart);
-  const [discountAmount, setDiscountAmount] = useState(0);
-  const [appliedCode, setAppliedCode] = useState("");
-  const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // The one address that will ship. Everything reads this.
-  const shippingAddress = addingNew ? newAddress : savedAddresses[selectedIdx] || EMPTY_ADDRESS;
+  const subtotal = cart?.subtotal || 0;
+  const shippingFee = subtotal >= 5000 || subtotal === 0 ? 0 : 99;
+  const total = subtotal + shippingFee;
 
-  // A one-time key for this checkout session. If the order request is sent
-  // twice (double-click, retry), the server returns the same order instead
-  // of creating a duplicate.
-  const [idempotencyKey] = useState(() => {
-    if (typeof crypto !== "undefined" && crypto.randomUUID) {
-      return crypto.randomUUID();
-    }
-    return `key-${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-  });
+  const handleChange = (e) => {
+    setAddress((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
-  // Ask the server to validate the coupon and tell us the discount in rupees.
-  // The server checks expiry, minimum order, and usage limits against the
-  // real cart, so the discount cannot be faked from the browser.
-  const applyCouponCode = async (rawCode) => {
-    const code = (rawCode || "").trim();
-    if (!code) {
+  const handlePlaceOrder = async (e) => {
+    e.preventDefault();
+
+    if (!address.name || !address.phone || !address.line1 || !address.city || !address.postalCode) {
+      toast.error("Please fill in all required delivery address fields.");
       return;
     }
-    setApplyingCoupon(true);
+
+    if (cart.items.length === 0) {
+      toast.error("Your cart is empty.");
+      navigate("/products");
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      const { data } = await api.post("/coupons/validate", { code });
-      setDiscountAmount(data.discount);
-      setAppliedCode(data.code);
-      toast.success(data.message || `Coupon ${data.code} applied`);
-    } catch (err) {
-      setDiscountAmount(0);
-      setAppliedCode("");
-      toast.error(err.message);
-    } finally {
-      setApplyingCoupon(false);
-    }
-  };
-
-  const removeCoupon = () => {
-    setDiscountAmount(0);
-    setAppliedCode("");
-    setCoupon("");
-  };
-
-  // Re-validate a coupon carried over from the cart page instead of trusting
-  // it, so the total here always matches what the order will charge.
-  const autoAppliedRef = useRef(false);
-  useEffect(() => {
-    if (autoAppliedRef.current || !couponFromCart) {
-      return;
-    }
-    if (loading || cart.items.length === 0) {
-      return;
-    }
-    autoAppliedRef.current = true;
-    applyCouponCode(couponFromCart);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [couponFromCart, loading, cart.items.length]);
-
-  // Reset applied coupon if subtotal changes to re-verify discount eligibility
-  const lastSubtotal = useRef(null);
-  useEffect(() => {
-    if (lastSubtotal.current !== null && lastSubtotal.current !== cart.subtotal) {
-      setDiscountAmount(0);
-      setAppliedCode("");
-    }
-    lastSubtotal.current = cart.subtotal;
-  }, [cart.subtotal]);
-
-  if (loading) {
-    return <SkeletonCart />;
-  }
-  if (cart.items.length === 0) {
-    return (
-      <EmptyState
-        eyebrow="Checkout"
-        title="Cart is empty"
-        message="Add items to your cart before checking out."
-        icon="cart"
-        action={
-          <button type="button" className="btn" onClick={() => navigate("/products")}>
-            Shop now
-          </button>
-        }
-      />
-    );
-  }
-
-  // All totals come from the admin's commerce rules — the same numbers the
-  // server will use when the order is placed.
-  const { shipping, tax, total } = calculateTotals({
-    subtotal: cart.subtotal,
-    discount: discountAmount,
-    commerce,
-  });
-  const savings = calculateSavings({
-    items: cart.items,
-    subtotal: cart.subtotal,
-    discount: discountAmount,
-    shipping,
-    commerce,
-  });
-
-  // Only the payment methods the admin currently offers.
-  const paymentOptions = [
-    {
-      value: "razorpay",
-      enabled: commerce.onlinePaymentEnabled !== false,
-      title: "UPI / Card / Net Banking",
-      desc: "Pay securely via Razorpay — UPI, Credit/Debit card, Net Banking, Wallets",
-    },
-    {
-      value: "cod",
-      enabled: commerce.codEnabled !== false,
-      title: "Cash on Delivery",
-      desc: "Pay when your order arrives at your doorstep",
-    },
-  ].filter((option) => option.enabled);
-
-  // If the admin turned off the method that is currently selected, fall back
-  // to the first one still on offer.
-  const activePayment = paymentOptions.some((o) => o.value === paymentMethod)
-    ? paymentMethod
-    : paymentOptions[0]?.value || "";
-
-  const pickSaved = (idx) => {
-    setSelectedIdx(idx);
-    setAddingNew(false);
-    setErrors({});
-  };
-
-  const startNewAddress = () => {
-    setAddingNew(true);
-    setNewAddress(EMPTY_ADDRESS);
-    setErrors({});
-  };
-
-  // Save valid addresses to user profile
-  const persistAddress = async (address) => {
-    try {
-      const keep = savedAddresses.filter(isAddressValid);
-      const { data } = await api.put("/auth/profile", {
-        addresses: [...keep, address],
-        address,
-      });
-      updateUser(data.user);
-    } catch {
-      toast.info("Could not save the address to your account — your order is unaffected.");
-    }
-  };
-
-  const placeOrder = async () => {
-    const found = validateAddress(shippingAddress);
-    if (Object.keys(found).length > 0) {
-      setErrors(found);
-      // Prompt user to complete missing address fields
-      if (!addingNew) {
-        setAddingNew(true);
-        setNewAddress({ ...EMPTY_ADDRESS, ...shippingAddress });
-        toast.error("Please complete this address before continuing");
-      } else {
-        toast.error("Please fix the highlighted fields");
-      }
-      return;
-    }
-    if (!activePayment) {
-      toast.error("No payment method is available right now.");
-      return;
-    }
-
-    setPlacing(true);
-    try {
-      if (addingNew && saveToAccount) {
-        await persistAddress(shippingAddress);
-      }
-
+      // 1. Create order on backend
       const { data } = await api.post("/orders", {
-        shippingAddress,
-        couponCode: discountAmount > 0 && appliedCode ? appliedCode : "",
-        paymentMethod: activePayment,
-        idempotencyKey,
+        shippingAddress: address,
+        paymentMethod,
       });
 
-      if (activePayment === "cod") {
+      const createdOrder = data.order || data;
+
+      // 2. Handle payment flow
+      if (paymentMethod === "cod") {
         await refresh();
-        toast.success("Order placed successfully");
-        navigate(`/orders/${data.order._id}?placed=1`);
+        toast.success("Order placed successfully!");
+        navigate(`/orders/${createdOrder._id}?placed=1`);
         return;
       }
 
+      // 3. Online payment via Razorpay
       await payForOrder({
-        order: data.order,
+        order: createdOrder,
         user,
-        address: shippingAddress,
-        onSuccess: async (order) => {
+        address,
+        onSuccess: async () => {
           await refresh();
-          toast.success("Payment successful");
-          navigate(`/orders/${order._id}?placed=1`);
+          toast.success("Payment completed successfully!");
+          navigate(`/orders/${createdOrder._id}?placed=1`);
         },
-        onFailure: (err) => toast.error(err.message),
+        onFailure: (err) => {
+          toast.error(err.message || "Payment verification failed");
+          navigate(`/orders/${createdOrder._id}`);
+        },
         onDismiss: () => {
-          toast.info("Payment cancelled — your order is saved and can be paid from My Orders.");
-          navigate(`/orders/${data.order._id}`);
+          toast.info("Payment window closed. Order saved in My Orders.");
+          navigate(`/orders/${createdOrder._id}`);
         },
       });
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || "Failed to place order");
     } finally {
-      setPlacing(false);
+      setIsSubmitting(false);
     }
   };
 
-  let submitLabel;
-  if (placing) {
-    submitLabel = "Processing...";
-  } else if (activePayment === "cod") {
-    submitLabel = `Place Order · ${formatINR(total)}`;
-  } else {
-    submitLabel = `Pay ${formatINR(total)}`;
+  if (!cart || cart.items.length === 0) {
+    return (
+      <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-lg border border-slate-200 text-center shadow-xs">
+        <h2 className="text-lg font-bold text-slate-800">Your Cart is Empty</h2>
+        <p className="text-xs text-slate-500 mt-1">Please add items to your cart before proceeding to checkout.</p>
+        <button
+          type="button"
+          onClick={() => navigate("/products")}
+          className="mt-4 px-5 py-2.5 bg-blue-600 text-white rounded-md text-xs font-semibold hover:bg-blue-700"
+        >
+          Explore Catalog
+        </button>
+      </div>
+    );
   }
 
-  const submitButton = (className) => (
-    <button
-      type="button"
-      onClick={placeOrder}
-      disabled={placing || !activePayment}
-      className={className}
-    >
-      {submitLabel}
-    </button>
-  );
-
   return (
-    <div className="animate-fade-in">
-      <div className="grid items-start gap-4 lg:grid-cols-[1fr_380px]">
-        {/* ── Left: what the shopper has to decide ── */}
-        <div className="flex flex-col gap-4">
-          <Panel
-            title="Delivery address"
-            subtitle={`Delivering to ${user?.name || "you"} · ${user?.email || ""}`}
-            action={
-              !addingNew && (
-                <button
-                  type="button"
-                  onClick={startNewAddress}
-                  className="text-xs font-bold uppercase tracking-wide text-accent-500 hover:underline"
-                >
-                  + Add new
-                </button>
-              )
-            }
-          >
-            {savedAddresses.length > 0 && !addingNew && (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {savedAddresses.map((a, idx) => {
-                  const picked = selectedIdx === idx;
-                  return (
-                    <label
-                      key={a._id || idx}
-                      className={`flex cursor-pointer gap-3 rounded-sm border p-4 transition-colors ${
-                        picked
-                          ? "border-accent-500 bg-accent-50/50"
-                          : "border-ink-200 hover:border-ink-400"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="saved-address"
-                        checked={picked}
-                        onChange={() => pickSaved(idx)}
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-accent-500"
-                      />
-                      <span className="min-w-0">
-                        <span className="flex flex-wrap items-center gap-2">
-                          <strong className="text-sm font-semibold text-ink-900">
-                            {a.fullName}
-                          </strong>
-                          {a.label && (
-                            <span className="rounded-sm bg-ink-100 px-1.5 py-0.5 text-2xs font-bold uppercase tracking-wide text-ink-500">
-                              {a.label}
-                            </span>
-                          )}
-                        </span>
-                        <span className="mt-1 block text-xs leading-relaxed text-ink-500">
-                          {formatAddressLine(a)}
-                        </span>
-                        <span className="mt-1 block text-xs font-medium text-ink-700">
-                          {a.phone}
-                        </span>
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Checkout</h1>
 
-            {addingNew && (
-              <>
-                <p className="mb-4 text-2xs font-semibold uppercase tracking-wide text-ink-400">
-                  <span className="text-danger">*</span> required
-                </p>
-
-                <AddressForm
-                  value={newAddress}
-                  onChange={(next) => {
-                    setNewAddress(next);
-                    setErrors({});
-                  }}
-                  errors={errors}
-                  disabled={placing}
-                />
-
-                <label className="mt-4 flex cursor-pointer items-center gap-2.5 text-sm text-ink-600">
-                  <input
-                    type="checkbox"
-                    checked={saveToAccount}
-                    onChange={(e) => setSaveToAccount(e.target.checked)}
-                    className="h-4 w-4 accent-accent-500"
-                  />
-                  Save this address to my account
-                </label>
-
-                {savedAddresses.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => pickSaved(selectedIdx)}
-                    className="mt-4 text-xs font-bold uppercase tracking-wide text-accent-500 hover:underline"
-                  >
-                    Use a saved address instead
-                  </button>
-                )}
-              </>
-            )}
-          </Panel>
-
-          <Panel title="Payment method">
-            {paymentOptions.length === 0 && (
-              <p className="text-sm text-ink-500">
-                No payment method is available right now. Please try again later.
-              </p>
-            )}
-            <div className="grid gap-3 sm:grid-cols-2">
-              {paymentOptions.map((option) => {
-                const picked = activePayment === option.value;
-                return (
-                  <label
-                    key={option.value}
-                    className={`flex cursor-pointer gap-3 rounded-sm border p-4 transition-colors ${
-                      picked
-                        ? "border-accent-500 bg-accent-50/50"
-                        : "border-ink-200 hover:border-ink-400"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="payment"
-                      value={option.value}
-                      checked={picked}
-                      onChange={() => setPaymentMethod(option.value)}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-accent-500"
-                    />
-                    <span className="min-w-0">
-                      <strong className="block text-sm font-medium text-ink-900">
-                        {option.title}
-                      </strong>
-                      <span className="mt-0.5 block text-xs leading-relaxed text-ink-500">
-                        {option.desc}
-                      </span>
-                    </span>
-                  </label>
-                );
-              })}
+      <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Delivery Address & Payment Method (8 cols) */}
+        <div className="lg:col-span-8 flex flex-col gap-6">
+          {/* Step 1: Delivery Address */}
+          <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
+            <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100 mb-5">
+              <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">
+                1
+              </span>
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-800">
+                Delivery Address
+              </h2>
             </div>
-          </Panel>
 
-          <Panel title="Coupon">
-            {appliedCode ? (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-success-edge bg-success-soft px-4 py-3">
-                <span className="text-sm text-ink-700">
-                  <strong className="font-bold text-success">{appliedCode}</strong> applied — you
-                  save {formatINR(discountAmount)}
-                </span>
-                <button
-                  type="button"
-                  onClick={removeCoupon}
-                  className="text-xs font-bold uppercase tracking-wide text-danger hover:underline"
-                >
-                  Remove
-                </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={address.name}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter full recipient name"
+                  className="w-full text-xs p-2.5 rounded border border-slate-300 focus:border-blue-600 focus:outline-none"
+                />
               </div>
-            ) : (
-              <div className="flex gap-2">
-                {/* min-w-0 or the flex child refuses to shrink and the input
-                    pushes the Apply button out of the panel. */}
-                <div className="min-w-0 flex-1">
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Mobile Phone *</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={address.phone}
+                  onChange={handleChange}
+                  required
+                  placeholder="10-digit mobile number"
+                  className="w-full text-xs p-2.5 rounded border border-slate-300 focus:border-blue-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Street Address *</label>
+                <input
+                  type="text"
+                  name="line1"
+                  value={address.line1}
+                  onChange={handleChange}
+                  required
+                  placeholder="House/Flat No., Building Name, Street Area"
+                  className="w-full text-xs p-2.5 rounded border border-slate-300 focus:border-blue-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">City / Town *</label>
+                <input
+                  type="text"
+                  name="city"
+                  value={address.city}
+                  onChange={handleChange}
+                  required
+                  placeholder="City"
+                  className="w-full text-xs p-2.5 rounded border border-slate-300 focus:border-blue-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">State</label>
                   <input
-                    className="input"
-                    placeholder="Coupon code (e.g. NEXA15)"
-                    value={coupon}
-                    onChange={(e) => setCoupon(e.target.value)}
-                    aria-label="Coupon code"
+                    type="text"
+                    name="state"
+                    value={address.state}
+                    onChange={handleChange}
+                    placeholder="State"
+                    className="w-full text-xs p-2.5 rounded border border-slate-300 focus:border-blue-600 focus:outline-none"
                   />
                 </div>
-                <button
-                  type="button"
-                  className="btn btn-outline shrink-0"
-                  onClick={() => applyCouponCode(coupon)}
-                  disabled={applyingCoupon || !coupon.trim()}
-                >
-                  {applyingCoupon ? "..." : "Apply"}
-                </button>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Pincode *</label>
+                  <input
+                    type="text"
+                    name="postalCode"
+                    value={address.postalCode}
+                    onChange={handleChange}
+                    required
+                    placeholder="6 digits"
+                    className="w-full text-xs p-2.5 rounded border border-slate-300 focus:border-blue-600 focus:outline-none"
+                  />
+                </div>
               </div>
-            )}
-          </Panel>
-
-          <p className="px-1 text-xs text-ink-400">
-            Standard delivery: {shipping === 0 ? "Free" : formatINR(shipping)} ·{" "}
-            {deliveryWindowLabel(commerce)}
-          </p>
-        </div>
-
-        {/* ── Right: what it costs ── */}
-        <div className="flex flex-col gap-4 lg:sticky lg:top-24">
-          <section className="card">
-            <h2 className="border-b border-ink-100 px-5 py-3.5 text-sm font-bold uppercase tracking-wide text-ink-900">
-              Order summary ({cart.count})
-            </h2>
-            <div className="max-h-[320px] divide-y divide-ink-100 overflow-y-auto">
-              {cart.items.map((item) => {
-                const product = item.product;
-                const vId = item.variant?._id || null;
-                const label = variantLabel(item.variant);
-                const available = item.variant ? item.variant.countInStock : product.countInStock;
-
-                return (
-                  <div key={`${product._id}-${vId || "base"}`} className="flex gap-3 px-5 py-4">
-                    <img
-                      src={lineImage(item)}
-                      alt={product.name}
-                      width="56"
-                      height="56"
-                      loading="lazy"
-                      decoding="async"
-                      onError={onProductImageError}
-                      className="h-14 w-14 shrink-0 bg-white object-contain"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 text-sm text-ink-900">{product.name}</p>
-                      {label && <p className="mt-0.5 text-xs text-ink-500">{label}</p>}
-                      <div className="mt-2 flex items-center justify-between gap-2">
-                        {/* Editable here, so a last-minute change does not mean
-                            backing out to the cart page and starting over. */}
-                        <CartQuantity
-                          productId={product._id}
-                          variantId={vId}
-                          max={available}
-                          size="sm"
-                        />
-                        <span className="text-sm font-semibold text-ink-900">
-                          {formatINR(item.lineTotal)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
-          </section>
+          </div>
 
-          <PriceDetails
-            itemCount={cart.count}
-            subtotal={cart.subtotal}
-            discountAmount={discountAmount}
-            appliedCode={appliedCode}
-            shipping={shipping}
-            tax={tax}
-            total={total}
-            savings={savings}
+          {/* Step 2: Payment Method */}
+          <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
+            <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100 mb-5">
+              <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">
+                2
+              </span>
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-800">
+                Payment Option
+              </h2>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <label
+                className={`flex items-start gap-3.5 p-4 rounded-lg border cursor-pointer transition-all ${
+                  paymentMethod === "razorpay"
+                    ? "border-blue-600 bg-blue-50/50 ring-1 ring-blue-600"
+                    : "border-slate-200 hover:border-slate-300 bg-white"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="payment"
+                  checked={paymentMethod === "razorpay"}
+                  onChange={() => setPaymentMethod("razorpay")}
+                  className="mt-1 accent-blue-600"
+                />
+                <div>
+                  <p className="text-sm font-bold text-slate-900">Online Payment (Razorpay)</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Pay securely via UPI (Google Pay, PhonePe, Paytm), Cards, or Net Banking.</p>
+                </div>
+              </label>
+
+              <label
+                className={`flex items-start gap-3.5 p-4 rounded-lg border cursor-pointer transition-all ${
+                  paymentMethod === "cod"
+                    ? "border-blue-600 bg-blue-50/50 ring-1 ring-blue-600"
+                    : "border-slate-200 hover:border-slate-300 bg-white"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="payment"
+                  checked={paymentMethod === "cod"}
+                  onChange={() => setPaymentMethod("cod")}
+                  className="mt-1 accent-blue-600"
+                />
+                <div>
+                  <p className="text-sm font-bold text-slate-900">Cash on Delivery (COD)</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Pay in cash or UPI directly when your shipment arrives at your doorstep.</p>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Order Summary & Place Order (4 cols) */}
+        <div className="lg:col-span-4 bg-white rounded-lg border border-slate-200 p-6 shadow-xs flex flex-col gap-5 sticky top-24">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-800 pb-3 border-b border-slate-100">
+            Order Summary ({cart.items.length} items)
+          </h2>
+
+          {/* Items thumbnail list */}
+          <div className="max-h-56 overflow-y-auto divide-y divide-slate-100 pr-1">
+            {cart.items.map((item, idx) => {
+              const p = item.product || {};
+              const img = p.images?.[0] || p.image || "https://placehold.co/100x100?text=Product";
+              return (
+                <div key={idx} className="py-2.5 flex items-center gap-3">
+                  <img src={img} alt="" className="w-12 h-12 rounded object-contain border p-1 bg-slate-50" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-slate-800 truncate">{p.name || "Product"}</p>
+                    <p className="text-2xs text-slate-500">Qty: {item.quantity} · {formatINR(item.unitPrice || p.price)}</p>
+                  </div>
+                  <span className="text-xs font-bold text-slate-900">
+                    {formatINR((item.unitPrice || p.price) * item.quantity)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Pricing calculations */}
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2 text-xs">
+            <div className="flex justify-between text-slate-600">
+              <span>Items Subtotal</span>
+              <span className="font-semibold">{formatINR(subtotal)}</span>
+            </div>
+            <div className="flex justify-between text-slate-600">
+              <span>Delivery Fee</span>
+              <span className="font-semibold text-green-600">
+                {shippingFee === 0 ? "FREE" : formatINR(shippingFee)}
+              </span>
+            </div>
+            <div className="flex justify-between text-base font-bold text-slate-900 pt-3 border-t border-slate-100">
+              <span>Total Payable</span>
+              <span className="text-blue-600">{formatINR(total)}</span>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-3.5 px-4 bg-[#fb641b] hover:bg-[#e85a14] disabled:opacity-50 text-white font-bold rounded-md shadow-xs text-sm transition-colors mt-2"
           >
-            <div className="hidden lg:block">{submitButton("btn btn-buy w-full py-3")}</div>
-            <p className="mt-3 hidden text-center text-xs text-ink-400 lg:block">
-              Confirmation goes to {user?.email}
-            </p>
-          </PriceDetails>
+            {isSubmitting ? "Processing..." : paymentMethod === "cod" ? `Place Order · ${formatINR(total)}` : `Proceed to Pay · ${formatINR(total)}`}
+          </button>
         </div>
-      </div>
-
-      {/* Mobile fixed bottom checkout action bar */}
-      <div className="fixed bottom-[56px] inset-x-0 z-30 flex items-center gap-4 border-t border-ink-200 bg-white px-4 py-3 shadow-deep lg:hidden">
-        <div className="min-w-0 flex-1">
-          <p className="text-2xs uppercase tracking-wide text-ink-400">Total</p>
-          <p className="text-lg font-bold text-ink-900">{formatINR(total)}</p>
-        </div>
-        {submitButton("btn btn-buy flex-1 py-3")}
-      </div>
+      </form>
     </div>
   );
-};
-
-export default Checkout;
+}
