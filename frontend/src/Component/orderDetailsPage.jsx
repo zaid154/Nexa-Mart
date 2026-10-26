@@ -20,13 +20,8 @@ export default function OrderDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
 
-  // 5-second countdown timer for success banner
+  // Success banner shows for 5 seconds when order is placed, then auto-dismisses
   const [showBanner, setShowBanner] = useState(justPlaced);
-  const [bannerCountdown, setBannerCountdown] = useState(5);
-
-  // 5-second countdown timer for live order tracking progression
-  const [trackingCountdown, setTrackingCountdown] = useState(5);
-  const [isAutoTracking, setIsAutoTracking] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -50,81 +45,14 @@ export default function OrderDetailsPage() {
     };
   }, [id]);
 
-  // 5-Second Banner Auto-Dismiss Timer
+  // Order Placed Success Banner auto-dismisses after exactly 5 seconds
   useEffect(() => {
-    if (!showBanner) return;
-    const interval = setInterval(() => {
-      setBannerCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setShowBanner(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [showBanner]);
-
-  // 5-Second Order Tracking Progressive Timer (Placed -> Confirmed -> Shipped -> Delivered)
-  useEffect(() => {
-    if (!order) return;
-    const currentStatus = (order.status || "placed").toLowerCase();
-    const currentStepIdx = STEPS.indexOf(currentStatus);
-    const isCancelled = currentStatus === "cancelled";
-
-    // If order is cancelled or already delivered or auto-tracking paused, don't run
-    if (isCancelled || currentStepIdx >= 3 || !isAutoTracking) return;
-
-    const interval = setInterval(() => {
-      setTrackingCountdown((prev) => {
-        if (prev <= 1) {
-          const nextStepIdx = Math.min(3, currentStepIdx + 1);
-          const nextStatus = STEPS[nextStepIdx];
-
-          // Advance status locally
-          setOrder((prevOrder) => ({
-            ...prevOrder,
-            status: nextStatus,
-            isDelivered: nextStatus === "delivered",
-            deliveredAt: nextStatus === "delivered" ? new Date().toISOString() : prevOrder?.deliveredAt,
-          }));
-
-          // Sync with backend API
-          api
-            .patch(`/orders/${order._id}/progress`, { status: nextStatus })
-            .catch((err) => console.error("Auto tracking sync error:", err));
-
-          if (nextStatus === "delivered") {
-            setIsAutoTracking(false);
-            toast.success("Order Delivered! You can now rate and review this product.");
-          }
-
-          return 5; // Reset countdown for next stage if any
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [order, isAutoTracking]);
-
-  const handleFastForward = async () => {
-    if (!order) return;
-    setOrder((prev) => ({
-      ...prev,
-      status: "delivered",
-      isDelivered: true,
-      deliveredAt: new Date().toISOString(),
-    }));
-    setIsAutoTracking(false);
-    try {
-      await api.patch(`/orders/${order._id}/progress`, { status: "delivered" });
-      toast.success("Order marked Delivered! You can now rate and review this product.");
-    } catch (err) {
-      console.error("Fast forward error:", err);
-    }
-  };
+    if (!justPlaced) return;
+    const timer = setTimeout(() => {
+      setShowBanner(false);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [justPlaced]);
 
   const handleCancel = async () => {
     const ok = await confirm({
@@ -180,20 +108,15 @@ export default function OrderDetailsPage() {
 
   return (
     <div className="w-full pb-8">
-      {/* Just Placed Success Banner with 5s countdown timer */}
+      {/* Just Placed Success Banner - displays for 5s then auto-dismisses */}
       {showBanner && (
-        <div className="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg p-4 flex items-center justify-between gap-3 shadow-xs transition-opacity duration-300">
+        <div className="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg p-4 flex items-center justify-between gap-3 shadow-xs transition-opacity duration-500 animate-fadeIn">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
               ✓
             </div>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-sm font-bold text-emerald-900">Order Placed Successfully!</p>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center gap-1">
-                  Closing in {bannerCountdown}s
-                </span>
-              </div>
+              <p className="text-sm font-bold text-emerald-900">Order Placed Successfully!</p>
               <p className="text-xs text-emerald-700 mt-0.5">
                 Thank you for your purchase. We have received your order and are preparing it for shipment.
               </p>
@@ -249,35 +172,17 @@ export default function OrderDetailsPage() {
         </div>
       </div>
 
-      {/* Visual Status Timeline with 5s progressive auto-tracker & connected stepper line */}
+      {/* Visual Status Timeline with Connected Stepper Line */}
       <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-xs mb-4">
         <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
           <div className="flex items-center gap-2.5">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">Order Tracking</h2>
-            {currentStepIdx < 3 && !isCancelled && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-2xs font-semibold border border-blue-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping" />
-                Next step in {trackingCountdown}s
-              </span>
-            )}
             {currentStepIdx === 3 && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-2xs font-bold border border-emerald-200">
                 ✓ Delivered
               </span>
             )}
           </div>
-
-          {!isCancelled && currentStepIdx < 3 && (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleFastForward}
-                className="text-2xs font-bold uppercase tracking-wider text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-xs transition-colors cursor-pointer"
-              >
-                ⚡ Fast-Forward to Delivered
-              </button>
-            </div>
-          )}
         </div>
 
         {isCancelled ? (
