@@ -1,5 +1,3 @@
-// Transactional email templates for authentication and orders
-
 const BRAND = "NexaMart";
 
 const layout = (title, body) => `

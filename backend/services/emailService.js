@@ -1,185 +1,104 @@
-// Helpers for sending emails (OTP, order confirmation, test email).
-// The SMTP settings come from the admin Settings, with .env as a fallback.
-//
-// Render's free tier blocks the SMTP ports, so when BREVO_API_KEY is set we
-// send over Brevo's HTTPS API instead. Without the key we use SMTP as before.
-
 import nodemailer from "nodemailer";
 import Settings from "../models/settingsModel.js";
 
-// Brevo's "send a transactional email" endpoint.
 const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
+const TIMEOUT_MS = 15000;
 
-// Give up on a slow send instead of hanging the request that is waiting on us.
-const SEND_TIMEOUT_MS = 15000;
+const renderTemplate = (template = "", vars = {}) =>
+  Object.entries(vars).reduce(
+    (html, [key, val]) => html.replace(new RegExp(`{{${key}}}`, "g"), val ?? ""),
+    template
+  );
 
-// Replace {{name}}, {{otp}}, etc. inside an HTML template with real values.
-const renderTemplate = (template, vars) => {
-  let html = template || "";
-
-  // Go through each variable and replace every {{key}} with its value.
-  for (const [key, value] of Object.entries(vars)) {
-    let safeValue = "";
-    if (value !== undefined && value !== null) {
-      safeValue = String(value);
-    }
-    html = html.replace(new RegExp(`{{${key}}}`, "g"), safeValue);
-  }
-
-  return html;
-};
-
-// Read the SMTP configuration from Settings (falling back to .env values).
 const getSmtpConfig = async () => {
   const settings = await Settings.getSingleton();
-
-  // For "secure", prefer the saved setting; if it is missing, use the .env value.
-  let secure;
-  if (settings.smtp.secure !== undefined && settings.smtp.secure !== null) {
-    secure = settings.smtp.secure;
-  } else {
-    secure = process.env.SMTP_SECURE === "true";
-  }
-
+  const smtp = settings.smtp || {};
   return {
-    host: settings.smtp.host || process.env.SMTP_HOST,
-    port: settings.smtp.port || Number(process.env.SMTP_PORT) || 587,
-    secure,
-    user: settings.smtp.user || process.env.SMTP_USER,
-    pass: settings.smtp.pass || process.env.SMTP_PASS,
-    from: settings.smtp.from || process.env.SMTP_FROM || process.env.SMTP_USER,
+    host: smtp.host || process.env.SMTP_HOST,
+    port: smtp.port || Number(process.env.SMTP_PORT) || 587,
+    secure: smtp.secure ?? (process.env.SMTP_SECURE === "true"),
+    user: smtp.user || process.env.SMTP_USER,
+    pass: smtp.pass || process.env.SMTP_PASS,
+    from: smtp.from || process.env.SMTP_FROM || process.env.SMTP_USER,
     brevoKey: process.env.BREVO_API_KEY || "",
-    siteName: settings.site.name || "NexaMart",
-    templates: settings.emailTemplates,
-    otpExpiryMin: settings.security.otpExpiryMin || Number(process.env.OTP_EXPIRES_MIN) || 10,
+    siteName: settings.site?.name || "NexaMart",
+    templates: settings.emailTemplates || {},
+    otpExpiryMin: settings.security?.otpExpiryMin || Number(process.env.OTP_EXPIRES_MIN) || 10,
   };
 };
 
-// Send one email through the Brevo HTTP API (port 443, never blocked).
-// The sender is SMTP_USER — the same address you verify in Brevo.
 const sendViaBrevo = async (cfg, { to, subject, html }) => {
-  const response = await fetch(BREVO_API_URL, {
+  const res = await fetch(BREVO_API_URL, {
     method: "POST",
-    headers: {
-      "api-key": cfg.brevoKey,
-      "content-type": "application/json",
-    },
+    headers: { "api-key": cfg.brevoKey, "content-type": "application/json" },
     body: JSON.stringify({
       sender: { name: cfg.siteName, email: cfg.user },
       to: [{ email: to }],
       subject,
       htmlContent: html,
     }),
-    signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
   });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new Error(`Brevo rejected the email (${response.status}): ${detail}`);
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Brevo rejected email (${res.status}): ${detail}`);
   }
 };
 
-// Build a nodemailer transport that can actually send mail.
 export const createTransport = async () => {
   const cfg = await getSmtpConfig();
-
-  // We need host, user and password to send an email.
   if (!cfg.host || !cfg.user || !cfg.pass) {
-    throw new Error("SMTP is not configured. Set SMTP credentials in .env or Admin Settings.");
+    throw new Error("SMTP is not configured in .env or Settings.");
   }
-
   return nodemailer.createTransport({
     host: cfg.host,
     port: cfg.port,
     secure: cfg.secure,
     auth: { user: cfg.user, pass: cfg.pass },
-    // Without these, a blocked SMTP port leaves the connection hanging for
-    // about two minutes. Fail quickly instead so the caller can report it.
-    connectionTimeout: SEND_TIMEOUT_MS,
-    greetingTimeout: SEND_TIMEOUT_MS,
-    socketTimeout: SEND_TIMEOUT_MS,
+    connectionTimeout: TIMEOUT_MS,
+    greetingTimeout: TIMEOUT_MS,
+    socketTimeout: TIMEOUT_MS,
   });
 };
 
-// Send a basic email with a subject and HTML body.
-// Uses direct SMTP (e.g. Gmail) when configured, falling back to Brevo HTTPS API.
 export const sendMail = async ({ to, subject, html }) => {
   const cfg = await getSmtpConfig();
-
-  // Try direct SMTP first (e.g. Gmail App Password delivers instantly to inbox)
   if (cfg.host && cfg.user && cfg.pass) {
     try {
       const transport = await createTransport();
-      const from = cfg.from || `NexaMart <${cfg.user}>`;
-      await transport.sendMail({ from, to, subject, html });
+      await transport.sendMail({ from: cfg.from || `NexaMart <${cfg.user}>`, to, subject, html });
       return;
-    } catch (smtpErr) {
-      console.warn(`[email] SMTP failed (${smtpErr.message}), trying Brevo fallback...`);
-      if (cfg.brevoKey) {
-        await sendViaBrevo(cfg, { to, subject, html });
-        return;
-      }
-      throw smtpErr;
+    } catch (err) {
+      if (cfg.brevoKey) return sendViaBrevo(cfg, { to, subject, html });
+      throw err;
     }
   }
-
-  if (cfg.brevoKey) {
-    await sendViaBrevo(cfg, { to, subject, html });
-    return;
-  }
-
+  if (cfg.brevoKey) return sendViaBrevo(cfg, { to, subject, html });
   throw new Error("No valid email transport configured.");
 };
 
-// Send an OTP email. The template and subject depend on the purpose.
 export const sendOtpEmail = async ({ to, name, otp, purpose = "verify" }) => {
   const cfg = await getSmtpConfig();
-
-  // Pick the correct template and subject for verify vs reset.
-  let template;
-  let subject;
-  if (purpose === "reset") {
-    template = cfg.templates.resetPassword;
-    subject = `${cfg.siteName} — Password reset code`;
-  } else {
-    template = cfg.templates.otp;
-    subject = `${cfg.siteName} — Verify your email`;
-  }
-
-  const html = renderTemplate(template, {
-    name: name || "there",
-    otp,
-    expiry: cfg.otpExpiryMin,
-  });
-
+  const isReset = purpose === "reset";
+  const template = isReset ? cfg.templates.resetPassword : cfg.templates.otp;
+  const subject = `${cfg.siteName} — ${isReset ? "Password reset code" : "Verify your email"}`;
+  const html = renderTemplate(template, { name: name || "there", otp, expiry: cfg.otpExpiryMin });
   await sendMail({ to, subject, html });
 };
 
-// Start sending an OTP email but do not make the caller wait for it.
-// Some routes must answer quickly and must not fail just because the mail
-// provider is slow or down (the account is already created by then, and a
-// thrown error would leave the user unable to retry). Anyone who does not get
-// the code can request a new one from the resend-otp route.
 export const sendOtpEmailInBackground = (options) => {
-  sendOtpEmail(options).catch((error) => {
-    const purpose = options.purpose || "verify";
-    console.error(`Could not send ${purpose} OTP to ${options.to}: ${error.message}`);
-  });
+  sendOtpEmail(options).catch((err) =>
+    console.error(`[email] Failed to send ${options.purpose || "verify"} OTP to ${options.to}:`, err.message)
+  );
 };
 
-// Send the "order confirmed" email.
 export const sendOrderConfirmationEmail = async ({ to, name, orderId, total }) => {
   const cfg = await getSmtpConfig();
-
   const html = renderTemplate(cfg.templates.orderConfirmation, {
     name: name || "there",
     orderId,
     total,
+    totalAmount: total,
   });
-
-  await sendMail({
-    to,
-    subject: `${cfg.siteName} — Order confirmed`,
-    html,
-  });
+  await sendMail({ to, subject: `${cfg.siteName} — Order confirmed`, html });
 };

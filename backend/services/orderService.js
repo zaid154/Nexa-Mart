@@ -1,27 +1,13 @@
-// Helpers and constants for order status, returns, refunds and stock.
-
 import Product from "../models/productModel.js";
 
-// All the statuses an order can have, in order of the normal flow.
 export const ORDER_STATUSES = [
-  "pending",
-  "confirmed",
-  "processing",
-  "packed",
-  "shipped",
-  "out_for_delivery",
-  "delivered",
-  "cancelled",
-  "return_requested",
-  "return_approved",
-  "return_rejected",
-  "returned",
+  "pending", "confirmed", "processing", "packed", "shipped",
+  "out_for_delivery", "delivered", "cancelled", "return_requested",
+  "return_approved", "return_rejected", "returned",
 ];
 
-// All the possible refund statuses.
 export const REFUND_STATUSES = ["none", "pending", "initiated", "processing", "completed", "failed"];
 
-// The reasons a customer can choose when requesting a return.
 export const RETURN_REASONS = [
   "Defective product",
   "Wrong item received",
@@ -30,7 +16,6 @@ export const RETURN_REASONS = [
   "Other",
 ];
 
-// Which statuses an order is allowed to move to from its current status.
 export const ALLOWED_TRANSITIONS = {
   pending: ["confirmed", "cancelled"],
   confirmed: ["processing", "cancelled"],
@@ -46,61 +31,27 @@ export const ALLOWED_TRANSITIONS = {
   returned: [],
 };
 
-// Statuses where a customer is still allowed to cancel the order.
 export const CANCELLABLE_STATUSES = ["pending", "confirmed", "processing", "packed"];
 
-// Check if moving from one status to another is allowed.
-export const canTransition = (from, to) => {
-  const allowed = ALLOWED_TRANSITIONS[from] || [];
-  return allowed.includes(to);
-};
+export const canTransition = (from, to) => (ALLOWED_TRANSITIONS[from] || []).includes(to);
+export const canCancel = (status) => CANCELLABLE_STATUSES.includes(status);
+export const canReturn = (status) => status === "delivered";
 
-// Can this order still be cancelled?
-export const canCancel = (status) => {
-  return CANCELLABLE_STATUSES.includes(status);
-};
-
-// A return can only be requested for delivered orders.
-export const canReturn = (status) => {
-  return status === "delivered";
-};
-
-// Reduce or restore product stock for all items in an order.
-// direction is either "reduce" (when placing/paying) or "restore" (cancel/return).
+// Adjust product and variant stock: direction is "reduce" or "restore"
 export const adjustStock = async (order, direction, session = null) => {
-  const shouldReduce = direction === "reduce";
-  const shouldRestore = direction === "restore";
+  const isReduce = direction === "reduce";
+  if (isReduce ? order.stockReduced : !order.stockReduced) return;
 
-  // Do not reduce twice, and do not restore if stock was never reduced.
-  if (shouldReduce && order.stockReduced) {
-    return;
-  }
-  if (shouldRestore && !order.stockReduced) {
-    return;
-  }
+  const multiplier = isReduce ? -1 : 1;
+  const opts = session ? { session } : {};
 
-  // Reducing subtracts stock (-1); restoring adds it back (+1).
-  let multiplier = 1;
-  if (shouldReduce) {
-    multiplier = -1;
-  }
-
-  // Pass the database session through if one was given (for transactions).
-  let opts = {};
-  if (session) {
-    opts = { session };
-  }
-
-  // Go through each item and update its product's stock. When the line was
-  // bought as a specific variant, that variant's own stock moves too.
   for (const item of order.items) {
     const product = await Product.findById(item.product).session(session || null);
     const variant = item.variant && product ? product.variants.id(item.variant) : null;
 
-    // When reducing, first make sure there is enough stock.
-    if (shouldReduce) {
-      const available = variant ? variant.countInStock : product?.countInStock;
-      if (!product || available < item.quantity) {
+    if (isReduce) {
+      const stock = variant ? variant.countInStock : product?.countInStock;
+      if (!product || stock < item.quantity) {
         throw new Error(`Insufficient stock for ${item.name}`);
       }
     }
@@ -118,14 +69,12 @@ export const adjustStock = async (order, direction, session = null) => {
     }
   }
 
-  // Remember the new state so we do not double-apply later.
-  order.stockReduced = shouldReduce;
+  order.stockReduced = isReduce;
 };
 
-// Build full URLs for the return images so the frontend can display them.
 export const buildReturnImageUrls = (req, order) => {
   const images = order.returnInfo?.images || [];
-  return images.map((img) => {
-    return `${req.protocol}://${req.get("host")}/api/orders/${order._id}/return-image/${img._id}`;
-  });
+  return images.map(
+    (img) => `${req.protocol}://${req.get("host")}/api/orders/${order._id}/return-image/${img._id}`
+  );
 };
