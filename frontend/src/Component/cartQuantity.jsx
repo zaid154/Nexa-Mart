@@ -8,20 +8,17 @@ import { useCart } from "../context/cartContext.jsx";
 import { useToast } from "../context/toastContext.jsx";
 import QuantityStepper from "./quantityStepper.jsx";
 
-// Find a product's line in the cart. A line is identified by the product plus
-// the chosen variant, so the same product in two configurations is two lines.
-export const findCartLine = (cart, productId, variantId) => {
+// Find a product's line in the cart.
+export const findCartLine = (cart, productId) => {
   const items = cart?.items || [];
   return (
-    items.find(
-      (item) =>
-        item.product?._id === productId &&
-        String(item.variant?._id || "") === String(variantId || "")
-    ) || null
+    items.find((item) => {
+      return String(item.product?._id || item.product?.id || item.product) === String(productId);
+    }) || null
   );
 };
 
-const CartQuantity = ({ productId, variantId = null, max, size = "sm", onEmpty }) => {
+const CartQuantity = ({ productId, max, size = "sm", onEmpty }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
@@ -29,7 +26,7 @@ const CartQuantity = ({ productId, variantId = null, max, size = "sm", onEmpty }
 
   const [busy, setBusy] = useState(false);
 
-  const line = findCartLine(cart, productId, variantId);
+  const line = findCartLine(cart, productId);
   const quantity = line ? line.quantity : 0;
 
   // Dispatches add, update, or remove based on target quantity
@@ -45,14 +42,14 @@ const CartQuantity = ({ productId, variantId = null, max, size = "sm", onEmpty }
     setBusy(true);
     try {
       if (next <= 0) {
-        await removeFromCart(productId, variantId);
+        await removeFromCart(productId);
         if (onEmpty) {
           onEmpty();
         }
       } else if (next > quantity) {
-        await addToCart(productId, next - quantity, variantId);
+        await addToCart(productId, next - quantity);
       } else {
-        await updateCartItem(productId, next, variantId);
+        await updateCartItem(productId, next);
       }
     } catch (err) {
       toast.error(err.message);

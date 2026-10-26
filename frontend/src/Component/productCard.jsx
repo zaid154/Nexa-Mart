@@ -1,34 +1,25 @@
+// Product card component rendering grid/list representations.
+// Supports image hover transitions, wishlist toggling, and quick cart mutation.
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Rating from "./rating.jsx";
 import { formatINR } from "../utils/formatUtils.js";
-import { onProductImageError, PRODUCT_IMAGE_PLACEHOLDER } from "../utils/productImageUtils.js";
 import { useCart } from "../context/cartContext.jsx";
 import { useAuth } from "../context/authContext.jsx";
 import { useToast } from "../context/toastContext.jsx";
-import { IconCart, IconHeart } from "./icons.jsx";
 import CartQuantity, { findCartLine } from "./cartQuantity.jsx";
-import { useCartDrawer } from "../context/cartContext.jsx";
-import { variantLabel } from "../utils/variantMediaUtils.js";
+import { IconCart, IconHeart, IconStar } from "./icons.jsx";
+import { onProductImageError, PRODUCT_IMAGE_PLACEHOLDER } from "../utils/productImageUtils.js";
 
-// One product box shown in the product grid. The whole tile is a link to the
-// product page; the wishlist heart and the cart control sit above it.
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, showBrand = true }) => {
+  const { cart, addToCart, addToWishlist, removeFromWishlist, inWishlist, openDrawer: openCartDrawer } = useCart();
   const { user } = useAuth();
-  const { cart, addToCart, addToWishlist, removeFromWishlist, inWishlist } = useCart();
-  const { open: openCartDrawer } = useCartDrawer();
   const toast = useToast();
   const navigate = useNavigate();
 
   const isWished = inWishlist(product._id);
-
-  // Default to first variant if product has options
-  const defaultVariant = product.variants?.[0] || null;
-  const variantId = defaultVariant?._id || null;
-  const defaultVariantLabel = variantLabel(defaultVariant);
-  const stock = defaultVariant ? defaultVariant.countInStock : product.countInStock;
-
-  const inCart = !!findCartLine(cart, product._id, variantId);
+  const stock = product.countInStock;
+  const inCart = !!findCartLine(cart, product._id);
 
   const [adding, setAdding] = useState(false);
 
@@ -39,8 +30,7 @@ const ProductCard = ({ product }) => {
     }
     setAdding(true);
     try {
-      await addToCart(product._id, 1, variantId);
-      // Open cart drawer on successful add
+      await addToCart(product._id, 1);
       openCartDrawer();
     } catch (error) {
       toast.error(error.message);
@@ -48,7 +38,7 @@ const ProductCard = ({ product }) => {
       setAdding(false);
     }
   };
-  // Display cover media or fallback to first image
+
   const cover = product.media?.[0];
   const image = cover?.url || product.images?.[0] || PRODUCT_IMAGE_PLACEHOLDER;
 
@@ -75,68 +65,70 @@ const ProductCard = ({ product }) => {
     }
   };
 
-  const outOfStock = product.countInStock === 0;
-
-  let wishlistTitle = "Add to wishlist";
-  if (isWished) {
-    wishlistTitle = "Remove from wishlist";
-  }
+  const outOfStock = stock === 0;
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-md sm:rounded-lg bg-white border border-ink-100/80 transition-all duration-200 hover:shadow-pop active:scale-[0.99]">
-      <Link to={`/products/${product._id}`} className="absolute inset-0 z-10">
-        <span className="sr-only">{product.name}</span>
-      </Link>
+    <div className="product-card group flex flex-col justify-between">
+      <div>
+        <div className="relative aspect-square overflow-hidden bg-sand-100/60 p-3 sm:p-4">
+          <Link to={`/products/${product._id}`} className="block h-full w-full">
+            <img
+              src={image}
+              alt={product.name}
+              loading="lazy"
+              onError={onProductImageError}
+              className="h-full w-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105"
+            />
+          </Link>
 
-      <div className="pointer-events-none relative aspect-[4/3] overflow-hidden bg-white">
-        <img
-          src={image}
-          srcSet={cover?.srcset || undefined}
-          sizes={cover?.srcset ? "(min-width: 1024px) 260px, (min-width: 640px) 33vw, 50vw" : undefined}
-          alt={product.name}
-          // Intrinsic size reserves the box so the grid does not jump as
-          // images arrive.
-          width={cover?.width || 400}
-          height={cover?.height || 400}
-          loading="lazy"
-          decoding="async"
-          onError={onProductImageError}
-          className={`h-full w-full object-contain p-2.5 sm:p-4 transition-transform duration-300 group-hover:scale-[1.04] ${
-            outOfStock ? "opacity-50" : ""
-          }`}
-        />
-        {outOfStock && (
-          <span className="absolute inset-0 z-[5] grid place-items-center">
-            <span className="rounded-sm bg-ink-900/85 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+          {/* Wishlist toggle button */}
+          <button
+            type="button"
+            onClick={handleWishlist}
+            aria-label={isWished ? "Remove from wishlist" : "Add to wishlist"}
+            className="absolute right-2 top-2 z-10 rounded-full bg-white/90 p-1.5 text-ink-600 shadow-xs backdrop-blur-xs transition hover:bg-white hover:text-copper-600 focus:outline-hidden"
+          >
+            <IconHeart size={16} filled={isWished} className={isWished ? "text-copper-600" : ""} />
+          </button>
+
+          {/* Out of Stock and low stock overlay indicators */}
+          {outOfStock ? (
+            <span className="badge badge-subtle absolute bottom-2 left-2 text-[10px] sm:text-xs">
               Out of stock
             </span>
-          </span>
-        )}
-        <button
-          type="button"
-          className={`pointer-events-auto absolute right-2 top-2 z-20 grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-full bg-white/95 shadow-xs transition-colors hover:text-danger ${
-            isWished ? "text-danger" : "text-ink-300"
-          }`}
-          onClick={handleWishlist}
-          title={wishlistTitle}
-          aria-label={wishlistTitle}
-        >
-          <IconHeart size={15} filled={isWished} />
-        </button>
+          ) : stock <= 5 ? (
+            <span className="badge badge-warning absolute bottom-2 left-2 text-[10px] sm:text-xs">
+              Only {stock} left
+            </span>
+          ) : null}
+        </div>
+
+        <div className="p-3 sm:p-4">
+          {showBrand && product.brand && (
+            <span className="brand-label text-[10px] sm:text-xs">{product.brand}</span>
+          )}
+
+          <h3 className="line-clamp-2 text-xs sm:text-sm font-medium text-ink-900 group-hover:text-copper-600">
+            <Link to={`/products/${product._id}`}>{product.name}</Link>
+          </h3>
+        </div>
       </div>
 
-      <div className="pointer-events-none flex flex-1 flex-col gap-1 px-2.5 sm:px-4 pb-3 sm:pb-4 pt-1">
-        <span className="line-clamp-2 min-h-[32px] sm:min-h-[38px] text-xs sm:text-sm font-medium leading-snug text-ink-900">
-          {product.name}
-          {defaultVariantLabel && (
-            <span className="text-slate-500 font-normal text-xs"> ({defaultVariantLabel})</span>
+      <div className="p-3 pt-0 sm:p-4 sm:pt-0">
+        <div className="flex items-center gap-2">
+          {product.rating > 0 && (
+            <div className="rating-pill text-[10px] sm:text-xs">
+              <span>{product.rating.toFixed(1)}</span>
+              <IconStar size={10} />
+            </div>
           )}
-        </span>
-        <span className="text-[11px] sm:text-xs text-ink-400">{product.brand}</span>
-        <div className="flex items-center gap-1.5">
-          <Rating value={product.rating} count={product.numReviews} />
-          {product.rating >= 4 && (
-            <span className="text-[9px] sm:text-2xs font-bold uppercase tracking-wide text-accent-500">
+          {product.numReviews > 0 && (
+            <span className="text-[10px] sm:text-xs text-ink-500">
+              ({product.numReviews})
+            </span>
+          )}
+          {product.rating >= 4.5 && (
+            <span className="rounded-xs bg-brand-50 px-1 py-0.5 text-[9px] sm:text-[10px] font-semibold text-brand-700">
               Assured
             </span>
           )}
@@ -152,8 +144,6 @@ const ProductCard = ({ product }) => {
         </div>
         <span className="text-[11px] sm:text-xs font-medium text-success">Free delivery</span>
 
-        {/* The tile body is pointer-events-none under a full-bleed link, so the
-            cart control has to opt back in and sit above it. */}
         {!outOfStock && (
           <div className="pointer-events-auto relative z-20 mt-2">
             {inCart ? (
@@ -161,7 +151,6 @@ const ProductCard = ({ product }) => {
                 <span className="text-xs font-semibold text-copper-600">In cart</span>
                 <CartQuantity
                   productId={product._id}
-                  variantId={variantId}
                   max={stock}
                   size="sm"
                 />
@@ -177,7 +166,6 @@ const ProductCard = ({ product }) => {
                 {adding ? "Adding..." : "Add to cart"}
               </button>
             )}
-
           </div>
         )}
       </div>

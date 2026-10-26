@@ -100,9 +100,8 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   for (const item of cartItems) {
     const prod = item.product;
-    const variant = item.variant ? prod.variants.id(item.variant) : null;
-    const price = variant?.price ?? prod.price;
-    const stock = variant ? variant.countInStock : prod.countInStock;
+    const price = prod.price || 0;
+    const stock = prod.countInStock || 0;
 
     if (stock < item.quantity) {
       res.status(400);
@@ -112,9 +111,6 @@ export const createOrder = asyncHandler(async (req, res) => {
     orderItems.push({
       product: prod._id,
       image: prod.images?.[0]?.url || (typeof prod.images?.[0] === "string" ? prod.images[0] : "") || prod.image || "",
-      variant: variant ? variant._id : undefined,
-      variantLabel: variant?.sku || prod.name,
-      variantSku: variant?.sku || prod.sku,
       name: prod.name,
       price,
       quantity: item.quantity,

@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import Product from "../models/productModel.js";
 import Review from "../models/reviewModel.js";
 import { productToView } from "../utils/productViewUtils.js";
-import { generateSku, generateVariantSku, getCategoryAttributes } from "../utils/skuUtils.js";
+import { generateSku, getCategoryAttributes } from "../utils/skuUtils.js";
 import { logActivity } from "../utils/loggerUtils.js";
 import { processUploadedFiles, removeProductImages } from "../utils/productImageUtils.js";
 
@@ -202,12 +202,6 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   const sku = await generateSku({ category, brand, name });
   const images = await processUploadedFiles(req.files);
-  const variants = parseJson(req.body.variants, []).map((v) => ({
-    attributes: v.attributes || {},
-    sku: v.sku || generateVariantSku(sku, v.attributes),
-    price: v.price != null ? Number(v.price) : Number(price),
-    countInStock: Number(v.countInStock) || 0,
-  }));
 
   const product = await Product.create({
     name,
@@ -221,7 +215,6 @@ export const createProduct = asyncHandler(async (req, res) => {
     status: status || (Number(countInStock) > 0 ? "active" : "out_of_stock"),
     sku,
     images,
-    variants,
     specs: parseJson(req.body.specs, {}),
     attributes: parseJson(req.body.attributes, {}),
   });
@@ -253,14 +246,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   if (req.body.specs) product.specs = parseJson(req.body.specs, product.specs);
   if (req.body.attributes) product.attributes = parseJson(req.body.attributes, product.attributes);
 
-  if (req.body.variants) {
-    product.variants = parseJson(req.body.variants, []).map((v) => ({
-      attributes: v.attributes || {},
-      sku: v.sku || generateVariantSku(product.sku, v.attributes),
-      price: v.price != null ? Number(v.price) : product.price,
-      countInStock: Number(v.countInStock) || 0,
-    }));
-  }
+
 
   if (req.files && req.files.length > 0) {
     const newImages = await processUploadedFiles(req.files);

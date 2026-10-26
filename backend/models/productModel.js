@@ -2,7 +2,7 @@
 
 import mongoose from "mongoose";
 
-// Product image schema with optional variant attribute mappings
+// Product image schema
 const imageSchema = new mongoose.Schema(
   {
     url: { type: String },
@@ -17,17 +17,6 @@ const imageSchema = new mongoose.Schema(
     // Cloudinary and admin-uploaded images leave these empty.
     srcset: { type: String },
     srcsetAvif: { type: String },
-  },
-  { _id: true }
-);
-
-// Product variant schema representing size, color, or other variations
-const variantSchema = new mongoose.Schema(
-  {
-    attributes: { type: Map, of: String, default: {} },
-    sku: { type: String, trim: true },
-    price: { type: Number, min: 0 },
-    countInStock: { type: Number, default: 0, min: 0 },
   },
   { _id: true }
 );
@@ -68,7 +57,6 @@ const productSchema = new mongoose.Schema(
         "100% secure payment",
       ],
     },
-    variants: [variantSchema],
     rating: { type: Number, default: 0 },
     numReviews: { type: Number, default: 0 },
     isFeatured: { type: Boolean, default: false },

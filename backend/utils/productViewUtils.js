@@ -1,8 +1,6 @@
 // Helpers that turn a Product document into a clean object for the frontend.
 // They build image URLs and convert Map fields into plain objects.
 
-import { toPlainAttributes } from "./variantMediaUtils.js";
-
 // Work out the public URL for one image subdocument. Returns null when the
 // image has neither a URL nor anything we can stream.
 const imageUrl = (req, product, img) => {
@@ -34,9 +32,7 @@ export const buildImageUrls = (req, product) => {
   return urls;
 };
 
-// Build the richer image list: same order as buildImageUrls, but each entry
-// keeps the attributes that say which variant it belongs to, plus the sizes the
-// browser needs to pick a source and reserve the box.
+// Build the media list
 export const buildMedia = (req, product) => {
   const images = product.images || [];
   const media = [];
@@ -50,7 +46,6 @@ export const buildMedia = (req, product) => {
     media.push({
       _id: img._id ? String(img._id) : null,
       url,
-      attributes: toPlainAttributes(img.attributes),
       width: img.width || null,
       height: img.height || null,
       srcset: img.srcset || null,
@@ -61,22 +56,17 @@ export const buildMedia = (req, product) => {
   return media;
 };
 
-// Convert a Mongoose Map (or plain object) into a normal object.
-const mapToObj = (map) => {
-  if (!map) {
-    return {};
-  }
-  if (map instanceof Map) {
-    return Object.fromEntries(map);
-  }
-  return map;
+// Convert a Mongoose Map into a plain JavaScript object.
+const mapToObj = (m) => {
+  if (!m) return {};
+  if (m instanceof Map) return Object.fromEntries(m);
+  if (typeof m === "object") return m;
+  return {};
 };
 
-// Convert a full product document into the shape the frontend expects.
+// Convert a Product document into a clean object for API responses.
 export const productToView = (req, product) => {
-  if (!product) {
-    return product;
-  }
+  if (!product) return null;
 
   // Get a plain object version of the product.
   let obj;
@@ -86,24 +76,14 @@ export const productToView = (req, product) => {
     obj = product;
   }
 
-  // Pull out the fields that need special handling.
   const { images, specs, attributes, variants, ...rest } = obj;
-
-  // Convert each variant's attributes map too.
-  const viewVariants = (variants || []).map((v) => ({
-    ...v,
-    attributes: mapToObj(v.attributes),
-  }));
 
   return {
     ...rest,
-    // `images` stays a plain array of URL strings: product cards, the catalog
-    // and the admin form all read images[0] and must keep working. `media` is
-    // the same list with the variant links attached.
     images: buildImageUrls(req, product),
     media: buildMedia(req, product),
     specs: mapToObj(specs),
     attributes: mapToObj(attributes),
-    variants: viewVariants,
+    variants: [],
   };
 };

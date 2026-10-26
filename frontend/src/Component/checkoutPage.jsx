@@ -271,9 +271,7 @@ export default function CheckoutPage() {
           <div className="max-h-36 overflow-y-auto divide-y divide-slate-100 pr-1">
             {cart.items.map((item, idx) => {
               const p = item.product || {};
-              const variant = item.variant || null;
               const img = p.images?.[0] || p.image || PRODUCT_IMAGE_PLACEHOLDER;
-              const vTitle = variant?.name || Object.entries(variant?.attributes || {}).map(([k, v]) => `${k}: ${v}`).join(", ");
 
               return (
                 <div key={idx} className="py-2 flex items-center gap-2.5">
@@ -285,9 +283,6 @@ export default function CheckoutPage() {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-slate-800 truncate">{p.name || "Product"}</p>
-                    {vTitle && (
-                      <p className="text-3xs text-slate-500 truncate">{vTitle}</p>
-                    )}
                     <p className="text-3xs text-slate-400">
                       Qty: {item.quantity} × {formatINR(item.unitPrice || p.price)}
                     </p>

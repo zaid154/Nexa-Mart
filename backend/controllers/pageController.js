@@ -10,7 +10,7 @@ const DEFAULT_PAGES = [
     slug: "about",
     title: "About Us",
     content:
-      "<h2>About NexaMart</h2><p>NexaMart is a full-stack e-commerce portfolio project built using the <strong>MERN stack</strong> (MongoDB, Express.js, React and Node.js). It demonstrates a production-grade online electronics store with features like user authentication, product catalogue with variants, cart & checkout, Razorpay payment integration, order tracking, admin dashboard and much more.</p><p>This project was designed and developed by <strong>Mohd Zaid</strong> to showcase full-stack development skills.</p>",
+      "<h2>About NexaMart</h2><p>NexaMart is a full-stack e-commerce portfolio project built using the <strong>MERN stack</strong> (MongoDB, Express.js, React and Node.js). It demonstrates a production-grade online electronics store with features like user authentication, product catalogue, cart & checkout, Razorpay payment integration, order tracking, admin dashboard and much more.</p><p>This project was designed and developed by <strong>Mohd Zaid</strong> to showcase full-stack development skills.</p>",
   },
   {
     slug: "contact",
@@ -52,7 +52,7 @@ const DEFAULT_PAGES = [
     slug: "sell",
     title: "Sell on NexaMart",
     content:
-      "<h2>Sell on NexaMart</h2><p>NexaMart is a single-vendor e-commerce demo project. All products are managed through the admin dashboard.</p><p>This project showcases a complete seller workflow including product listing with variants, inventory management, order fulfilment pipeline, returns processing and analytics dashboard.</p><p>For any queries, contact: <strong>trendykart.app@gmail.com</strong></p>",
+      "<h2>Sell on NexaMart</h2><p>NexaMart is a single-vendor e-commerce demo project. All products are managed through the admin dashboard.</p><p>This project showcases a complete seller workflow including product listing, inventory management, order fulfilment pipeline, returns processing and analytics dashboard.</p><p>For any queries, contact: <strong>trendykart.app@gmail.com</strong></p>",
   },
 ];
 

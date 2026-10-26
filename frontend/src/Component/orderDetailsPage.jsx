@@ -217,9 +217,7 @@ export default function OrderDetailsPage() {
                   >
                     {name}
                   </Link>
-                  {item.variantLabel && (
-                    <p className="text-2xs text-slate-500 mt-0.5">Variant: {item.variantLabel}</p>
-                  )}
+
                   <p className="text-2xs text-slate-500 mt-1">
                     Qty: <span className="font-medium text-slate-700">{item.quantity}</span> × {formatINR(item.price)}
                   </p>

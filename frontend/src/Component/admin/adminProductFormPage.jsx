@@ -28,7 +28,6 @@ const ProductForm = () => {
   const [sku, setSku] = useState("");
   const [specs, setSpecs] = useState([{ key: "", value: "" }]);
   const [attributes, setAttributes] = useState([{ key: "", value: "" }]);
-  const [variants, setVariants] = useState([]);
   const [benefits, setBenefits] = useState([
     "Free delivery in 3–5 business days",
     "1 year manufacturer warranty",
@@ -39,11 +38,6 @@ const ProductForm = () => {
   const [files, setFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [removeImages, setRemoveImages] = useState([]);
-  // Which variant each photo belongs to: { [imageId]: { Color: "Graphite" } }.
-  // An empty object means the photo is shared across every variant.
-  const [imageTags, setImageTags] = useState({});
-  // Same, for files chosen in this session, keyed by position in `files`.
-  const [newImageTags, setNewImageTags] = useState([]);
   const [loading, setLoading] = useState(editing);
   const [saving, setSaving] = useState(false);
 
@@ -94,21 +88,14 @@ const ProductForm = () => {
           setAttributes([{ key: "", value: "" }]);
         }
 
-        setVariants(p.variants || []);
         setBenefits(p.benefits || []);
 
-        // `media` carries a real subdocument id and the variant each photo
-        // belongs to. Older responses only have `images` as bare URL strings,
-        // so fall back to digging the id out of the URL for those.
-        const images = (p.media || []).length
-          ? p.media.map((m) => ({ url: m.url, id: m._id || m.url, attributes: m.attributes || {} }))
-          : (p.images || []).map((url) => {
-              const match = String(url).match(/\/image\/([a-f0-9]{24})(?:$|\?)/i);
-              return { url, id: match ? match[1] : url, attributes: {} };
-            });
+        const images = (p.images || []).map((url) => {
+          const match = String(url).match(/\/image\/([a-f0-9]{24})(?:$|\?)/i);
+          return { url, id: match ? match[1] : url };
+        });
 
         setExistingImages(images);
-        setImageTags(Object.fromEntries(images.map((img) => [img.id, img.attributes])));
       })
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
@@ -136,25 +123,6 @@ const ProductForm = () => {
   const updateBenefit = (i, value) =>
     setBenefits((rows) => rows.map((r, idx) => (idx === i ? value : r)));
   const removeBenefit = (i) => setBenefits((rows) => rows.filter((_, idx) => idx !== i));
-
-  // Variant helpers.
-  const addVariant = () => {
-    setVariants((rows) => [...rows, { attributes: {}, price: form.price || 0, countInStock: 0 }]);
-  };
-  const setVariant = (i, field, value) => {
-    setVariants((rows) => rows.map((row, idx) => (idx === i ? { ...row, [field]: value } : row)));
-  };
-  const setVariantAttr = (i, key, value) => {
-    setVariants((rows) =>
-      rows.map((row, idx) => {
-        if (idx === i) {
-          return { ...row, attributes: { ...row.attributes, [key]: value } };
-        }
-        return row;
-      })
-    );
-  };
-  const removeVariant = (i) => setVariants((rows) => rows.filter((_, idx) => idx !== i));
 
   // Mark an existing image to be removed, or undo that.
   const toggleRemoveImage = (imageId) => {
@@ -191,21 +159,12 @@ const ProductForm = () => {
         }
       });
       fd.append("attributes", JSON.stringify(attrObj));
-      fd.append("variants", JSON.stringify(variants));
       fd.append("benefits", JSON.stringify(benefits.map((b) => b.trim()).filter(Boolean)));
 
       files.forEach((f) => fd.append("images", f));
       if (removeImages.length > 0) {
         fd.append("removeImages", JSON.stringify(removeImages));
       }
-
-      // Which variant each photo belongs to. Uploads are matched by position,
-      // which is the order multer receives them in.
-      fd.append("imageAttributes", JSON.stringify(imageTags));
-      fd.append(
-        "newImageAttributes",
-        JSON.stringify(files.map((_, i) => newImageTags[i] || {}))
-      );
 
       if (editing) {
         await api.put(`/products/${id}`, fd);
@@ -225,101 +184,6 @@ const ProductForm = () => {
   // Keep the selected image files when the file input changes.
   const handleFilesChange = (e) => {
     setFiles(Array.from(e.target.files));
-    setNewImageTags([]);
-  };
-
-  // -- Variant photo tagging ---------------------------------------
-  //
-  // A photo says which variant it belongs to, rather than a variant pointing at
-  // a photo. That way one set of photos covers every storage tier of the same
-  // colour, and nothing breaks when variants are edited.
-
-  // Attributes that change how the product looks. Storage and RAM do not, so
-  // they are not offered as photo tags.
-  const VISUAL_KEYS = ["Color", "Colour", "Dial", "Bracelet", "Strap", "Material", "Finish", "Pattern", "Style", "Bundle"];
-
-  // The visual attribute values this product actually varies on, taken from the
-  // variants the admin has entered.
-  const photoTagOptions = (() => {
-    const options = {};
-    for (const variant of variants) {
-      for (const [key, value] of Object.entries(variant.attributes || {})) {
-        if (!VISUAL_KEYS.includes(key) || !String(value).trim()) {
-          continue;
-        }
-        options[key] = options[key] || [];
-        if (!options[key].includes(value)) {
-          options[key].push(value);
-        }
-      }
-    }
-    return options;
-  })();
-
-  // How many variants a photo with these tags would appear on.
-  const variantsMatching = (tags) =>
-    variants.filter((variant) =>
-      Object.entries(tags || {}).every(([key, value]) => variant.attributes?.[key] === value)
-    ).length;
-
-  const setPhotoTag = (imageId, key, value) => {
-    setImageTags((current) => {
-      const tags = { ...(current[imageId] || {}) };
-      if (value) {
-        tags[key] = value;
-      } else {
-        delete tags[key];
-      }
-      return { ...current, [imageId]: tags };
-    });
-  };
-
-  const setNewPhotoTag = (index, key, value) => {
-    setNewImageTags((current) => {
-      const next = [...current];
-      const tags = { ...(next[index] || {}) };
-      if (value) {
-        tags[key] = value;
-      } else {
-        delete tags[key];
-      }
-      next[index] = tags;
-      return next;
-    });
-  };
-
-  // The dropdowns shown under a photo thumbnail.
-  const TagControls = ({ tags, onChange }) => {
-    const keys = Object.keys(photoTagOptions);
-    if (keys.length === 0) {
-      return null;
-    }
-
-    const count = variantsMatching(tags);
-
-    return (
-      <div className="mt-1 flex flex-col gap-1">
-        {keys.map((key) => (
-          <select
-            key={key}
-            value={tags?.[key] || ""}
-            onChange={(e) => onChange(key, e.target.value)}
-            className="input !py-1 !text-2xs"
-            title={`Which ${key} does this photo show?`}
-          >
-            <option value="">Any {key}</option>
-            {photoTagOptions[key].map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
-        ))}
-        <span className={`text-2xs ${count === 0 ? "text-danger" : "text-ink-400"}`}>
-          {count === 0 ? "matches no variant" : `shows on ${count} variant${count === 1 ? "" : "s"}`}
-        </span>
-      </div>
-    );
   };
 
   if (loading) {
@@ -473,53 +337,16 @@ const ProductForm = () => {
           </button>
         </div>
 
-        <div className="border-t border-ink-100 pt-5">
-          <h3 className="mb-4 text-2xs font-bold uppercase tracking-wider text-ink-400">Variants</h3>
-          <div className="space-y-3">
-            {variants.map((v, i) => (
-              <div className="card space-y-4 p-4" key={i}>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="label">Price</label>
-                    <input className="input" type="number" value={v.price} onChange={(e) => setVariant(i, "price", Number(e.target.value))} />
-                  </div>
-                  <div>
-                    <label className="label">Stock</label>
-                    <input className="input" type="number" value={v.countInStock} onChange={(e) => setVariant(i, "countInStock", Number(e.target.value))} />
-                  </div>
-                </div>
-                {categoryAttrs.map((attr) => (
-                  <div key={attr}>
-                    <label className="label">{attr}</label>
-                    <input
-                      className="input"
-                      value={v.attributes?.[attr] || ""}
-                      onChange={(e) => setVariantAttr(i, attr, e.target.value)}
-                    />
-                  </div>
-                ))}
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => removeVariant(i)}>Remove variant</button>
-              </div>
-            ))}
-          </div>
-          <button type="button" className="btn btn-outline btn-sm mt-3" onClick={addVariant}>+ Add variant</button>
-        </div>
-
         {editing && existingImages.length > 0 && (
           <div className="border-t border-ink-100 pt-5">
             <h3 className="mb-1 text-2xs font-bold uppercase tracking-wider text-ink-400">Current images</h3>
             <p className="mb-4 text-xs text-ink-500">
-              Say which configuration each photo shows. Leave a dropdown on “Any” when the photo
-              suits every variant — a packaging shot, say. A photo tagged “Graphite” shows for every
-              Graphite variant and never for another colour.
+              Manage existing product images. Click ✕ to remove an image.
             </p>
             <div className="flex flex-wrap gap-3">
               {existingImages.map((img) => {
                 const isRemoved = removeImages.includes(img.id);
-                let removeLabel = "✕";
-                if (isRemoved) {
-                  removeLabel = "↺";
-                }
+                const removeLabel = isRemoved ? "↺" : "✕";
                 return (
                   <div key={img.id} className={`w-28 ${isRemoved ? "opacity-40" : ""}`}>
                     <div
@@ -541,12 +368,6 @@ const ProductForm = () => {
                         {removeLabel}
                       </button>
                     </div>
-                    {!isRemoved && (
-                      <TagControls
-                        tags={imageTags[img.id]}
-                        onChange={(key, value) => setPhotoTag(img.id, key, value)}
-                      />
-                    )}
                   </div>
                 );
               })}
@@ -564,7 +385,7 @@ const ProductForm = () => {
             className="block w-full text-sm text-ink-600 file:mr-3 file:rounded-md file:border-0 file:bg-accent-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:uppercase file:text-white hover:file:bg-accent-600"
           />
 
-          {files.length > 0 && Object.keys(photoTagOptions).length > 0 && (
+          {files.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-3">
               {files.map((file, i) => (
                 <div key={`${file.name}-${i}`} className="w-28">
@@ -578,10 +399,6 @@ const ProductForm = () => {
                   <p className="mt-1 truncate text-2xs text-ink-500" title={file.name}>
                     {file.name}
                   </p>
-                  <TagControls
-                    tags={newImageTags[i]}
-                    onChange={(key, value) => setNewPhotoTag(i, key, value)}
-                  />
                 </div>
               ))}
             </div>

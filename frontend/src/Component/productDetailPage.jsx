@@ -99,7 +99,7 @@ export default function ProductDetailPage() {
     return String(item.product?._id || item.product?.id || item.product) === String(product._id);
   });
 
-  const isCurrentVariantInCart = Boolean(cartItem);
+  const isInCart = Boolean(cartItem);
   const currentCartQty = cartItem ? cartItem.quantity : 0;
 
   const images = [
@@ -161,7 +161,7 @@ export default function ProductDetailPage() {
   const handleBuyNow = async () => {
     if (!user) return navigate("/login");
     try {
-      if (!isCurrentVariantInCart) {
+      if (!isInCart) {
         await addToCart(product._id, quantity);
       }
       navigate("/checkout");
@@ -357,18 +357,18 @@ export default function ProductDetailPage() {
                   <button
                     type="button"
                     disabled={updatingCartQty}
-                    onClick={isCurrentVariantInCart ? handleDecrementCartQty : () => setQuantity((q) => Math.max(1, q - 1))}
+                    onClick={isInCart ? handleDecrementCartQty : () => setQuantity((q) => Math.max(1, q - 1))}
                     className="px-2 py-0.5 text-slate-600 hover:bg-slate-100 disabled:opacity-50 text-xs font-bold transition-colors"
                   >
                     -
                   </button>
                   <span className="px-2 py-0.5 text-xs font-bold text-slate-900 min-w-[20px] text-center">
-                    {isCurrentVariantInCart ? (updatingCartQty ? "..." : currentCartQty) : quantity}
+                    {isInCart ? (updatingCartQty ? "..." : currentCartQty) : quantity}
                   </span>
                   <button
                     type="button"
-                    disabled={updatingCartQty || (isCurrentVariantInCart ? currentCartQty >= maxStock : quantity >= maxStock)}
-                    onClick={isCurrentVariantInCart ? handleIncrementCartQty : () => setQuantity((q) => Math.min(maxStock, q + 1))}
+                    disabled={updatingCartQty || (isInCart ? currentCartQty >= maxStock : quantity >= maxStock)}
+                    onClick={isInCart ? handleIncrementCartQty : () => setQuantity((q) => Math.min(maxStock, q + 1))}
                     className="px-2 py-0.5 text-slate-600 hover:bg-slate-100 disabled:opacity-50 text-xs font-bold transition-colors"
                   >
                     +
@@ -381,15 +381,15 @@ export default function ProductDetailPage() {
               {/* Cart Icon Button */}
               <button
                 type="button"
-                onClick={isCurrentVariantInCart ? () => navigate("/cart") : handleAddToCart}
+                onClick={isInCart ? () => navigate("/cart") : handleAddToCart}
                 disabled={!inStock || addingToCart}
                 className="w-11 h-11 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 transition-colors flex items-center justify-center shrink-0 relative text-slate-700 shadow-2xs"
-                title={isCurrentVariantInCart ? "View in Cart" : "Add to Cart"}
+                title={isInCart ? "View in Cart" : "Add to Cart"}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                {isCurrentVariantInCart && (
+                {isInCart && (
                   <span className="absolute -top-1 -right-1 bg-emerald-600 text-white text-3xs font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {currentCartQty}
                   </span>
@@ -399,15 +399,15 @@ export default function ProductDetailPage() {
               {/* Middle Button: Add to Cart / Buy with EMI */}
               <button
                 type="button"
-                onClick={isCurrentVariantInCart ? () => navigate("/cart") : handleAddToCart}
+                onClick={isInCart ? () => navigate("/cart") : handleAddToCart}
                 disabled={!inStock || addingToCart}
                 className="flex-1 h-11 px-3 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 transition-colors text-left flex flex-col justify-center leading-tight shadow-2xs"
               >
                 <span className="text-xs sm:text-sm font-bold text-[#212121]">
-                  {isCurrentVariantInCart ? "Go to Cart" : "Buy with EMI"}
+                  {isInCart ? "Go to Cart" : "Buy with EMI"}
                 </span>
                 <span className="text-2xs text-[#878787] font-medium">
-                  {isCurrentVariantInCart ? `${currentCartQty} in cart` : `From ${formatINR(emiAmount)}/m`}
+                  {isInCart ? `${currentCartQty} in cart` : `From ${formatINR(emiAmount)}/m`}
                 </span>
               </button>
 

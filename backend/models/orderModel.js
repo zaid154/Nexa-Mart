@@ -15,10 +15,6 @@ const orderItemSchema = new mongoose.Schema(
     price: { type: Number, required: true },
     image: { type: String, default: "" },
     quantity: { type: Number, required: true, min: 1 },
-    // Snapshot of purchased variant configuration
-    variant: { type: mongoose.Schema.Types.ObjectId, default: null },
-    variantLabel: { type: String, default: "" },
-    variantSku: { type: String, default: "" },
   },
   { _id: false }
 );

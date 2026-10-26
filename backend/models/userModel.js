@@ -4,9 +4,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-// One product the user has put in their cart. When the product sells in
-// several configurations, `variant` holds the _id of the chosen one — the
-// same product in two configurations is two separate cart lines.
+// One product the user has put in their cart.
 const cartItemSchema = new mongoose.Schema(
   {
     product: {
@@ -14,7 +12,6 @@ const cartItemSchema = new mongoose.Schema(
       ref: "Product",
       required: true,
     },
-    variant: { type: mongoose.Schema.Types.ObjectId, default: null },
     quantity: { type: Number, required: true, default: 1, min: 1 },
   },
   { _id: false }

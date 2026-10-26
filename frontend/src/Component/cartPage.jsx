@@ -60,38 +60,37 @@ export default function CartPage() {
 
   const mrpTotal = cart.items.reduce((sum, item) => {
     const prod = item.product || {};
-    const variant = item.variant || null;
-    const mrp = variant?.mrp || prod.mrp || item.unitPrice || prod.price || 0;
+    const mrp = prod.mrp || item.unitPrice || prod.price || 0;
     return sum + mrp * item.quantity;
   }, 0);
   const totalSavings = mrpTotal > subtotal ? mrpTotal - subtotal : 0;
 
-  const handleQuantity = async (productId, currentQty, delta, variantId) => {
+  const handleQuantity = async (productId, currentQty, delta) => {
     const next = currentQty + delta;
     if (next <= 0) {
-      handleRemove(productId, variantId);
+      handleRemove(productId);
       return;
     }
     try {
-      await updateCartItem(productId, next, variantId);
+      await updateCartItem(productId, next);
     } catch (err) {
       toast.error(err.message || "Failed to update quantity");
     }
   };
 
-  const handleRemove = async (productId, variantId) => {
+  const handleRemove = async (productId) => {
     try {
-      await removeFromCart(productId, variantId);
+      await removeFromCart(productId);
       toast.success("Item removed from cart");
     } catch (err) {
       toast.error(err.message || "Failed to remove item");
     }
   };
 
-  const handleSaveForLater = async (productId, variantId) => {
+  const handleSaveForLater = async (productId) => {
     try {
       await addToWishlist(productId);
-      await removeFromCart(productId, variantId);
+      await removeFromCart(productId);
       toast.success("Moved to wishlist");
     } catch (err) {
       toast.error(err.message || "Could not move to wishlist");
@@ -109,13 +108,11 @@ export default function CartPage() {
         <div className="lg:col-span-8 bg-white rounded-lg border border-slate-200 divide-y divide-slate-100 shadow-xs">
           {cart.items.map((item) => {
             const prod = item.product || {};
-            const variant = item.variant || null;
             const price = item.unitPrice || prod.price || 0;
             const img = prod.images?.[0] || prod.image || "https://placehold.co/150x150?text=Product";
-            const variantTitle = variant?.name || Object.entries(variant?.attributes || {}).map(([k, v]) => `${k}: ${v}`).join(", ");
 
             return (
-              <div key={item._id || `${prod._id}-${variant?._id}`} className="p-5 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+              <div key={item._id || prod._id} className="p-5 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
                 {/* Product thumbnail */}
                 <Link to={`/products/${prod._id}`} className="shrink-0 w-24 h-24 rounded border border-slate-100 p-2 bg-slate-50 flex items-center justify-center">
                   <img src={img} alt={prod.name} className="max-h-full max-w-full object-contain" />
@@ -127,9 +124,7 @@ export default function CartPage() {
                     {prod.name}
                   </Link>
 
-                  {variantTitle && (
-                    <p className="text-xs text-slate-500 font-medium mt-1">Option: {variantTitle}</p>
-                  )}
+
 
                   <div className="flex items-baseline gap-2.5 mt-2">
                     <span className="text-base font-bold text-slate-900">{formatINR(price)}</span>
@@ -143,7 +138,7 @@ export default function CartPage() {
                     <div className="flex items-center border border-slate-300 rounded">
                       <button
                         type="button"
-                        onClick={() => handleQuantity(prod._id, item.quantity, -1, variant?._id)}
+                        onClick={() => handleQuantity(prod._id, item.quantity, -1)}
                         className="px-2.5 py-0.5 text-slate-600 hover:bg-slate-100 text-xs font-bold"
                       >
                         -
@@ -151,7 +146,7 @@ export default function CartPage() {
                       <span className="px-2.5 py-0.5 text-xs font-bold text-slate-800">{item.quantity}</span>
                       <button
                         type="button"
-                        onClick={() => handleQuantity(prod._id, item.quantity, 1, variant?._id)}
+                        onClick={() => handleQuantity(prod._id, item.quantity, 1)}
                         className="px-2.5 py-0.5 text-slate-600 hover:bg-slate-100 text-xs font-bold"
                       >
                         +
@@ -160,7 +155,7 @@ export default function CartPage() {
 
                     <button
                       type="button"
-                      onClick={() => handleSaveForLater(prod._id, variant?._id)}
+                      onClick={() => handleSaveForLater(prod._id)}
                       className="text-xs font-semibold text-slate-600 hover:text-blue-600"
                     >
                       Save for Later
@@ -168,7 +163,7 @@ export default function CartPage() {
 
                     <button
                       type="button"
-                      onClick={() => handleRemove(prod._id, variant?._id)}
+                      onClick={() => handleRemove(prod._id)}
                       className="text-xs font-semibold text-red-500 hover:text-red-700"
                     >
                       Remove

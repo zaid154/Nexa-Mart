@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { useCart, useCartDrawer, useCartDrawerOpen } from "../context/cartContext.jsx";
 import { useCommerce } from "../context/settingsContext.jsx";
 import { formatINR } from "../utils/formatUtils.js";
-import { lineImage, variantLabel } from "../utils/variantMediaUtils.js";
 import { onProductImageError } from "../utils/productImageUtils.js";
 import { IconClose, IconEmptyCart } from "./icons.jsx";
 import CartQuantity from "./cartQuantity.jsx";
@@ -104,17 +103,14 @@ const CartDrawer = () => {
             <div className="flex-1 divide-y divide-ink-100 overflow-y-auto">
               {items.map((item) => {
                 const product = item.product;
-                const variantId = item.variant?._id || null;
-                const label = variantLabel(item.variant);
-                const available = item.variant
-                  ? item.variant.countInStock
-                  : product.countInStock;
+                const available = product.countInStock;
+                const img = product.images?.[0] || product.image || "";
 
                 return (
-                  <div key={`${product._id}-${variantId || "base"}`} className="flex gap-3 px-5 py-4">
+                  <div key={product._id} className="flex gap-3 px-5 py-4">
                     <Link to={`/products/${product._id}`} onClick={close} className="shrink-0">
                       <img
-                        src={lineImage(item)}
+                        src={img}
                         alt={product.name}
                         width="64"
                         height="64"
@@ -131,12 +127,10 @@ const CartDrawer = () => {
                           {product.name}
                         </p>
                       </Link>
-                      {label && <p className="mt-0.5 text-xs text-ink-500">{label}</p>}
 
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <CartQuantity
                           productId={product._id}
-                          variantId={variantId}
                           max={available}
                           size="sm"
                         />

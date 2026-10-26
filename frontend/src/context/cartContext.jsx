@@ -52,20 +52,19 @@ export const CartProvider = ({ children }) => {
     refresh();
   }, [refresh]);
 
-  const addToCart = async (productId, quantity = 1, variantId = null) => {
-    const res = await api.post("/cart", { productId, quantity, variantId });
+  const addToCart = async (productId, quantity = 1) => {
+    const res = await api.post("/cart", { productId, quantity });
     setCart(res.data);
     openDrawer();
   };
 
-  const updateCartItem = async (productId, quantity, variantId = null) => {
-    const res = await api.put(`/cart/${productId}`, { quantity, variantId });
+  const updateCartItem = async (productId, quantity) => {
+    const res = await api.put(`/cart/${productId}`, { quantity });
     setCart(res.data);
   };
 
-  const removeFromCart = async (productId, variantId = null) => {
-    const query = variantId ? `?variantId=${variantId}` : "";
-    const res = await api.delete(`/cart/${productId}${query}`);
+  const removeFromCart = async (productId) => {
+    const res = await api.delete(`/cart/${productId}`);
     setCart(res.data);
   };
 
