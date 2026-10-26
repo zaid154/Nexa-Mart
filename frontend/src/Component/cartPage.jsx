@@ -1,3 +1,4 @@
+import { IconShield } from "./icons.jsx";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/cartContext.jsx";
 import { useAuth } from "../context/authContext.jsx";
@@ -57,6 +58,14 @@ export default function CartPage() {
   const shipping = subtotal >= 5000 || subtotal === 0 ? 0 : 99;
   const total = subtotal + shipping;
 
+  const mrpTotal = cart.items.reduce((sum, item) => {
+    const prod = item.product || {};
+    const variant = item.variant || null;
+    const mrp = variant?.mrp || prod.mrp || item.unitPrice || prod.price || 0;
+    return sum + mrp * item.quantity;
+  }, 0);
+  const totalSavings = mrpTotal > subtotal ? mrpTotal - subtotal : 0;
+
   const handleQuantity = async (productId, currentQty, delta, variantId) => {
     const next = currentQty + delta;
     if (next <= 0) {
@@ -90,8 +99,8 @@ export default function CartPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">
+    <div className="w-full pb-8">
+      <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4">
         Shopping Cart ({cart.items.length} {cart.items.length === 1 ? "item" : "items"})
       </h1>
 
@@ -172,43 +181,66 @@ export default function CartPage() {
         </div>
 
         {/* Right: Price Breakdown Card (4 cols) */}
-        <div className="lg:col-span-4 bg-white rounded-lg border border-slate-200 p-6 shadow-xs flex flex-col gap-4 sticky top-24">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 pb-3 border-b border-slate-100">
-            Price Details
-          </h2>
+        <div className="lg:col-span-4 flex flex-col gap-4 sticky top-4">
+          <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-xs flex flex-col gap-4">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 pb-3 border-b border-slate-100">
+              Price Details
+            </h2>
 
-          <div className="flex flex-col gap-2.5 text-xs">
-            <div className="flex justify-between text-slate-600">
-              <span>Price ({cart.items.length} items)</span>
-              <span className="font-semibold">{formatINR(subtotal)}</span>
+            <div className="flex flex-col gap-3 text-xs">
+              <div className="flex justify-between text-slate-600">
+                <span>Price ({cart.items.length} items)</span>
+                <span className="font-semibold">{formatINR(mrpTotal > subtotal ? mrpTotal : subtotal)}</span>
+              </div>
+
+              {totalSavings > 0 && (
+                <div className="flex justify-between text-emerald-600">
+                  <span>Discount</span>
+                  <span className="font-semibold">- {formatINR(totalSavings)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between text-slate-600">
+                <span>Delivery Charges</span>
+                <span className="font-semibold text-emerald-600">
+                  {shipping === 0 ? "FREE" : formatINR(shipping)}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-base font-bold text-slate-900 pt-3 border-t border-slate-100">
+                <span>Total Amount</span>
+                <span className="text-blue-600">{formatINR(total)}</span>
+              </div>
             </div>
 
-            <div className="flex justify-between text-slate-600">
-              <span>Delivery Charges</span>
-              <span className="font-semibold text-green-600">
-                {shipping === 0 ? "FREE" : formatINR(shipping)}
-              </span>
-            </div>
+            {totalSavings > 0 && (
+              <div className="bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-2 rounded border border-emerald-100">
+                You will save {formatINR(totalSavings)} on this order
+              </div>
+            )}
 
-            <div className="flex justify-between text-base font-bold text-slate-900 pt-3 border-t border-slate-100">
-              <span>Total Amount</span>
-              <span className="text-blue-600">{formatINR(total)}</span>
-            </div>
+            {subtotal < 5000 && (
+              <p className="text-2xs text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-100">
+                Add items worth <strong>{formatINR(5000 - subtotal)}</strong> more to get <strong>FREE Delivery</strong>.
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => navigate("/checkout")}
+              className="w-full py-3.5 px-4 bg-[#fb641b] hover:bg-[#e85a14] text-white font-bold rounded-md shadow-xs text-sm uppercase tracking-wider transition-colors"
+            >
+              Proceed to Checkout
+            </button>
           </div>
 
-          {subtotal < 5000 && (
-            <p className="text-2xs text-slate-500 bg-slate-50 p-2 rounded border border-slate-100">
-              Add items worth <strong>{formatINR(5000 - subtotal)}</strong> more to get <strong>FREE Delivery</strong>.
+          {/* Flipkart / Amazon style Trust Assurance below price card */}
+          <div className="flex items-center gap-3 px-3 py-1 text-slate-500 text-xs">
+            <IconShield size={28} className="text-slate-400 shrink-0" />
+            <p className="text-[11px] leading-relaxed text-slate-500">
+              Safe and Secure Payments. 100% Authentic products. Easy 7-day returns.
             </p>
-          )}
-
-          <button
-            type="button"
-            onClick={() => navigate("/checkout")}
-            className="w-full py-3.5 px-4 bg-[#fb641b] hover:bg-[#e85a14] text-white font-bold rounded-md shadow-xs text-sm transition-colors mt-2"
-          >
-            Proceed to Checkout
-          </button>
+          </div>
         </div>
       </div>
     </div>
