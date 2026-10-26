@@ -94,10 +94,10 @@ export default function CatalogPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="max-w-[1360px] mx-auto px-3 sm:px-4 lg:px-6 py-4">
       {/* Search Header Banner */}
       {activeSearch && (
-        <div className="mb-5 p-3.5 bg-blue-50 border border-blue-200 rounded-md flex items-center justify-between">
+        <div className="mb-4 p-3.5 bg-blue-50 border border-blue-200 rounded-xs flex items-center justify-between">
           <span className="text-sm text-blue-900 font-medium">
             Search results for <strong className="text-blue-700">"{activeSearch}"</strong> ({total} items found)
           </span>
@@ -111,9 +111,9 @@ export default function CatalogPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-5">
         {/* Left Filter Sidebar */}
-        <aside className="bg-white rounded-lg border border-slate-200 p-5 self-start shadow-xs flex flex-col gap-5">
+        <aside className="bg-white rounded-xs border border-slate-200 p-4 sm:p-5 self-start shadow-xs flex flex-col gap-5">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <h2 className="text-sm font-bold uppercase tracking-wide text-slate-800">Filters</h2>
             <button
@@ -184,9 +184,9 @@ export default function CatalogPage() {
         </aside>
 
         {/* Right Product Grid Area */}
-        <section className="md:col-span-3 flex flex-col gap-5">
+        <section className="md:col-span-3 flex flex-col gap-4">
           {/* Top Sort & Count Bar */}
-          <div className="bg-white rounded-lg border border-slate-200 p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+          <div className="bg-white rounded-xs border border-slate-200 p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
             <span className="text-xs font-medium text-slate-600">
               Showing <strong className="text-slate-900">{products.length}</strong> of {total} products
             </span>

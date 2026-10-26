@@ -252,40 +252,43 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12">
-        {/* 1. Flipkart-style Top Breadcrumb */}
-        <nav className="text-[12px] text-[#878787] mb-4 px-0.5 flex items-center flex-wrap gap-1 font-normal">
-          <Link to="/" className="hover:text-[#2874f0] transition-colors">
-            Home
-          </Link>
-          <span>/</span>
-          <Link
-            to={`/products?category=${encodeURIComponent(product.category)}`}
-            className="hover:text-[#2874f0] transition-colors"
-          >
-            {product.category}
-          </Link>
-          <span>/</span>
-          {product.brand && (
-            <>
-              <Link
-                to={`/products?brand=${encodeURIComponent(product.brand)}`}
-                className="hover:text-[#2874f0] transition-colors"
-              >
-                {product.brand}
-              </Link>
-              <span className="px-1 text-slate-400">›</span>
-              <span>/</span>
-            </>
-          )}
-          <span className="text-[#212121] truncate max-w-xs sm:max-w-md font-normal">
-            {product.name} ({activeColor})
-          </span>
-        </nav>
+    <div className="min-h-screen bg-[#f1f3f6] py-3 sm:py-4">
+      <div className="max-w-[1360px] mx-auto px-3 sm:px-4 lg:px-6">
+        
+        {/* Main Flipkart White Card Container */}
+        <div className="bg-white rounded-xs border border-slate-200 p-4 sm:p-6 shadow-xs">
+          {/* 1. Flipkart-style Top Breadcrumb */}
+          <nav className="text-[12px] text-[#878787] mb-3.5 flex items-center flex-wrap gap-1 font-normal">
+            <Link to="/" className="hover:text-[#2874f0] transition-colors">
+              Home
+            </Link>
+            <span>/</span>
+            <Link
+              to={`/products?category=${encodeURIComponent(product.category)}`}
+              className="hover:text-[#2874f0] transition-colors"
+            >
+              {product.category}
+            </Link>
+            <span>/</span>
+            {product.brand && (
+              <>
+                <Link
+                  to={`/products?brand=${encodeURIComponent(product.brand)}`}
+                  className="hover:text-[#2874f0] transition-colors"
+                >
+                  {product.brand}
+                </Link>
+                <span className="px-1 text-slate-400">›</span>
+                <span>/</span>
+              </>
+            )}
+            <span className="text-[#212121] truncate max-w-xs sm:max-w-md font-normal">
+              {product.name} ({activeColor})
+            </span>
+          </nav>
 
-        {/* 2. Main Flipkart Hero Section (Exact 1:1 match with reference screenshot) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
+          {/* 2. Main Flipkart Hero Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
           
           {/* LEFT COLUMN (58% width): Dual Side-by-Side Large Rounded Cards */}
           <div className="lg:col-span-7 flex flex-col gap-2.5">
@@ -623,19 +626,20 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
-
-        {/* 4. Similar Products Section */}
-        {related.length > 0 && (
-          <div className="mt-8 border-t border-slate-200 pt-6">
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Similar Products</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-              {related.map((p) => (
-                <ProductCard key={p._id} product={p} />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
     </div>
-  );
+
+    {/* 4. Similar Products Section */}
+    {related.length > 0 && (
+      <div className="mt-4 bg-white rounded-xs border border-slate-200 p-4 sm:p-6 shadow-xs">
+        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Similar Products</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+          {related.map((p) => (
+            <ProductCard key={p._id} product={p} />
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+);
 }

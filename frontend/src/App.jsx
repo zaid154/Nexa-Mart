@@ -51,13 +51,13 @@ export default function App() {
   const isAdminPage = location.pathname.startsWith("/admin");
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-[#f1f3f6]">
       <BackendWakingBanner />
       {!isAdminPage && <Navbar />}
       {!isAdminPage && <CartDrawer />}
       {!isAdminPage && <MobileBottomNav />}
 
-      <main className="flex flex-1 flex-col">
+      <main className="flex flex-1 flex-col bg-[#f1f3f6]">
         <PageShell>
           <Suspense fallback={<PageLoader />}>
             <Routes>

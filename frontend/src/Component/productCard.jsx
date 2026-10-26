@@ -68,9 +68,9 @@ const ProductCard = ({ product, showBrand = true }) => {
   const outOfStock = stock === 0;
 
   return (
-    <div className="product-card group flex flex-col justify-between">
+    <div className="bg-white rounded-xs border border-slate-200 p-3 sm:p-4 flex flex-col justify-between hover:shadow-md transition-shadow group">
       <div>
-        <div className="relative aspect-square overflow-hidden bg-sand-100/60 p-3 sm:p-4">
+        <div className="relative aspect-square overflow-hidden bg-white p-2 sm:p-3 flex items-center justify-center">
           <Link to={`/products/${product._id}`} className="block h-full w-full">
             <img
               src={image}
@@ -103,7 +103,7 @@ const ProductCard = ({ product, showBrand = true }) => {
           ) : null}
         </div>
 
-        <div className="p-3 sm:p-4">
+        <div className="pt-2.5">
           {showBrand && product.brand && (
             <span className="brand-label text-[10px] sm:text-xs">{product.brand}</span>
           )}
@@ -114,7 +114,7 @@ const ProductCard = ({ product, showBrand = true }) => {
         </div>
       </div>
 
-      <div className="p-3 pt-0 sm:p-4 sm:pt-0">
+      <div className="pt-2">
         <div className="flex items-center gap-2">
           {product.rating > 0 && (
             <div className="rating-pill text-[10px] sm:text-xs">
