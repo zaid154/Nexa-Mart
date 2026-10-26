@@ -92,18 +92,6 @@ export default function OrderDetailsPage() {
 
   return (
     <div className="w-full pb-8">
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-xs text-slate-500 mb-3">
-        <Link to="/orders" className="hover:text-blue-600 flex items-center gap-1 font-medium transition-colors">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Orders
-        </Link>
-        <span>/</span>
-        <span className="text-slate-700 font-semibold">Order #{order._id?.slice(-8).toUpperCase()}</span>
-      </div>
-
       {/* Just Placed Success Banner */}
       {justPlaced && (
         <div className="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg p-4 flex items-center justify-between gap-3 shadow-xs">

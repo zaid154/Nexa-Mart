@@ -147,21 +147,6 @@ export default function CheckoutPage() {
 
   return (
     <div className="w-full pb-6">
-      {/* Back to Cart Navigation */}
-      <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
-        <Link
-          to="/cart"
-          className="hover:text-blue-600 flex items-center gap-1 font-medium transition-colors"
-        >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Cart
-        </Link>
-        <span>/</span>
-        <span className="text-slate-800 font-semibold">Checkout</span>
-      </div>
-
       <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mb-3.5">Checkout</h1>
 
       <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">

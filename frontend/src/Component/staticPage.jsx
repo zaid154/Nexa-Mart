@@ -49,11 +49,6 @@ const StaticPage = () => {
 
   return (
     <div className="animate-fade-in mx-auto max-w-3xl">
-      <nav className="mb-3 flex items-center gap-1.5 text-xs text-ink-400" aria-label="Breadcrumb">
-        <Link to="/" className="hover:text-accent-600">Home</Link>
-        <span aria-hidden="true">›</span>
-        <span className="font-medium text-ink-700">{page.title}</span>
-      </nav>
       <article className="card p-6 sm:p-8">
         <h1 className="mb-5 text-2xl font-bold text-ink-900 sm:text-3xl">{page.title}</h1>
         <div
