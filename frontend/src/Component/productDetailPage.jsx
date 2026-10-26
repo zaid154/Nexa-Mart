@@ -252,94 +252,95 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="w-full pb-10 bg-white">
-      {/* 1. Flipkart-style Top Breadcrumb */}
-      <nav className="text-[12px] text-[#878787] mb-3 px-1 flex items-center flex-wrap gap-1 font-normal">
-        <Link to="/" className="hover:text-[#2874f0] transition-colors">
-          Home
-        </Link>
-        <span>/</span>
-        <Link
-          to={`/products?category=${encodeURIComponent(product.category)}`}
-          className="hover:text-[#2874f0] transition-colors"
-        >
-          {product.category}
-        </Link>
-        <span>/</span>
-        {product.brand && (
-          <>
-            <Link
-              to={`/products?brand=${encodeURIComponent(product.brand)}`}
-              className="hover:text-[#2874f0] transition-colors"
-            >
-              {product.brand}
-            </Link>
-            <span className="px-1 text-slate-400">›</span>
-            <span>/</span>
-          </>
-        )}
-        <span className="text-[#212121] truncate max-w-xs sm:max-w-md font-normal">
-          {product.name} ({activeColor})
-        </span>
-      </nav>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12">
+        {/* 1. Flipkart-style Top Breadcrumb */}
+        <nav className="text-[12px] text-[#878787] mb-4 px-0.5 flex items-center flex-wrap gap-1 font-normal">
+          <Link to="/" className="hover:text-[#2874f0] transition-colors">
+            Home
+          </Link>
+          <span>/</span>
+          <Link
+            to={`/products?category=${encodeURIComponent(product.category)}`}
+            className="hover:text-[#2874f0] transition-colors"
+          >
+            {product.category}
+          </Link>
+          <span>/</span>
+          {product.brand && (
+            <>
+              <Link
+                to={`/products?brand=${encodeURIComponent(product.brand)}`}
+                className="hover:text-[#2874f0] transition-colors"
+              >
+                {product.brand}
+              </Link>
+              <span className="px-1 text-slate-400">›</span>
+              <span>/</span>
+            </>
+          )}
+          <span className="text-[#212121] truncate max-w-xs sm:max-w-md font-normal">
+            {product.name} ({activeColor})
+          </span>
+        </nav>
 
-      {/* 2. Main Flipkart Hero Section (Exact 1:1 match with reference screenshot) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-6 items-start">
-        
-        {/* LEFT COLUMN (58% width): Dual Side-by-Side Large Rounded Cards */}
-        <div className="lg:col-span-7 flex flex-col gap-2.5">
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            
-            {/* Card 1: Front / Primary Showcase Panel */}
-            <div className="h-[380px] sm:h-[420px] lg:h-[440px] rounded-2xl bg-[#f0f2f5] p-5 flex items-center justify-center overflow-hidden relative">
-              <img
-                src={primaryDisplayImage}
-                alt={product.name}
-                onError={onProductImageError}
-                className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-300 hover:scale-105"
-              />
-            </div>
+        {/* 2. Main Flipkart Hero Section (Exact 1:1 match with reference screenshot) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
+          
+          {/* LEFT COLUMN (58% width): Dual Side-by-Side Large Rounded Cards */}
+          <div className="lg:col-span-7 flex flex-col gap-2.5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              
+              {/* Card 1: Front / Primary Showcase Panel */}
+              <div className="h-[380px] sm:h-[420px] lg:h-[450px] rounded-2xl bg-[#f0f2f5] p-6 sm:p-7 flex items-center justify-center overflow-hidden relative">
+                <img
+                  src={primaryDisplayImage}
+                  alt={product.name}
+                  onError={onProductImageError}
+                  className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-300 hover:scale-105"
+                />
+              </div>
 
-            {/* Card 2: Back / Secondary Showcase Panel with Wishlist & Share */}
-            <div className="h-[380px] sm:h-[420px] lg:h-[440px] rounded-2xl bg-[#f0f2f5] p-5 flex items-center justify-center overflow-hidden relative">
-              <img
-                src={secondaryDisplayImage}
-                alt={product.name}
-                onError={onProductImageError}
-                className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-300 hover:scale-105"
-              />
+              {/* Card 2: Back / Secondary Showcase Panel with Wishlist & Share */}
+              <div className="h-[380px] sm:h-[420px] lg:h-[450px] rounded-2xl bg-[#f0f2f5] p-6 sm:p-7 flex items-center justify-center overflow-hidden relative">
+                <img
+                  src={secondaryDisplayImage}
+                  alt={product.name}
+                  onError={onProductImageError}
+                  className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-300 hover:scale-105"
+                />
 
-              {/* Top-Right Floating Wishlist & Share Buttons */}
-              <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
-                <button
-                  type="button"
-                  onClick={handleToggleWishlist}
-                  className="w-9 h-9 rounded-full shadow-sm bg-white border border-slate-200 flex items-center justify-center hover:scale-110 transition-transform"
-                  title={isWished ? "Remove from wishlist" : "Add to wishlist"}
-                >
-                  <svg
-                    className={`w-4 h-4 ${isWished ? "fill-[#ff4343] text-[#ff4343]" : "fill-none stroke-slate-700"}`}
-                    viewBox="0 0 24 24"
-                    strokeWidth="2"
+                {/* Top-Right Floating Wishlist & Share Buttons */}
+                <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
+                  <button
+                    type="button"
+                    onClick={handleToggleWishlist}
+                    className="w-9 h-9 rounded-full shadow-sm bg-white border border-slate-200 flex items-center justify-center hover:scale-110 transition-transform"
+                    title={isWished ? "Remove from wishlist" : "Add to wishlist"}
                   >
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                  </svg>
-                </button>
+                    <svg
+                      className={`w-4 h-4 ${isWished ? "fill-[#ff4343] text-[#ff4343]" : "fill-none stroke-slate-700"}`}
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                    >
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  className="w-9 h-9 rounded-full shadow-sm bg-white border border-slate-200 flex items-center justify-center hover:scale-110 transition-transform text-slate-700"
-                  title="Share product link"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
-                </button>
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    className="w-9 h-9 rounded-full shadow-sm bg-white border border-slate-200 flex items-center justify-center hover:scale-110 transition-transform text-slate-700"
+                    title="Share product link"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
         {/* RIGHT COLUMN (42% width): The 4 Flipkart Stacked Blocks */}
         <div className="lg:col-span-5 flex flex-col gap-3 justify-between">
@@ -623,17 +624,18 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* 4. Similar Products Section */}
-      {related.length > 0 && (
-        <div className="mt-8 border-t border-slate-200 pt-6">
-          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Similar Products</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-            {related.map((p) => (
-              <ProductCard key={p._id} product={p} />
-            ))}
+        {/* 4. Similar Products Section */}
+        {related.length > 0 && (
+          <div className="mt-8 border-t border-slate-200 pt-6">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">Similar Products</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+              {related.map((p) => (
+                <ProductCard key={p._id} product={p} />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
