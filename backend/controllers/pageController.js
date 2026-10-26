@@ -48,18 +48,15 @@ const DEFAULT_PAGES = [
     content:
       "<h2>Frequently Asked Questions</h2><p><strong>Is this a real store?</strong><br/>No. NexaMart is a portfolio project built by Mohd Zaid to demonstrate full-stack MERN development skills.</p><p><strong>Can I place real orders?</strong><br/>You can go through the full checkout flow, but no real payments are charged and no products are shipped.</p><p><strong>What technologies are used?</strong><br/>React, Node.js, Express, MongoDB, Razorpay (test mode), Cloudinary, and Tailwind CSS.</p><p><strong>How do I contact the developer?</strong><br/>Email: trendykart.app@gmail.com or visit the <a href='/page/contact'>Contact Us</a> page.</p>",
   },
-  {
-    slug: "sell",
-    title: "Sell on NexaMart",
-    content:
-      "<h2>Sell on NexaMart</h2><p>NexaMart is a single-vendor e-commerce demo project. All products are managed through the admin dashboard.</p><p>This project showcases a complete seller workflow including product listing, inventory management, order fulfilment pipeline, returns processing and analytics dashboard.</p><p>For any queries, contact: <strong>trendykart.app@gmail.com</strong></p>",
-  },
 ];
 
 // Make sure every default page exists. Only missing slugs are inserted, so
 // admin edits are never overwritten and a newly added default page still
 // appears on an existing database.
 const ensureDefaultPages = async () => {
+  // Ensure 'sell' page is removed since NexaMart is a single-vendor store
+  await Page.deleteMany({ slug: "sell" });
+
   const existing = await Page.find().select("slug").lean();
   const known = new Set(existing.map((p) => p.slug));
 

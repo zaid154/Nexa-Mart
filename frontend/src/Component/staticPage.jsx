@@ -13,6 +13,13 @@ const StaticPage = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (slug === "sell") {
+      setPage(null);
+      setError("Page not found");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError("");
     api

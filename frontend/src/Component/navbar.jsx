@@ -199,12 +199,6 @@ const Navbar = () => {
                   >
                     24x7 Customer Care
                   </Link>
-                  <Link
-                    to="/page/sell"
-                    className="block rounded-md px-3 py-2 text-sm font-semibold text-accent-500 hover:bg-accent-50"
-                  >
-                    Become a Seller
-                  </Link>
                 </div>
               )}
             </div>
