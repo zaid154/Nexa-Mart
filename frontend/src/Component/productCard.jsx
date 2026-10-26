@@ -147,20 +147,17 @@ const ProductCard = ({ product, showBrand = true }) => {
         {!outOfStock && (
           <div className="pointer-events-auto relative z-20 mt-2">
             {inCart ? (
-              <div className="flex items-center justify-between gap-2 rounded-sm border border-copper-100 bg-copper-50 px-2 py-1.5">
-                <span className="text-xs font-semibold text-copper-600">In cart</span>
-                <CartQuantity
-                  productId={product._id}
-                  max={stock}
-                  size="sm"
-                />
-              </div>
+              <CartQuantity
+                productId={product._id}
+                max={stock}
+                variant="button"
+              />
             ) : (
               <button
                 type="button"
                 onClick={handleAdd}
                 disabled={adding}
-                className="btn btn-cart btn-sm w-full gap-1.5"
+                className="btn btn-cart btn-sm w-full h-8 sm:h-9 gap-1.5"
               >
                 <IconCart size={14} />
                 {adding ? "Adding..." : "Add to cart"}

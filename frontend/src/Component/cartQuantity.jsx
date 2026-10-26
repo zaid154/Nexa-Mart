@@ -18,7 +18,7 @@ export const findCartLine = (cart, productId) => {
   );
 };
 
-const CartQuantity = ({ productId, max, size = "sm", onEmpty }) => {
+const CartQuantity = ({ productId, max, size = "sm", variant = "default", onEmpty }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
@@ -57,6 +57,53 @@ const CartQuantity = ({ productId, max, size = "sm", onEmpty }) => {
       setBusy(false);
     }
   };
+
+  if (variant === "button") {
+    const atMax = typeof max === "number" && quantity >= max;
+    return (
+      <div
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        className={`w-full h-8 sm:h-9 rounded-xs bg-[#ff9f00] text-white flex items-center justify-between px-1.5 shadow-xs select-none ${
+          busy ? "opacity-75" : ""
+        }`}
+      >
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            apply(quantity - 1);
+          }}
+          disabled={busy}
+          aria-label="Decrease quantity"
+          className="w-6 h-6 sm:w-7 sm:h-7 rounded-xs bg-white text-[#ff9f00] font-black text-sm flex items-center justify-center hover:bg-amber-50 active:scale-95 transition-all disabled:opacity-50 cursor-pointer shadow-2xs"
+        >
+          −
+        </button>
+        <div className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider text-white">
+          <span className="text-sm font-extrabold">{quantity}</span>
+          <span className="text-[10px] font-semibold opacity-95">in cart</span>
+        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            apply(quantity + 1);
+          }}
+          disabled={busy || atMax}
+          aria-label="Increase quantity"
+          title={atMax ? "No more stock available" : undefined}
+          className="w-6 h-6 sm:w-7 sm:h-7 rounded-xs bg-white text-[#ff9f00] font-black text-sm flex items-center justify-center hover:bg-amber-50 active:scale-95 transition-all disabled:opacity-50 cursor-pointer shadow-2xs"
+        >
+          +
+        </button>
+      </div>
+    );
+  }
 
   return (
     <QuantityStepper
