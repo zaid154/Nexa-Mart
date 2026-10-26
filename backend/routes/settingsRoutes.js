@@ -2,7 +2,7 @@
 
 import express from "express";
 import { getSettings, getPublicSettings, getInvoiceSettings, updateSettings, sendTestEmail } from "../controllers/settingsController.js";
-import { protect, admin } from "../middleware/auth.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

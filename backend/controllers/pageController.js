@@ -1,7 +1,7 @@
 // Controller for CMS content pages (About, Contact, Privacy, Terms, etc.).
 
 import asyncHandler from "express-async-handler";
-import Page from "../models/Page.js";
+import Page from "../models/pageModel.js";
 
 // The default footer pages. Created automatically the first time the admin
 // opens the Pages editor, so there is always something to edit.

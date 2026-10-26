@@ -1,8 +1,8 @@
 // Seed database with initial products, users, coupons, and sample data.
 // Run with: npm run seed
 
-import "./config/env.js";
-import { connectDB, disconnectDB } from "./config/db.js";
+import "./config/envConfig.js";
+import { connectDB, disconnectDB } from "./config/dbConfig.js";
 import { seedDatabase } from "./seed/seedData.js";
 
 const run = async () => {

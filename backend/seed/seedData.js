@@ -15,13 +15,13 @@
 //    processing, packed, shipped, out_for_delivery, delivered, cancelled,
 //    return_requested) with matching trackingHistory entries.
 
-import User from "../models/User.js";
-import Product from "../models/Product.js";
-import Review from "../models/Review.js";
-import Order from "../models/Order.js";
-import Coupon from "../models/Coupon.js";
+import User from "../models/userModel.js";
+import Product from "../models/productModel.js";
+import Review from "../models/reviewModel.js";
+import Order from "../models/orderModel.js";
+import Coupon from "../models/couponModel.js";
 import { catalogue, variantsByProduct } from "./catalogue.js";
-import { generateVariantSku } from "../utils/sku.js";
+import { generateVariantSku } from "../utils/skuUtils.js";
 
 
 

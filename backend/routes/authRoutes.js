@@ -11,8 +11,8 @@ import {
   getProfile,
   updateProfile,
 } from "../controllers/authController.js";
-import { protect } from "../middleware/auth.js";
-import { validate } from "../middleware/validate.js";
+import { protect } from "../middleware/authMiddleware.js";
+import { validate } from "../middleware/validateMiddleware.js";
 import {
   registerSchema,
   loginSchema,

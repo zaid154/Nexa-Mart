@@ -49,50 +49,53 @@ NexaMart is a full-stack MERN e-commerce web application inspired by modern Indi
 ```
 Nexa-Mart/
 ├── backend/
-│   ├── config/              # MongoDB connection, env loader, Razorpay init
-│   ├── controllers/         # Product, Order, Cart, Auth, and Admin controllers
-│   ├── middleware/          # Auth verification, error handling, file upload
-│   ├── models/              # Mongoose schemas (Product, Order, User, Review, Coupon)
-│   ├── routes/              # REST API routes (/products, /orders, /cart, /auth)
-│   ├── seed/                # Seed catalogue data and helpers
-│   ├── seedData.js          # Database seeding script (npm run seed)
+│   ├── config/              # dbConfig.js, envConfig.js, razorpayConfig.js
+│   ├── controllers/         # productController.js, orderController.js, cartController.js
+│   ├── middleware/          # authMiddleware.js, errorMiddleware.js, uploadMiddleware.js
+│   ├── models/              # productModel.js, orderModel.js, userModel.js, otpModel.js
+│   ├── routes/              # productRoutes.js, orderRoutes.js, authRoutes.js
+│   ├── seed/                # catalogueData.js, seedData.js, uploadCloudinary.js
+│   ├── services/            # emailService.js, orderService.js, tokenService.js
+│   ├── utils/               # formatUtils.js, couponUtils.js, productImageUtils.js
+│   ├── validators/          # authValidators.js, orderValidators.js
+│   ├── seedData.js          # Database seeder entry point (npm run seed)
 │   ├── server.js            # Express application entry point (npm start)
 │   ├── .env.example
 │   └── package.json
 ├── frontend/
 │   ├── src/
-│   │   ├── api/             # Axios instance & token interceptors
-│   │   ├── Component/       # All pages & UI components (one file per page)
-│   │   │   ├── HomePage.jsx
-│   │   │   ├── CatalogPage.jsx
-│   │   │   ├── ProductDetailPage.jsx
-│   │   │   ├── CartPage.jsx
-│   │   │   ├── CheckoutPage.jsx
-│   │   │   ├── OrdersPage.jsx
-│   │   │   ├── OrderDetailsPage.jsx
-│   │   │   ├── WishlistPage.jsx
-│   │   │   ├── LoginPage.jsx
-│   │   │   ├── RegisterPage.jsx
-│   │   │   ├── ProfilePage.jsx
-│   │   │   ├── InvoicePage.jsx
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── Footer.jsx
-│   │   │   ├── ProductCard.jsx
-│   │   │   ├── CartDrawer.jsx
+│   │   ├── api/             # apiClient.js
+│   │   ├── Component/       # camelCase storefront pages & UI components
+│   │   │   ├── homePage.jsx
+│   │   │   ├── catalogPage.jsx
+│   │   │   ├── productDetailPage.jsx
+│   │   │   ├── cartPage.jsx
+│   │   │   ├── checkoutPage.jsx
+│   │   │   ├── ordersPage.jsx
+│   │   │   ├── orderDetailsPage.jsx
+│   │   │   ├── wishlistPage.jsx
+│   │   │   ├── loginPage.jsx
+│   │   │   ├── registerPage.jsx
+│   │   │   ├── profilePage.jsx
+│   │   │   ├── invoicePage.jsx
+│   │   │   ├── navbar.jsx
+│   │   │   ├── footer.jsx
+│   │   │   ├── productCard.jsx
+│   │   │   ├── cartDrawer.jsx
 │   │   │   └── admin/       # Dedicated Seller Hub pages
-│   │   │       ├── AdminLayout.jsx
-│   │   │       ├── AdminDashboardPage.jsx
-│   │   │       ├── AdminProductsPage.jsx
-│   │   │       ├── AdminProductFormPage.jsx
-│   │   │       ├── AdminOrdersPage.jsx
-│   │   │       ├── AdminOrderDetailPage.jsx
-│   │   │       ├── AdminCouponsPage.jsx
-│   │   │       ├── AdminReturnsPage.jsx
-│   │   │       ├── AdminUsersPage.jsx
-│   │   │       ├── AdminSettingsPage.jsx
-│   │   │       └── AdminLogsPage.jsx
-│   │   ├── context/         # AuthContext, CartContext, ConfirmContext, ToastContext
-│   │   ├── utils/           # format.js, payment.js, pricing.js
+│   │   │       ├── adminLayout.jsx
+│   │   │       ├── adminDashboardPage.jsx
+│   │   │       ├── adminProductsPage.jsx
+│   │   │       ├── adminProductFormPage.jsx
+│   │   │       ├── adminOrdersPage.jsx
+│   │   │       ├── adminOrderDetailPage.jsx
+│   │   │       ├── adminCouponsPage.jsx
+│   │   │       ├── adminReturnsPage.jsx
+│   │   │       ├── adminUsersPage.jsx
+│   │   │       ├── adminSettingsPage.jsx
+│   │   │       └── adminLogsPage.jsx
+│   │   ├── context/         # authContext.jsx, cartContext.jsx, toastContext.jsx
+│   │   ├── utils/           # formatUtils.js, paymentUtils.js, pricingUtils.js
 │   │   ├── App.jsx          # Declarative React Router routing switch
 │   │   └── main.jsx         # Application root mount point
 │   ├── index.html

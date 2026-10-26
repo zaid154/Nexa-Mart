@@ -1,6 +1,6 @@
 // Helpers and constants for order status, returns, refunds and stock.
 
-import Product from "../models/Product.js";
+import Product from "../models/productModel.js";
 
 // All the statuses an order can have, in order of the normal flow.
 export const ORDER_STATUSES = [

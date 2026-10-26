@@ -2,13 +2,13 @@
 
 import asyncHandler from "express-async-handler";
 import crypto from "crypto";
-import Order from "../models/Order.js";
-import User from "../models/User.js";
+import Order from "../models/orderModel.js";
+import User from "../models/userModel.js";
 import {
   getRazorpay,
   getRazorpayKeys,
   getRazorpayWebhookSecret,
-} from "../config/razorpay.js";
+} from "../config/razorpayConfig.js";
 import { adjustStock } from "../services/orderService.js";
 
 // Mark an order as paid: confirm it, reduce stock and clear the buyer's cart.

@@ -1,9 +1,9 @@
 // This controller handles the wishlist (saved products) for a logged-in user.
 
 import asyncHandler from "express-async-handler";
-import User from "../models/User.js";
-import Product from "../models/Product.js";
-import { productToView } from "../utils/productView.js";
+import User from "../models/userModel.js";
+import Product from "../models/productModel.js";
+import { productToView } from "../utils/productViewUtils.js";
 
 // Build the wishlist as a clean list of product views.
 const buildWishlist = async (req, userId) => {

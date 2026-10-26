@@ -9,7 +9,7 @@ import {
   updateCoupon,
   deleteCoupon,
 } from "../controllers/couponController.js";
-import { protect, admin } from "../middleware/auth.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

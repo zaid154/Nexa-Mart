@@ -1,10 +1,10 @@
-import "../config/env.js";
+import "../config/envConfig.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { v2 as cloudinary } from "cloudinary";
-import { connectDB, disconnectDB } from "../config/db.js";
-import Product from "../models/Product.js";
+import { connectDB, disconnectDB } from "../config/dbConfig.js";
+import Product from "../models/productModel.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, "../../../");
@@ -116,7 +116,7 @@ const imgs = (slug) => {
   );
 
   fs.writeFileSync(cataloguePath, catalogueContent);
-  console.log("[Catalogue] Updated backend/src/seed/catalogue.js to use Cloudinary mapping.");
+  console.log("[Catalogue] Updated backend/src/seed/catalogueData.js to use Cloudinary mapping.");
 
   await disconnectDB();
   console.log(`\n🎉 [Finished] Successfully uploaded ${totalUploaded} images to Cloudinary and synchronized MongoDB Atlas!\n`);

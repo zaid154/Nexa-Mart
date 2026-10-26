@@ -1,9 +1,9 @@
 // This controller handles product reviews (read, create/update, delete).
 
 import asyncHandler from "express-async-handler";
-import Review from "../models/Review.js";
-import Product from "../models/Product.js";
-import Order from "../models/Order.js";
+import Review from "../models/reviewModel.js";
+import Product from "../models/productModel.js";
+import Order from "../models/orderModel.js";
 
 // GET /api/reviews/product/:productId  - all reviews for a product.
 export const getProductReviews = asyncHandler(async (req, res) => {

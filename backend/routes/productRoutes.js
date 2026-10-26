@@ -13,9 +13,9 @@ import {
   updateProduct,
   deleteProduct,
 } from "../controllers/productController.js";
-import { protect, admin } from "../middleware/auth.js";
-import { optionalAuth } from "../middleware/optionalAuth.js";
-import { upload } from "../middleware/upload.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
+import { optionalAuth } from "../middleware/optionalAuthMiddleware.js";
+import { upload } from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 

@@ -5,7 +5,7 @@
 // send over Brevo's HTTPS API instead. Without the key we use SMTP as before.
 
 import nodemailer from "nodemailer";
-import Settings from "../models/Settings.js";
+import Settings from "../models/settingsModel.js";
 
 // Brevo's "send a transactional email" endpoint.
 const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";

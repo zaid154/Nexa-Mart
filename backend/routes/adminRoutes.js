@@ -22,7 +22,7 @@ import {
   updateUserStatus,
   deleteUser,
 } from "../controllers/adminController.js";
-import { protect, admin } from "../middleware/auth.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

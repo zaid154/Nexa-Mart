@@ -1,11 +1,11 @@
 import asyncHandler from "express-async-handler";
-import Order from "../models/Order.js";
-import User from "../models/User.js";
-import Settings from "../models/Settings.js";
-import { logActivity } from "../utils/logger.js";
-import { validateCoupon, recordCouponUse, releaseCouponUse } from "../utils/coupons.js";
+import Order from "../models/orderModel.js";
+import User from "../models/userModel.js";
+import Settings from "../models/settingsModel.js";
+import { logActivity } from "../utils/loggerUtils.js";
+import { validateCoupon, recordCouponUse, releaseCouponUse } from "../utils/couponUtils.js";
 import { adjustStock, buildReturnImageUrls, canCancel, canReturn, RETURN_REASONS } from "../services/orderService.js";
-import { buildImageUrls } from "../utils/productView.js";
+import { buildImageUrls } from "../utils/productViewUtils.js";
 
 // Fetch current commerce pricing rules from settings
 const getPricingRules = async () => {

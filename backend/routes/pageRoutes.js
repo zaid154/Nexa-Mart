@@ -3,7 +3,7 @@
 //   /api/admin/pages   -> admin editor (login + admin required)
 
 import express from "express";
-import { protect, admin } from "../middleware/auth.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 import {
   listPages,
   getPage,

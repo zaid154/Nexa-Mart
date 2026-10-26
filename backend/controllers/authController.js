@@ -2,10 +2,10 @@
 // register, verify email, login, logout, password reset and profile.
 
 import asyncHandler from "express-async-handler";
-import User from "../models/User.js";
-import Otp from "../models/Otp.js";
+import User from "../models/userModel.js";
+import Otp from "../models/otpModel.js";
 import { sendOtpEmail, sendOtpEmailInBackground } from "../services/emailService.js";
-import { generateOtpCode, getOtpExpiryMin } from "../utils/otp.js";
+import { generateOtpCode, getOtpExpiryMin } from "../utils/otpUtils.js";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -14,7 +14,7 @@ import {
   getRefreshCookieOptions,
   REFRESH_COOKIE,
 } from "../services/tokenService.js";
-import { logActivity } from "../utils/logger.js";
+import { logActivity } from "../utils/loggerUtils.js";
 
 // Return only the safe user fields (never the password) to send to the client.
 const sanitizeUser = (user) => {

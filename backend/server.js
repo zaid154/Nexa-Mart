@@ -1,4 +1,4 @@
-import "./config/env.js";
+import "./config/envConfig.js";
 
 import express from "express";
 import cors from "cors";
@@ -8,9 +8,9 @@ import compression from "compression";
 import rateLimit from "express-rate-limit";
 import mongoSanitize from "express-mongo-sanitize";
 
-import { connectDB } from "./config/db.js";
-import { validateEnv } from "./config/validateEnv.js";
-import { notFound, errorHandler } from "./middleware/error.js";
+import { connectDB } from "./config/dbConfig.js";
+import { validateEnv } from "./config/validateEnvConfig.js";
+import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";

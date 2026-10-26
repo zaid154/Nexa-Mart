@@ -3,10 +3,10 @@
 // returns/refunds, and user management.
 
 import asyncHandler from "express-async-handler";
-import Order from "../models/Order.js";
-import Product from "../models/Product.js";
-import User from "../models/User.js";
-import ActivityLog from "../models/ActivityLog.js";
+import Order from "../models/orderModel.js";
+import Product from "../models/productModel.js";
+import User from "../models/userModel.js";
+import ActivityLog from "../models/activityLogModel.js";
 import {
   adjustStock,
   buildReturnImageUrls,
@@ -14,9 +14,9 @@ import {
   ORDER_STATUSES,
   REFUND_STATUSES,
 } from "../services/orderService.js";
-import { logActivity } from "../utils/logger.js";
-import { getPagination, paginatedResponse } from "../utils/paginate.js";
-import { createRefund } from "../config/razorpay.js";
+import { logActivity } from "../utils/loggerUtils.js";
+import { getPagination, paginatedResponse } from "../utils/paginateUtils.js";
+import { createRefund } from "../config/razorpayConfig.js";
 
 // Convert an order into the shape the frontend expects,
 // adding full URLs for any return images.

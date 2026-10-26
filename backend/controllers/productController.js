@@ -1,10 +1,10 @@
 import asyncHandler from "express-async-handler";
-import Product from "../models/Product.js";
-import Review from "../models/Review.js";
-import { productToView } from "../utils/productView.js";
-import { generateSku, generateVariantSku, getCategoryAttributes } from "../utils/sku.js";
-import { logActivity } from "../utils/logger.js";
-import { processUploadedFiles, removeProductImages } from "../utils/productImages.js";
+import Product from "../models/productModel.js";
+import Review from "../models/reviewModel.js";
+import { productToView } from "../utils/productViewUtils.js";
+import { generateSku, generateVariantSku, getCategoryAttributes } from "../utils/skuUtils.js";
+import { logActivity } from "../utils/loggerUtils.js";
+import { processUploadedFiles, removeProductImages } from "../utils/productImageUtils.js";
 
 const parseJson = (val, fallback) => {
   if (!val) return fallback;

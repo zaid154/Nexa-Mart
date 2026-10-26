@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
-import User from "../models/User.js";
-import Product from "../models/Product.js";
-import { productToView } from "../utils/productView.js";
+import User from "../models/userModel.js";
+import Product from "../models/productModel.js";
+import { productToView } from "../utils/productViewUtils.js";
 
 // Helper: match product variant by ID
 const findVariant = (product, variantId) => {

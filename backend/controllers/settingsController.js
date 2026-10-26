@@ -2,10 +2,10 @@
 // (reading settings, updating them, and sending a test email).
 
 import asyncHandler from "express-async-handler";
-import Settings from "../models/Settings.js";
+import Settings from "../models/settingsModel.js";
 import { sendMail } from "../services/emailService.js";
-import { logActivity } from "../utils/logger.js";
-import { isValidRazorpayKeyId } from "../config/razorpay.js";
+import { logActivity } from "../utils/loggerUtils.js";
+import { isValidRazorpayKeyId } from "../config/razorpayConfig.js";
 
 // Mask sensitive credentials before returning settings to client
 const maskSettings = (settings) => {

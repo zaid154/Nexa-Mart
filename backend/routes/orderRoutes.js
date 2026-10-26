@@ -10,9 +10,9 @@ import {
   getReturnImage,
   getReturnReasons,
 } from "../controllers/orderController.js";
-import { protect } from "../middleware/auth.js";
-import { upload } from "../middleware/upload.js";
-import { validate } from "../middleware/validate.js";
+import { protect } from "../middleware/authMiddleware.js";
+import { upload } from "../middleware/uploadMiddleware.js";
+import { validate } from "../middleware/validateMiddleware.js";
 import { createOrderSchema } from "../validators/orderValidators.js";
 
 const router = express.Router();

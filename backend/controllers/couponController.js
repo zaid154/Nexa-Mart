@@ -3,10 +3,10 @@
 // - customers preview a coupon's discount at checkout
 
 import asyncHandler from "express-async-handler";
-import Coupon from "../models/Coupon.js";
-import User from "../models/User.js";
-import { validateCoupon, normalizeCode } from "../utils/coupons.js";
-import { logActivity } from "../utils/logger.js";
+import Coupon from "../models/couponModel.js";
+import User from "../models/userModel.js";
+import { validateCoupon, normalizeCode } from "../utils/couponUtils.js";
+import { logActivity } from "../utils/loggerUtils.js";
 
 // Hide the heavy per-user usage list when returning coupons to the admin UI.
 const couponToView = (coupon) => {
