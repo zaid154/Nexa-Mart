@@ -3,7 +3,7 @@ import {
   getProducts, getCollections, getAdminProducts, getCategoryAttributeTemplates,
   getFilters, getProductById, getProductImage, createProduct, updateProduct, deleteProduct
 } from "../controllers/productController.js";
-import { createReview } from "../controllers/reviewController.js";
+import { createReview, checkReviewEligibility } from "../controllers/reviewController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 import { optionalAuth } from "../middleware/optionalAuthMiddleware.js";
 import { upload } from "../middleware/uploadMiddleware.js";
@@ -17,6 +17,7 @@ router.get("/filters", getFilters);
 router.get("/category-attributes", getCategoryAttributeTemplates);
 router.get("/:id", optionalAuth, getProductById);
 router.get("/:id/image/:imageId", getProductImage);
+router.get("/:id/review-eligibility", protect, checkReviewEligibility);
 router.post("/:id/reviews", protect, createReview);
 
 // Admin product management routes

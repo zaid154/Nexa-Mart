@@ -11,6 +11,37 @@ export const getProductReviews = asyncHandler(async (req, res) => {
   res.json({ reviews });
 });
 
+// GET /api/reviews/product/:productId/eligibility - check if user can review this product
+export const checkReviewEligibility = asyncHandler(async (req, res) => {
+  const productId = req.params.productId || req.params.id;
+
+  if (!req.user) {
+    return res.json({ eligible: false, reason: "Please sign in to rate or review." });
+  }
+
+  // The user can only review if they have received delivery of this product
+  const hasDelivered = await Order.exists({
+    user: req.user._id,
+    "items.product": productId,
+    status: "delivered",
+  });
+
+  if (!hasDelivered) {
+    return res.json({
+      eligible: false,
+      reason: "Only customers who have received delivery of this product can rate or review it.",
+    });
+  }
+
+  const existing = await Review.findOne({ product: productId, user: req.user._id });
+
+  res.json({
+    eligible: true,
+    hasReviewed: Boolean(existing),
+    existingReview: existing || null,
+  });
+});
+
 // POST /api/reviews/product/:productId  - add or update a review.
 export const createReview = asyncHandler(async (req, res) => {
   const { rating, comment } = req.body;
@@ -28,15 +59,15 @@ export const createReview = asyncHandler(async (req, res) => {
     throw new Error("Product not found");
   }
 
-  // The user can only review a product they have actually bought and paid for.
-  const hasPurchased = await Order.exists({
+  // The user can only review a product if they have an order containing it that has been delivered.
+  const hasDelivered = await Order.exists({
     user: req.user._id,
     "items.product": productId,
-    $or: [{ isPaid: true }, { status: "delivered" }],
+    status: "delivered",
   });
-  if (!hasPurchased) {
+  if (!hasDelivered) {
     res.status(403);
-    throw new Error("You can only review products you have purchased");
+    throw new Error("Only customers who have received delivery of this product can rate or review it.");
   }
 
   // If the user already reviewed this product, update that review instead.
