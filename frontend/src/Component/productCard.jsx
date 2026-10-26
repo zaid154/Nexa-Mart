@@ -128,6 +128,9 @@ const ProductCard = ({ product }) => {
       <div className="pointer-events-none flex flex-1 flex-col gap-1 px-2.5 sm:px-4 pb-3 sm:pb-4 pt-1">
         <span className="line-clamp-2 min-h-[32px] sm:min-h-[38px] text-xs sm:text-sm font-medium leading-snug text-ink-900">
           {product.name}
+          {defaultVariantLabel && (
+            <span className="text-slate-500 font-normal text-xs"> ({defaultVariantLabel})</span>
+          )}
         </span>
         <span className="text-[11px] sm:text-xs text-ink-400">{product.brand}</span>
         <div className="flex items-center gap-1.5">
@@ -174,11 +177,7 @@ const ProductCard = ({ product }) => {
                 {adding ? "Adding..." : "Add to cart"}
               </button>
             )}
-            {defaultVariantLabel && (
-              <p className="mt-1 truncate text-center text-2xs text-ink-400">
-                {defaultVariantLabel}
-              </p>
-            )}
+
           </div>
         )}
       </div>
