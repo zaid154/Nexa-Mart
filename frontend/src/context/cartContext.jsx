@@ -55,7 +55,6 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (productId, quantity = 1) => {
     const res = await api.post("/cart", { productId, quantity });
     setCart(res.data);
-    openDrawer();
   };
 
   const updateCartItem = async (productId, quantity) => {

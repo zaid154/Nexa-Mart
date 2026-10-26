@@ -12,7 +12,7 @@ import { IconCart, IconHeart, IconStar } from "./icons.jsx";
 import { onProductImageError, PRODUCT_IMAGE_PLACEHOLDER } from "../utils/productImageUtils.js";
 
 const ProductCard = ({ product, showBrand = true }) => {
-  const { cart, addToCart, addToWishlist, removeFromWishlist, inWishlist, openDrawer: openCartDrawer } = useCart();
+  const { cart, addToCart, addToWishlist, removeFromWishlist, inWishlist } = useCart();
   const { user } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ const ProductCard = ({ product, showBrand = true }) => {
     setAdding(true);
     try {
       await addToCart(product._id, 1);
-      openCartDrawer();
+      toast.success("Added to cart");
     } catch (error) {
       toast.error(error.message);
     } finally {

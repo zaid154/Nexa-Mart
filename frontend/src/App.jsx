@@ -4,7 +4,6 @@ import Navbar from "./Component/navbar.jsx";
 import Footer from "./Component/footer.jsx";
 import PageShell from "./Component/pageShell.jsx";
 import Loader from "./Component/loader.jsx";
-import CartDrawer from "./Component/cartDrawer.jsx";
 import { ProtectedRoute, AdminRoute } from "./Component/protectedRoute.jsx";
 import BackendWakingBanner from "./Component/backendWakingBanner.jsx";
 import MobileBottomNav from "./Component/mobileBottomNav.jsx";
@@ -54,7 +53,6 @@ export default function App() {
     <div className="flex min-h-screen flex-col bg-[#f1f3f6]">
       <BackendWakingBanner />
       {!isAdminPage && <Navbar />}
-      {!isAdminPage && <CartDrawer />}
       {!isAdminPage && <MobileBottomNav />}
 
       <main className="flex flex-1 flex-col bg-[#f1f3f6]">
