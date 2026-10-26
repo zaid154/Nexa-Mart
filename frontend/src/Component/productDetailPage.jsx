@@ -89,11 +89,25 @@ export default function ProductDetailPage() {
   const variants = product.variants || [];
   const activeVariant = variants.find((v) => String(v._id) === String(selectedVariantId)) || variants[0] || null;
   const price = activeVariant?.price ?? product.price ?? 0;
-  const mrp = activeVariant?.mrp ?? product.mrp ?? 0;
+  const mrp = activeVariant?.mrp ?? (product.mrp && product.mrp > price ? product.mrp : Math.round(price * 1.35));
   const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
   const inStock = (activeVariant?.countInStock ?? product.countInStock ?? 0) > 0;
   const maxStock = activeVariant?.countInStock ?? product.countInStock ?? 99;
   const isWished = inWishlist(product._id);
+
+  // Active variant label (e.g. "Sky Blue, 64 GB")
+  const activeVariantLabel = activeVariant
+    ? Object.entries(activeVariant.attributes || {}).map(([, v]) => String(v)).join(", ") || activeVariant.name || activeVariant.sku || ""
+    : "";
+
+  // Check if variants have a color attribute
+  const colorAttrKey = activeVariant
+    ? Object.keys(activeVariant.attributes || {}).find((k) => k.toLowerCase() === "color")
+    : null;
+  const activeColor = colorAttrKey ? activeVariant.attributes[colorAttrKey] : null;
+
+  // Monthly EMI estimation (price / 3)
+  const emiAmount = Math.max(299, Math.round(price / 3));
 
   // Check if currently selected variant is in the cart
   const cartItem = (cart?.items || []).find((item) => {
@@ -189,6 +203,18 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: product.name,
+        url: window.location.href,
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Product link copied to clipboard!");
+    }
+  };
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     if (!user) return navigate("/login");
@@ -207,9 +233,32 @@ export default function ProductDetailPage() {
 
   return (
     <div className="w-full pb-8">
-      {/* Main product showcase */}
-      <div className="bg-white rounded-lg border border-slate-200 p-5 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 shadow-xs">
-        {/* Left: Image gallery */}
+      {/* 1. Flipkart-style Breadcrumb Navigation */}
+      <nav className="text-xs text-slate-500 mb-2.5 flex items-center flex-wrap gap-1.5 font-normal">
+        <Link to="/" className="hover:text-blue-600 transition-colors">
+          Home
+        </Link>
+        <span className="text-slate-400">/</span>
+        <Link to={`/products?category=${encodeURIComponent(product.category)}`} className="hover:text-blue-600 transition-colors">
+          {product.category}
+        </Link>
+        {product.brand && (
+          <>
+            <span className="text-slate-400">/</span>
+            <Link to={`/products?brand=${encodeURIComponent(product.brand)}`} className="hover:text-blue-600 transition-colors">
+              {product.brand}
+            </Link>
+          </>
+        )}
+        <span className="text-slate-400">/</span>
+        <span className="text-slate-700 font-medium truncate max-w-xs sm:max-w-md">
+          {product.name} {activeVariantLabel ? `(${activeVariantLabel})` : ""}
+        </span>
+      </nav>
+
+      {/* Main product showcase card */}
+      <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 shadow-xs">
+        {/* Left: Image gallery with Wishlist & Share buttons */}
         <div className="md:col-span-5 flex flex-col gap-3">
           <div className="relative aspect-square w-full rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden">
             <img
@@ -218,18 +267,31 @@ export default function ProductDetailPage() {
               onError={onProductImageError}
               className="max-h-full max-w-full object-contain p-4 transition-transform duration-300 hover:scale-105"
             />
-            <button
-              type="button"
-              onClick={handleToggleWishlist}
-              className={`absolute top-3 right-3 p-2.5 rounded-full shadow-md bg-white border border-slate-200 transition-colors ${
-                isWished ? "text-red-500 hover:bg-red-50" : "text-slate-400 hover:text-slate-600"
-              }`}
-              title={isWished ? "Remove from wishlist" : "Add to wishlist"}
-            >
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-            </button>
+            {/* Top Right Floating Action Icons: Wishlist Heart & Share */}
+            <div className="absolute top-3 right-3 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handleToggleWishlist}
+                className={`p-2 rounded-full shadow-md bg-white border border-slate-200 transition-colors ${
+                  isWished ? "text-red-500 hover:bg-red-50" : "text-slate-400 hover:text-slate-600"
+                }`}
+                title={isWished ? "Remove from wishlist" : "Add to wishlist"}
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="p-2 rounded-full shadow-md bg-white border border-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                title="Share product"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {images.length > 1 && (
@@ -239,8 +301,8 @@ export default function ProductDetailPage() {
                   key={idx}
                   type="button"
                   onClick={() => setSelectedImage(img)}
-                  className={`w-16 h-16 rounded-md border p-1 bg-white shrink-0 overflow-hidden ${
-                    selectedImage === img ? "border-blue-600 ring-2 ring-blue-100" : "border-slate-200 hover:border-slate-300"
+                  className={`w-16 h-16 rounded-md border p-1 bg-white shrink-0 overflow-hidden transition-all ${
+                    selectedImage === img ? "border-slate-900 ring-2 ring-slate-900/10 shadow-2xs" : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <img src={img} alt="" onError={onProductImageError} className="w-full h-full object-contain" />
@@ -250,46 +312,92 @@ export default function ProductDetailPage() {
           )}
         </div>
 
-        {/* Right: Details & options */}
-        <div className="md:col-span-7 flex flex-col gap-3.5">
+        {/* Right: Details & Flipkart-style configuration panels */}
+        <div className="md:col-span-7 flex flex-col gap-4">
+          {/* Header Ad / Brand Strip */}
+          <div className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-md">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">{product.brand || "NexaMart"}</span>
+              <span className="text-slate-300">|</span>
+              <span className="text-xs text-slate-600 truncate max-w-[180px] sm:max-w-xs">{product.name}</span>
+            </div>
+            <span className="text-xs font-bold text-slate-900">From {formatINR(price)}</span>
+          </div>
+
           <div>
-            <span className="text-xs uppercase font-bold tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-              {product.brand || product.category}
-            </span>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1.5">{product.name}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{product.name}</h1>
+            <div className="flex items-center gap-3 mt-1.5">
+              <span className="inline-flex items-center gap-1 bg-[#388e3c] text-white text-xs font-bold px-1.5 py-0.5 rounded">
+                {product.rating || "4.5"} ★
+              </span>
+              <span className="text-xs text-slate-500 font-medium">{reviews.length} Ratings & Reviews</span>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded ${inStock ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                {inStock ? "In Stock" : "Currently Out of Stock"}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1 bg-[#388e3c] text-white text-xs font-bold px-2 py-0.5 rounded">
-              {product.rating || "4.5"} ★
-            </span>
-            <span className="text-xs text-slate-500 font-medium">{reviews.length} Ratings & Reviews</span>
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded ${inStock ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
-              {inStock ? "In Stock" : "Currently Out of Stock"}
-            </span>
-          </div>
-
-          <div className="flex items-baseline gap-3 pt-2 border-t border-slate-100">
+          {/* Pricing Row */}
+          <div className="flex items-baseline gap-3 pt-1 border-t border-slate-100">
             <span className="text-2xl sm:text-3xl font-bold text-slate-900">{formatINR(price)}</span>
             {mrp > price && (
               <>
                 <span className="text-sm sm:text-base text-slate-400 line-through">{formatINR(mrp)}</span>
-                <span className="text-xs sm:text-sm font-bold text-[#388e3c]">{discount}% off</span>
+                <span className="text-xs sm:text-sm font-bold text-[#388e3c]">↓ {discount}% off</span>
               </>
             )}
           </div>
 
-          {/* Clean Variant Selection Chips */}
+          {/* 2. Selected Color (Flipkart-style Thumbnail Swatch Cards) */}
           {variants.length > 1 && (
             <div className="pt-2 flex flex-col gap-2">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">
-                Select Option:
+              <label className="text-xs font-bold text-slate-800">
+                Selected Color: <span className="font-normal text-slate-600">{activeColor || activeVariantLabel}</span>
               </label>
 
-              <div className="flex flex-wrap gap-2">
-                {variants.map((v) => {
-                  const label = Object.entries(v.attributes || {}).map(([k, val]) => `${k}: ${val}`).join(" / ") || v.name || formatINR(v.price);
+              <div className="flex flex-wrap gap-2.5">
+                {variants.map((v, idx) => {
                   const isSelected = String(v._id) === String(selectedVariantId);
+                  const vImg = v.image || images[idx] || images[0] || PRODUCT_IMAGE_PLACEHOLDER;
+                  const vColor = v.attributes?.Color || v.attributes?.color || Object.values(v.attributes || {})[0] || v.name;
+
+                  return (
+                    <button
+                      key={v._id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedVariantId(v._id);
+                        if (v.image || images[idx]) setSelectedImage(v.image || images[idx]);
+                      }}
+                      className={`w-14 h-16 sm:w-16 sm:h-20 rounded-lg p-1 bg-white flex flex-col items-center justify-center transition-all ${
+                        isSelected
+                          ? "border-2 border-slate-900 shadow-xs ring-1 ring-slate-900/10"
+                          : "border border-slate-200 hover:border-slate-400"
+                      }`}
+                      title={String(vColor)}
+                    >
+                      <img src={vImg} alt="" onError={onProductImageError} className="max-h-full max-w-full object-contain" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* 3. Variant Cards (Flipkart Spec + Discount + Price Card Style) */}
+          {variants.length > 1 && (
+            <div className="pt-2 flex flex-col gap-2">
+              <label className="text-xs font-bold text-slate-800">
+                Variant: <span className="font-normal text-slate-600">{activeVariantLabel}</span>
+              </label>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {variants.map((v) => {
+                  const isSelected = String(v._id) === String(selectedVariantId);
+                  const vLabel = Object.entries(v.attributes || {}).map(([, val]) => String(val)).join(" + ") || v.name || v.sku;
+                  const vPrice = v.price || price;
+                  const vMrp = v.mrp || (product.mrp && product.mrp > vPrice ? product.mrp : Math.round(vPrice * 1.35));
+                  const vDiscount = vMrp > vPrice ? Math.round(((vMrp - vPrice) / vMrp) * 100) : 0;
 
                   return (
                     <button
@@ -299,13 +407,20 @@ export default function ProductDetailPage() {
                         setSelectedVariantId(v._id);
                         if (v.image) setSelectedImage(v.image);
                       }}
-                      className={`px-3.5 py-1.5 rounded-md text-xs font-semibold border transition-all ${
+                      className={`text-left rounded-lg p-2.5 sm:p-3 transition-all flex flex-col justify-between ${
                         isSelected
-                          ? "border-blue-600 bg-blue-50 text-blue-700 shadow-xs ring-1 ring-blue-600"
-                          : "border-slate-300 text-slate-700 hover:border-slate-400 bg-white"
+                          ? "border-2 border-slate-900 bg-slate-50/60 shadow-2xs"
+                          : "border border-slate-200 hover:border-slate-400 bg-white"
                       }`}
                     >
-                      {label}
+                      <span className="text-xs font-bold text-slate-900 truncate block">{vLabel}</span>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        {vDiscount > 0 && (
+                          <span className="text-2xs font-bold text-[#388e3c]">↓{vDiscount}%</span>
+                        )}
+                        <span className="text-2xs text-slate-400 line-through">{formatINR(vMrp)}</span>
+                      </div>
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 mt-0.5 block">{formatINR(vPrice)}</span>
                     </button>
                   );
                 })}
@@ -313,29 +428,29 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          {/* Quantity Selector: Updates live cart quantity when in cart, or selects quantity to add */}
-          <div className="flex items-center gap-3 pt-2">
-            <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Quantity:</span>
+          {/* Quantity Stepper: Live cart updater when item is in cart, or pre-cart selector */}
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-xs font-bold text-slate-800">Quantity:</span>
             {isCurrentVariantInCart ? (
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <div className="flex items-center border border-slate-300 rounded-md bg-white shadow-2xs">
                   <button
                     type="button"
                     disabled={updatingCartQty}
                     onClick={handleDecrementCartQty}
-                    className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 disabled:opacity-50 text-sm font-bold transition-colors"
+                    className="px-3 py-1 text-slate-600 hover:bg-slate-100 disabled:opacity-50 text-sm font-bold transition-colors"
                     title={currentCartQty === 1 ? "Remove from cart" : "Decrease quantity"}
                   >
                     -
                   </button>
-                  <span className="px-3 py-1.5 text-sm font-bold text-slate-900 min-w-[32px] text-center">
+                  <span className="px-3 py-1 text-xs font-bold text-slate-900 min-w-[28px] text-center">
                     {updatingCartQty ? "..." : currentCartQty}
                   </span>
                   <button
                     type="button"
                     disabled={updatingCartQty || currentCartQty >= maxStock}
                     onClick={handleIncrementCartQty}
-                    className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 disabled:opacity-50 text-sm font-bold transition-colors"
+                    className="px-3 py-1 text-slate-600 hover:bg-slate-100 disabled:opacity-50 text-sm font-bold transition-colors"
                     title={currentCartQty >= maxStock ? "Maximum stock reached" : "Increase quantity"}
                   >
                     +
@@ -350,16 +465,16 @@ export default function ProductDetailPage() {
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 text-sm font-bold transition-colors"
+                  className="px-3 py-1 text-slate-600 hover:bg-slate-100 text-sm font-bold transition-colors"
                 >
                   -
                 </button>
-                <span className="px-3 py-1.5 text-sm font-bold text-slate-900 min-w-[32px] text-center">{quantity}</span>
+                <span className="px-3 py-1 text-xs font-bold text-slate-900 min-w-[28px] text-center">{quantity}</span>
                 <button
                   type="button"
                   disabled={quantity >= maxStock}
                   onClick={() => setQuantity((q) => Math.min(maxStock, q + 1))}
-                  className="px-3 py-1.5 text-slate-600 hover:bg-slate-100 disabled:opacity-50 text-sm font-bold transition-colors"
+                  className="px-3 py-1 text-slate-600 hover:bg-slate-100 disabled:opacity-50 text-sm font-bold transition-colors"
                 >
                   +
                 </button>
@@ -367,54 +482,67 @@ export default function ProductDetailPage() {
             )}
           </div>
 
-          {/* Action buttons (placed directly below Quantity) */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            {isCurrentVariantInCart ? (
-              <button
-                type="button"
-                onClick={() => navigate("/cart")}
-                className="w-full py-3.5 px-4 rounded-md font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-xs text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                Go to Cart
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                disabled={!inStock || addingToCart}
-                className="w-full py-3.5 px-4 rounded-md font-semibold text-white bg-[#ff9f00] hover:bg-[#f39700] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-xs text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                {addingToCart ? "Adding..." : "Add to Cart"}
-              </button>
-            )}
+          {/* 4. Flipkart-style Bottom Action Box */}
+          <div className="border border-slate-200 rounded-lg p-3 sm:p-3.5 bg-white shadow-2xs mt-1">
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate mb-2.5">
+              {product.brand ? `${product.brand} ` : ""}{product.name} {activeVariantLabel ? `(${activeVariantLabel})` : ""}
+            </h4>
 
-            <button
-              type="button"
-              onClick={handleBuyNow}
-              disabled={!inStock}
-              className="w-full py-3.5 px-4 rounded-md font-semibold text-white bg-[#fb641b] hover:bg-[#e85a14] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-xs text-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Buy Now
-            </button>
+            <div className="flex items-stretch gap-2 sm:gap-2.5">
+              {/* Cart Icon Button */}
+              <button
+                type="button"
+                onClick={isCurrentVariantInCart ? () => navigate("/cart") : handleAddToCart}
+                disabled={!inStock || addingToCart}
+                className="px-3.5 py-2.5 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 transition-colors flex items-center justify-center shrink-0 relative text-slate-700"
+                title={isCurrentVariantInCart ? "View in Cart" : "Add to Cart"}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {isCurrentVariantInCart && (
+                  <span className="absolute -top-1 -right-1 bg-emerald-600 text-white text-3xs font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                    {currentCartQty}
+                  </span>
+                )}
+              </button>
+
+              {/* Middle Button: Add to Cart / Buy with EMI */}
+              <button
+                type="button"
+                onClick={isCurrentVariantInCart ? () => navigate("/cart") : handleAddToCart}
+                disabled={!inStock || addingToCart}
+                className="flex-1 py-2 px-3 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 transition-colors text-left flex flex-col justify-center leading-tight shadow-2xs"
+              >
+                <span className="text-xs sm:text-sm font-bold text-slate-800">
+                  {isCurrentVariantInCart ? "Go to Cart" : "Buy with EMI"}
+                </span>
+                <span className="text-2xs text-slate-500 font-medium">
+                  {isCurrentVariantInCart ? `${currentCartQty} in cart` : `From ${formatINR(emiAmount)}/m`}
+                </span>
+              </button>
+
+              {/* Right Primary Button: Flipkart Signature Yellow "Buy now at ₹{price}" */}
+              <button
+                type="button"
+                onClick={handleBuyNow}
+                disabled={!inStock}
+                className="px-5 sm:px-6 py-2 rounded-lg bg-[#ffc200] hover:bg-[#f5b800] disabled:opacity-50 text-slate-900 font-bold flex flex-col items-center justify-center shrink-0 leading-tight shadow-2xs transition-colors"
+              >
+                <span className="text-xs sm:text-sm font-bold">Buy now</span>
+                <span className="text-2xs font-semibold text-slate-800">at {formatINR(price)}</span>
+              </button>
+            </div>
           </div>
 
           {/* Description */}
-          <div className="pt-3 border-t border-slate-100">
-            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Description</h3>
+          <div className="pt-2 border-t border-slate-100">
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-1">Description</h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{product.description}</p>
           </div>
 
-          {/* Clean Delivery & Service Policies (real e-commerce style, zero emojis) */}
-          <div className="pt-3 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
+          {/* Delivery & Service Policies */}
+          <div className="pt-2 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
               <span>7 Days Replacement Policy</span>
