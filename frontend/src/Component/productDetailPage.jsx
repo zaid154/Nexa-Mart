@@ -6,18 +6,20 @@ import { formatINR, formatDate } from "../utils/formatUtils.js";
 import { useCart } from "../context/cartContext.jsx";
 import { useAuth } from "../context/authContext.jsx";
 import { useToast } from "../context/toastContext.jsx";
+import { onProductImageError, PRODUCT_IMAGE_PLACEHOLDER } from "../utils/productImageUtils.js";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const toast = useToast();
-  const { addToCart, addToWishlist, removeFromWishlist, inWishlist } = useCart();
+  const { cart, addToCart, addToWishlist, removeFromWishlist, inWishlist } = useCart();
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [addingToCart, setAddingToCart] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedVariantId, setSelectedVariantId] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -91,6 +93,19 @@ export default function ProductDetailPage() {
   const inStock = (activeVariant?.countInStock ?? product.countInStock ?? 0) > 0;
   const isWished = inWishlist(product._id);
 
+  // Filter items in cart that belong to this product
+  const cartItemsForThisProduct = (cart?.items || []).filter(
+    (item) => String(item.product?._id || item.product?.id || item.product) === String(product._id)
+  );
+
+  // Check if currently selected variant is in the cart
+  const currentVariantInCart = cartItemsForThisProduct.find((item) => {
+    const itemVarId = item.variant?._id || item.variant?.id || item.variant || null;
+    return String(itemVarId || "") === String(selectedVariantId || "");
+  });
+
+  const isCurrentVariantInCart = Boolean(currentVariantInCart);
+
   const images = [
     ...(product.images || []),
     ...(product.image ? [product.image] : []),
@@ -98,18 +113,26 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (!user) return navigate("/login");
+    setAddingToCart(true);
     try {
       await addToCart(product._id, quantity, selectedVariantId);
-      toast.success("Added to cart!");
+      const varLabel = activeVariant
+        ? Object.entries(activeVariant.attributes || {}).map(([k, v]) => `${k}: ${v}`).join(", ") || activeVariant.sku || activeVariant.name
+        : "";
+      toast.success(varLabel ? `Added "${varLabel}" to cart!` : "Added to cart!");
     } catch (err) {
       toast.error(err.message || "Could not add to cart");
+    } finally {
+      setAddingToCart(false);
     }
   };
 
   const handleBuyNow = async () => {
     if (!user) return navigate("/login");
     try {
-      await addToCart(product._id, quantity, selectedVariantId);
+      if (!isCurrentVariantInCart) {
+        await addToCart(product._id, quantity, selectedVariantId);
+      }
       navigate("/checkout");
     } catch (err) {
       toast.error(err.message || "Failed to initiate checkout");
@@ -177,13 +200,14 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Main product showcase */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6 grid grid-cols-1 md:grid-cols-12 gap-8 shadow-xs">
+      <div className="bg-white rounded-lg border border-slate-200 p-5 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 shadow-xs">
         {/* Left: Image gallery */}
         <div className="md:col-span-5 flex flex-col gap-4">
           <div className="relative aspect-square w-full rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden">
             <img
-              src={selectedImage || images[0] || "https://placehold.co/600x600?text=Product"}
+              src={selectedImage || images[0] || PRODUCT_IMAGE_PLACEHOLDER}
               alt={product.name}
+              onError={onProductImageError}
               className="max-h-full max-w-full object-contain p-4 transition-transform duration-300 hover:scale-105"
             />
             <button
@@ -201,7 +225,7 @@ export default function ProductDetailPage() {
           </div>
 
           {images.length > 1 && (
-            <div className="flex gap-2.5 overflow-x-auto pb-2">
+            <div className="flex gap-2.5 overflow-x-auto pb-1">
               {images.map((img, idx) => (
                 <button
                   key={idx}
@@ -211,40 +235,77 @@ export default function ProductDetailPage() {
                     selectedImage === img ? "border-blue-600 ring-2 ring-blue-100" : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-contain" />
+                  <img src={img} alt="" onError={onProductImageError} className="w-full h-full object-contain" />
                 </button>
               ))}
             </div>
           )}
 
           {/* Action buttons */}
-          <div className="grid grid-cols-2 gap-3.5 mt-2">
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={!inStock}
-              className="w-full py-3.5 px-4 rounded-md font-semibold text-white bg-[#ff9f00] hover:bg-[#f39700] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-xs"
-            >
-              Add to Cart
-            </button>
+          <div className="grid grid-cols-2 gap-3 mt-1">
+            {isCurrentVariantInCart ? (
+              <button
+                type="button"
+                onClick={() => navigate("/cart")}
+                className="w-full py-3.5 px-3 rounded-md font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center justify-center gap-1.5 shadow-xs text-xs sm:text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                Go to Cart ({currentVariantInCart.quantity})
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={!inStock || addingToCart}
+                className="w-full py-3.5 px-3 rounded-md font-semibold text-white bg-[#ff9f00] hover:bg-[#f39700] disabled:opacity-50 transition-colors flex items-center justify-center gap-1.5 shadow-xs text-xs sm:text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                {addingToCart ? "Adding..." : "Add to Cart"}
+              </button>
+            )}
+
             <button
               type="button"
               onClick={handleBuyNow}
               disabled={!inStock}
-              className="w-full py-3.5 px-4 rounded-md font-semibold text-white bg-[#fb641b] hover:bg-[#e85a14] disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-xs"
+              className="w-full py-3.5 px-3 rounded-md font-semibold text-white bg-[#fb641b] hover:bg-[#e85a14] disabled:opacity-50 transition-colors flex items-center justify-center gap-1.5 shadow-xs text-xs sm:text-sm"
             >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
               Buy Now
             </button>
           </div>
+
+          {/* Quick add-more button if already in cart */}
+          {isCurrentVariantInCart && (
+            <div className="flex items-center justify-between text-2xs text-slate-600 px-1 pt-0.5">
+              <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                <span>✓</span> In cart: {currentVariantInCart.quantity} item{currentVariantInCart.quantity > 1 ? "s" : ""}
+              </span>
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={addingToCart}
+                className="text-blue-600 hover:text-blue-700 font-bold underline cursor-pointer"
+              >
+                {addingToCart ? "Adding..." : "+ Add 1 more"}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Right: Details & options */}
-        <div className="md:col-span-7 flex flex-col gap-4">
+        <div className="md:col-span-7 flex flex-col gap-3.5">
           <div>
             <span className="text-xs uppercase font-bold tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
               {product.brand || product.category}
             </span>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mt-2">{product.name}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1.5">{product.name}</h1>
           </div>
 
           <div className="flex items-center gap-3">
@@ -257,23 +318,39 @@ export default function ProductDetailPage() {
             </span>
           </div>
 
-          <div className="flex items-baseline gap-3 pt-2 border-t border-slate-100">
-            <span className="text-3xl font-bold text-slate-900">{formatINR(price)}</span>
+          <div className="flex items-baseline gap-3 pt-1 border-t border-slate-100">
+            <span className="text-2xl sm:text-3xl font-bold text-slate-900">{formatINR(price)}</span>
             {mrp > price && (
               <>
-                <span className="text-base text-slate-400 line-through">{formatINR(mrp)}</span>
-                <span className="text-sm font-bold text-[#388e3c]">{discount}% off</span>
+                <span className="text-sm sm:text-base text-slate-400 line-through">{formatINR(mrp)}</span>
+                <span className="text-xs sm:text-sm font-bold text-[#388e3c]">{discount}% off</span>
               </>
             )}
           </div>
 
+          {/* Variant Selection Chips with In-Cart indicators */}
           {variants.length > 1 && (
-            <div className="pt-2 flex flex-col gap-2">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">Select Option:</label>
-              <div className="flex flex-wrap gap-2.5">
+            <div className="pt-1.5 flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                  Select Option:
+                </label>
+                {cartItemsForThisProduct.length > 0 && (
+                  <span className="text-2xs text-emerald-700 font-semibold flex items-center gap-1">
+                    <span>✓</span> {cartItemsForThisProduct.length} {cartItemsForThisProduct.length === 1 ? "option" : "options"} in cart
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-2">
                 {variants.map((v) => {
                   const label = Object.entries(v.attributes || {}).map(([k, val]) => `${k}: ${val}`).join(" / ") || v.name || formatINR(v.price);
                   const isSelected = String(v._id) === String(selectedVariantId);
+                  const vInCart = cartItemsForThisProduct.find((ci) => {
+                    const itemVarId = ci.variant?._id || ci.variant?.id || ci.variant || null;
+                    return String(itemVarId || "") === String(v._id);
+                  });
+
                   return (
                     <button
                       key={v._id}
@@ -282,13 +359,18 @@ export default function ProductDetailPage() {
                         setSelectedVariantId(v._id);
                         if (v.image) setSelectedImage(v.image);
                       }}
-                      className={`px-3.5 py-1.5 rounded-md text-xs font-semibold border transition-all ${
+                      className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all flex items-center gap-1.5 ${
                         isSelected
                           ? "border-blue-600 bg-blue-50 text-blue-700 shadow-xs ring-1 ring-blue-600"
                           : "border-slate-300 text-slate-700 hover:border-slate-400 bg-white"
                       }`}
                     >
-                      {label}
+                      <span>{label}</span>
+                      {vInCart && (
+                        <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
+                          ✓ ({vInCart.quantity})
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -296,7 +378,8 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          <div className="flex items-center gap-3 pt-2">
+          {/* Quantity Selector */}
+          <div className="flex items-center gap-3 pt-1">
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Quantity:</span>
             <div className="flex items-center border border-slate-300 rounded-md">
               <button
@@ -317,15 +400,112 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-100">
+          {/* In-Cart Status Alert */}
+          {isCurrentVariantInCart && (
+            <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-md text-xs text-emerald-900">
+              <span className="flex items-center gap-2 font-medium">
+                <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
+                This option is in your cart (<strong>Qty: {currentVariantInCart.quantity}</strong>)
+              </span>
+              <Link to="/cart" className="font-bold text-emerald-800 hover:text-emerald-950 underline">
+                Go to Cart &rarr;
+              </Link>
+            </div>
+          )}
+
+          {/* Multiple variants summary snapshot */}
+          {cartItemsForThisProduct.length > 1 && (
+            <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-md text-xs text-blue-900">
+              <div className="flex items-center justify-between font-bold mb-1.5">
+                <span className="flex items-center gap-1.5">
+                  <span>🛒</span> Multiple options added to cart ({cartItemsForThisProduct.length}):
+                </span>
+                <Link to="/cart" className="text-blue-700 hover:underline font-semibold">Open Cart &rarr;</Link>
+              </div>
+              <div className="space-y-1">
+                {cartItemsForThisProduct.map((ci, idx) => {
+                  const vTitle = ci.variant?.name || Object.entries(ci.variant?.attributes || {}).map(([k, v]) => `${k}: ${v}`).join(", ") || "Default";
+                  return (
+                    <div key={idx} className="flex items-center justify-between bg-white px-2.5 py-1 rounded border border-blue-100 text-2xs">
+                      <span className="font-medium text-slate-800">• {vTitle}</span>
+                      <span className="font-bold text-blue-800">Qty: {ci.quantity} ({formatINR(ci.unitPrice * ci.quantity)})</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Description */}
+          <div className="pt-2 border-t border-slate-100">
             <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">Description</h3>
-            <p className="text-sm text-slate-600 leading-relaxed">{product.description}</p>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{product.description}</p>
+          </div>
+
+          {/* Available Offers Section (Flipkart style) */}
+          <div className="pt-2 border-t border-slate-100">
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+              <span className="text-emerald-600">🏷️</span> Available Offers
+            </h3>
+            <div className="space-y-1 text-xs text-slate-600">
+              <div className="flex items-start gap-2">
+                <span className="font-bold text-slate-800 shrink-0">Bank Offer:</span>
+                <span>5% Unlimited Cashback on Flipkart Axis Bank Credit Card</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="font-bold text-slate-800 shrink-0">Special Price:</span>
+                <span>Extra discount applied automatically at checkout</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="font-bold text-slate-800 shrink-0">Partner Offer:</span>
+                <span>Sign up for NexaPay &amp; get flat ₹100 instant cashback on your first purchase</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Key Specs / Highlights (derived from product.specs) */}
+          {product.specs && Object.keys(product.specs).length > 0 && (
+            <div className="pt-2 border-t border-slate-100">
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Key Highlights</h3>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {Object.entries(product.specs).slice(0, 6).map(([k, v]) => (
+                  <div key={k} className="flex flex-col bg-slate-50 p-2 rounded border border-slate-100">
+                    <span className="text-2xs text-slate-400 uppercase font-medium">{k}</span>
+                    <span className="font-semibold text-slate-800 truncate" title={String(v)}>{String(v)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Delivery & Trust Guarantee Badges */}
+          <div className="pt-2.5 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="p-2 bg-slate-50 border border-slate-100 rounded-md text-center">
+              <span className="text-sm block mb-0.5">🚚</span>
+              <span className="text-2xs font-bold text-slate-800 block">Free Delivery</span>
+              <span className="text-3xs text-slate-400 block">In 2-4 days</span>
+            </div>
+            <div className="p-2 bg-slate-50 border border-slate-100 rounded-md text-center">
+              <span className="text-sm block mb-0.5">🔄</span>
+              <span className="text-2xs font-bold text-slate-800 block">7-Day Return</span>
+              <span className="text-3xs text-slate-400 block">Hassle free</span>
+            </div>
+            <div className="p-2 bg-slate-50 border border-slate-100 rounded-md text-center">
+              <span className="text-sm block mb-0.5">🛡️</span>
+              <span className="text-2xs font-bold text-slate-800 block">1 Year Warranty</span>
+              <span className="text-3xs text-slate-400 block">Brand warranty</span>
+            </div>
+            <div className="p-2 bg-slate-50 border border-slate-100 rounded-md text-center">
+              <span className="text-sm block mb-0.5">💵</span>
+              <span className="text-2xs font-bold text-slate-800 block">COD Available</span>
+              <span className="text-3xs text-slate-400 block">Pay at doorstep</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Specifications & Reviews tabs */}
-      <div className="mt-8 bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
+      <div className="mt-6 bg-white rounded-lg border border-slate-200 p-5 sm:p-6 shadow-xs">
         <div className="flex border-b border-slate-200 gap-6">
           <button
             type="button"
@@ -425,7 +605,7 @@ export default function ProductDetailPage() {
 
       {/* Similar products */}
       {related.length > 0 && (
-        <div className="mt-8 bg-white rounded-lg border border-slate-200 p-6 shadow-xs">
+        <div className="mt-6 bg-white rounded-lg border border-slate-200 p-5 sm:p-6 shadow-xs">
           <h3 className="text-base font-bold text-slate-900 mb-4">Similar Products</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {related.map((p) => (
