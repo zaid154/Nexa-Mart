@@ -15,10 +15,10 @@ NexaMart is a production-ready, full-stack MERN e-commerce web platform engineer
 
 ## Live Demo & Repositories
 
-- **Frontend Application:** [nexa-mart-953k63ws2-mohd-zaid-s-projects1.vercel.app](https://nexa-mart-953k63ws2-mohd-zaid-s-projects1.vercel.app/)
+- **Frontend Application:** [nexamart-pro.vercel.app](https://nexamart-pro.vercel.app/)
 - **Backend REST API:** [nexa-mart.onrender.com/api](https://nexa-mart.onrender.com/api)
 - **GitHub Repository:** [github.com/zaid154/Nexa-Mart](https://github.com/zaid154/Nexa-Mart)
-- **Author:** Mohd Zaid ([Portfolio](https://portfolio-zeta-drab-97.vercel.app/) | [GitHub](https://github.com/zaid154) | [LinkedIn](https://www.linkedin.com/in/mohd-zaid-794090231/))
+- **Author:** Mohd Zaid ([Portfolio](https://zaid-pro.vercel.app/) | [GitHub](https://github.com/zaid154) | [LinkedIn](https://www.linkedin.com/in/mohd-zaid-794090231/))
 
 ---
 

@@ -46,7 +46,7 @@ const allowedOrigins = [
     .map((url) => url.trim())
     .filter(Boolean),
   "http://localhost:5173",
-  "https://nexa-mart-psi.vercel.app",
+  "https://nexamart-pro.vercel.app/",
   "https://nexa-mart.onrender.com",
 ];
 
@@ -119,7 +119,7 @@ app.use("/api/admin", adminRoutes);
 // Redirect web root requests to frontend application
 const frontendUrl =
   String(process.env.CLIENT_URL || "").split(",")[0].trim() ||
-  "https://nexa-mart-psi.vercel.app";
+  "https://nexamart-pro.vercel.app/";
 
 app.use((req, res, next) => {
   const isApi = req.path === "/api" || req.path.startsWith("/api/");
