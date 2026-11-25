@@ -89,7 +89,7 @@ A dedicated administrative back-office protected with Role-Based Access Control 
 
 ```
 Nexa-Mart/
-├── backend/
+├── server/
 │   ├── config/              # dbConfig.js, envConfig.js, razorpayConfig.js, validateEnvConfig.js
 │   ├── controllers/         # productController.js, orderController.js, cartController.js, adminController.js
 │   ├── middleware/          # authMiddleware.js, errorMiddleware.js, uploadMiddleware.js
@@ -103,7 +103,7 @@ Nexa-Mart/
 │   ├── server.js            # Express application entry point (npm start)
 │   ├── .env.example
 │   └── package.json
-├── frontend/
+├── client/
 │   ├── src/
 │   │   ├── api/             # apiClient.js (Axios instance with auth interceptor)
 │   │   ├── Component/       # Storefront pages & reusable UI components
@@ -164,7 +164,7 @@ cd Nexa-Mart
 
 ### 2. Backend Configuration & Setup
 ```bash
-cd backend
+cd server
 npm install
 
 # Create environment configuration
@@ -196,7 +196,7 @@ npm run dev
 ### 3. Frontend Configuration & Setup
 In a separate terminal:
 ```bash
-cd frontend
+cd client
 npm install
 
 # Start Vite development server
@@ -206,7 +206,7 @@ npm run dev
 
 ### 4. Production Build
 ```bash
-cd frontend
+cd client
 npm run build
 ```
 
