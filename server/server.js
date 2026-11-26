@@ -46,7 +46,7 @@ const allowedOrigins = [
     .map((url) => url.trim())
     .filter(Boolean),
   "http://localhost:5173",
-  "https://nexamart-pro.vercel.app/",
+  "https://nexamart-pro.vercel.app",
   "https://nexa-mart.onrender.com",
 ];
 
