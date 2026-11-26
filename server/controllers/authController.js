@@ -232,7 +232,8 @@ export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   // Find the user and include the password field for checking.
-  const user = await User.findOne({ email, isDeleted: { $ne: true } }).select("+password");
+  const normalizedEmail = String(email || "").toLowerCase().trim();
+  const user = await User.findOne({ email: normalizedEmail, isDeleted: { $ne: true } }).select("+password");
 
   // If there is no user, or the password is wrong, log it and reject.
   if (!user || !(await user.matchPassword(password))) {
@@ -289,15 +290,17 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   }
 
   // Only send a code if the user exists, but do not reveal that to the caller.
-  const user = await User.findOne({ email: email.toLowerCase(), isDeleted: { $ne: true } });
+  const normalizedEmail = String(email || "").toLowerCase().trim();
+  const user = await User.findOne({ email: normalizedEmail, isDeleted: { $ne: true } });
   if (user) {
     const code = generateOtpCode();
     const expiryMin = await getOtpExpiryMin();
-    await Otp.createOtp(email, code, "reset", expiryMin);
+    console.log(`\n========================================\n[RESET OTP] Code for ${normalizedEmail}: ${code}\n========================================\n`);
+    await Otp.createOtp(normalizedEmail, code, "reset", expiryMin);
     // Sent in the background so that a known email does not take measurably
     // longer (or error) than an unknown one, which would undo the guarantee
     // the shared response below is meant to give.
-    sendOtpEmailInBackground({ to: email, name: user.name, otp: code, purpose: "reset" });
+    sendOtpEmailInBackground({ to: normalizedEmail, name: user.name, otp: code, purpose: "reset" });
   }
 
   // Always send the same response to prevent email enumeration.

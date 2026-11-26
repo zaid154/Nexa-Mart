@@ -165,12 +165,22 @@ api.interceptors.response.use(
       return api(config);
     }
 
-    // If 401 error, try to refresh the token
+    // If 401 error, try to refresh the token (skip unauthenticated/public auth endpoints)
     const is401 = status === 401;
     const alreadyTriedRefresh = config._refreshAttempted;
-    const isRefreshUrl = config.url && config.url.includes("/auth/refresh");
+    const isPublicAuthUrl =
+      config.url &&
+      [
+        "/auth/refresh",
+        "/auth/login",
+        "/auth/register",
+        "/auth/verify-otp",
+        "/auth/resend-otp",
+        "/auth/forgot-password",
+        "/auth/reset-password",
+      ].some((path) => config.url.includes(path));
 
-    if (is401 && !alreadyTriedRefresh && !isRefreshUrl) {
+    if (is401 && !alreadyTriedRefresh && !isPublicAuthUrl) {
       config._refreshAttempted = true;
 
       try {
@@ -181,21 +191,21 @@ api.interceptors.response.use(
         }
 
         const refreshResult = await refreshing;
-        const newToken = refreshResult.data.token;
+        const newToken = refreshResult.data?.token;
 
-        _accessToken = newToken;
-        config.headers.Authorization = "Bearer " + newToken;
-
-        return api(config);
+        if (newToken) {
+          _accessToken = newToken;
+          config.headers.Authorization = "Bearer " + newToken;
+          return api(config);
+        }
+        _accessToken = null;
       } catch (refreshError) {
         _accessToken = null;
       }
     }
 
     // Clear token on any other 401 error
-    const isAuthUrl = config.url && config.url.includes("/auth/");
-
-    if (is401 && !isAuthUrl) {
+    if (is401 && !isPublicAuthUrl) {
       _accessToken = null;
     }
 

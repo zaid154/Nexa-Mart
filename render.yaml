@@ -15,7 +15,7 @@ services:
       - key: PORT
         value: "10000"
       - key: CLIENT_URL
-        value: https://nexa-mart-psi.vercel.app
+        value: https://nexamart-pro.vercel.app
       - key: COOKIE_SECURE
         value: "true"
       - key: MONGO_URI

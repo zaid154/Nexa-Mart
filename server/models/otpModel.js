@@ -20,11 +20,12 @@ otpSchema.index({ email: 1, purpose: 1 });
 
 // Hash code and replace any existing OTP for email and purpose
 otpSchema.statics.createOtp = async function (email, code, purpose, expiresMin) {
+  const normalizedEmail = String(email).toLowerCase().trim();
   const codeHash = await bcrypt.hash(code, 10);
-  await this.deleteMany({ email, purpose });
+  await this.deleteMany({ email: normalizedEmail, purpose });
 
   return this.create({
-    email,
+    email: normalizedEmail,
     codeHash,
     purpose,
     expiresAt: new Date(Date.now() + expiresMin * 60 * 1000),
