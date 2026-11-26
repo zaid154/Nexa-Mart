@@ -16,7 +16,7 @@ cloudinary.config({
 });
 
 const FOLDER_NAME = process.env.CLOUDINARY_FOLDER || "Nexa Mart";
-const BASE_IMAGES_DIR = path.join(ROOT_DIR, "frontend/public/images/products");
+const BASE_IMAGES_DIR = path.join(ROOT_DIR, "client/public/images/products");
 
 const run = async () => {
   console.log(`[Cloudinary] Connecting to account: ${process.env.CLOUDINARY_CLOUD_NAME}...`);

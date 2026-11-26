@@ -2,10 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  // Load VITE_* env vars from the Nexa-Mart root .env (one level up), so the
-  // logo path lives in the same .env the user already edits for the backend.
-  // Only VITE_-prefixed vars are exposed to the client; backend secrets are not.
-  envDir: "..",
   plugins: [react()],
   build: {
     rollupOptions: {
